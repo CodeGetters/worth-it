@@ -23,6 +23,7 @@ import {
 import { today } from '../../utils/date'
 import { t } from '../../i18n'
 import type { Flash } from './shared'
+import './CheckinScreen.scss'
 
 /**
  * 打卡灵魂屏（移植自 design/mobile.html 屏2）。

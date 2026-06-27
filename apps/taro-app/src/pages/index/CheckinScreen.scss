@@ -1,0 +1,117 @@
+/* 打卡灵魂屏 · 票面内容样式（对齐 design/mobile.html 屏2）。
+   页面骨架（.checkin 根 / body / dots / swiper）留在 index.scss；
+   这里只管票面内部：头部印章、大单价区、反馈、心里价参照、操作区。色彩全走 var(--c-*) */
+
+/* 票面撑开剩余空间，内部再纵向分布（大单价 margin:auto 居中） */
+.checkin__ticket {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+}
+
+/* Ticket 内部 body 也要 flex 撑开，让大单价区垂直居中 */
+.checkin__ticket .ticket__body {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+}
+
+/* 票面头部：卡名印章 + 次数标签 */
+.ticket-head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--sp-2);
+}
+
+/* 大单价区：在票面内垂直居中怼脸 */
+.ticket-price {
+  margin: auto 0;
+  text-align: center;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: var(--sp-2);
+  padding: var(--sp-5) 0;
+}
+
+/* delta 印章 + hint 容器 */
+.ticket-feedback {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: var(--sp-2);
+  margin-top: var(--sp-1);
+}
+
+/* hint：跟心里价比 / 断卡负反馈 */
+.ticket-hint {
+  display: block;
+  font-size: var(--fs-sm);
+  color: var(--c-faint);
+  line-height: 1.5;
+
+  &--burn {
+    color: var(--c-burn);
+    font-weight: 700;
+  }
+}
+
+/* 少样本占位 */
+.fewsample {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: var(--sp-2);
+
+  &__ph {
+    font-family: var(--font-num);
+    font-size: var(--fs-xl);
+    font-weight: 800;
+    letter-spacing: 0.1em;
+    color: var(--c-faint);
+  }
+
+  &__title {
+    font-size: var(--fs-md);
+    font-weight: 700;
+    color: var(--c-ink);
+    line-height: 1.4;
+  }
+
+  &__desc {
+    font-size: var(--fs-sm);
+    color: var(--c-faint);
+    line-height: 1.5;
+  }
+}
+
+/* 心里价参照：虚线 + 账目行 + 进度条 */
+.ticket-progress {
+  display: flex;
+  flex-direction: column;
+  gap: var(--sp-3);
+}
+
+/* 打卡 / 撤销 / 补打操作区 */
+.ticket-actions {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: var(--sp-3);
+  margin-top: var(--sp-5);
+
+  /* 撤销 + 补打 横排（补打常驻，撤销有打卡时才显示） */
+  &__links {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: var(--sp-5);
+  }
+
+  &__link {
+    font-size: var(--fs-sm);
+    color: var(--c-mute);
+    font-weight: 700;
+  }
+}
