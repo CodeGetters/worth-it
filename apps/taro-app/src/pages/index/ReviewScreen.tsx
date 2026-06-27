@@ -108,7 +108,7 @@ export function ReviewScreen({ card, allCheckins, onRenew, onExport }: ReviewScr
       {/* 下次怎么选（黄票） */}
       <View className="review__next">
         <View className="review__next-head">
-          <Icon name="logo" size={18} strokeWidth={2.4} color="var(--c-ink)" />
+          <Icon name="bulb" size={18} strokeWidth={2.4} color="var(--c-ink)" />
           <Text className="review__next-title">{t('review.nextTitle')}</Text>
         </View>
         <Text className="review__next-body">{advice}</Text>

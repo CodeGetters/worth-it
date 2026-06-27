@@ -40,11 +40,24 @@
     border: var(--bd);
     border-radius: var(--r-sm);
 
+    &-main {
+      display: flex;
+      align-items: baseline;
+      gap: var(--sp-2);
+      min-width: 0;
+    }
+
     &-val {
       font-family: var(--font-num);
       font-feature-settings: var(--fnum);
       font-weight: 700;
       color: var(--c-ink);
+    }
+
+    /* 原始 ISO 日期：弱化为副信息，「N 个月」为主 */
+    &-date {
+      font-size: var(--fs-xs);
+      color: var(--c-faint);
     }
 
     /* 「已自动填」印章：省钱绿小标 */
@@ -85,14 +98,25 @@
     gap: 2px;
   }
 
+  /* 未选中：灰字、权重降一档，弱化为「另一个选项」 */
   &__title {
-    font-weight: 800;
+    font-weight: 700;
     font-size: var(--fs-sm);
-    color: var(--c-ink);
+    color: var(--c-mute);
   }
 
   &__hint {
     font-size: var(--fs-xs);
+    color: var(--c-faint);
+  }
+
+  /* 选中：墨黑加粗，明确「当前选的是这种卡」 */
+  &--on &__title {
+    font-weight: 800;
+    color: var(--c-ink);
+  }
+
+  &--on &__hint {
     color: var(--c-mute);
   }
 }

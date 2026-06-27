@@ -4,7 +4,7 @@ import Taro from '@tarojs/taro'
 import type { CardType } from '@worthit/core'
 import type { NewCardInput } from '../../store/useCardStore'
 import { Ticket, MonoCap, Field, Button } from '@/components'
-import { today, addYears } from '../../utils/date'
+import { today, addYears, monthsFromToday, daysFromToday } from '../../utils/date'
 import { t } from '../../i18n'
 import './AddCardForm.scss'
 
@@ -37,6 +37,17 @@ export function AddCardForm({ onSubmit, prefill }: AddCardFormProps) {
   const isLimited = type === 'limited'
   // 有效期是否仍是默认值（今天+1年），用于显示「已自动填」印章
   const isAutoExpire = expireDate === addYears(today(), 1)
+  // 有效期友好展示：整年显「N 年」，否则「N 个月」，不足一月退「N 天」，再不足退原始日期
+  const expireMonths = monthsFromToday(expireDate)
+  const expireDays = daysFromToday(expireDate)
+  const expireFriendly =
+    expireMonths > 0 && expireMonths % 12 === 0
+      ? t('addCard.expireYears', { n: expireMonths / 12 })
+      : expireMonths > 0
+        ? t('addCard.expireMonths', { n: expireMonths })
+        : expireDays > 0
+          ? t('addCard.expireDays', { n: expireDays })
+          : expireDate
 
   function fail(msg: string) {
     void Taro.showToast({ title: msg, icon: 'none' })
@@ -95,7 +106,6 @@ export function AddCardForm({ onSubmit, prefill }: AddCardFormProps) {
           value={name}
           onChange={setName}
           placeholder={t('addCard.phName')}
-          optional
         />
 
         <View className="addform__row">
@@ -129,7 +139,10 @@ export function AddCardForm({ onSubmit, prefill }: AddCardFormProps) {
             onChange={(e) => setExpireDate(String(e.detail.value))}
           >
             <View className="addform__expire">
-              <Text className="addform__expire-val">{expireDate}</Text>
+              <View className="addform__expire-main">
+                <Text className="addform__expire-val">{expireFriendly}</Text>
+                <Text className="addform__expire-date">{expireDate}</Text>
+              </View>
               {isAutoExpire && (
                 <Text className="addform__expire-auto">{t('addCard.expireAuto')}</Text>
               )}

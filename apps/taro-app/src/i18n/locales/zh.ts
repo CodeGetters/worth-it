@@ -113,6 +113,9 @@ export const zh = {
     phExpected: '作参照基准，后面随时改',
     // 有效期
     expireAuto: '已自动填:今天+1年',
+    expireYears: '{n} 年',
+    expireMonths: '{n} 个月',
+    expireDays: '{n} 天',
     // 保存
     save: '保存，开始打卡',
     // 校验提示

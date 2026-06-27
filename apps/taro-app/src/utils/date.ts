@@ -21,3 +21,19 @@ export function today(): string {
 export function addYears(ymd: string, n: number): string {
   return dayjs(ymd).add(n, 'year').format('YYYY-MM-DD')
 }
+
+/**
+ * 从今天到 ymd 的友好时长描述用的月数（四舍五入到最近整月，最少 0）。
+ * 用四舍五入而非截断：今天+1年 = 11 个月零几天 → 12 个月，符合直觉。
+ */
+export function monthsFromToday(ymd: string): number {
+  const m = dayjs(ymd).diff(dayjs(), 'month', true) // 带小数
+  const rounded = Math.round(m)
+  return rounded > 0 ? rounded : 0
+}
+
+/** 从今天到 ymd 还有多少天（向下取整，最少 0）。N 个月不足时兜底用 */
+export function daysFromToday(ymd: string): number {
+  const d = dayjs(ymd).diff(dayjs(), 'day')
+  return d > 0 ? d : 0
+}

@@ -22,6 +22,8 @@ const PATHS: Record<string, string> = {
   chevronLeft: '<path d="M15 18l-6-6 6-6"/>',
   // 帮助
   help: '<circle cx="12" cy="12" r="9"/><path d="M9.5 9a2.5 2.5 0 015 0c0 1.5-2.5 2-2.5 4"/><circle cx="12" cy="17" r=".7" fill="currentColor"/>',
+  // 灯泡：建议 / 下次怎么选（移植自原型屏6）
+  bulb: '<path d="M9 18h6M10 22h4M12 2a7 7 0 00-4 12.7c.6.5 1 1.3 1 2.3h6c0-1 .4-1.8 1-2.3A7 7 0 0012 2z"/>',
   // tab：打卡（同 logo）
   tabCheckin: '<path d="M3 17l5-5 4 3 6-7"/><path d="M14 8h4v4"/>',
   // tab：总览
