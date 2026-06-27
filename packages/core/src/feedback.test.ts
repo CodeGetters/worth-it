@@ -70,6 +70,18 @@ describe('getStatus · 总览着色', () => {
 })
 
 describe('detectTurningPoint · 转折判定', () => {
+  it('断卡回归 → welcomeBack（优先级最高）', () => {
+    const before = result({ breakDays: 10 })
+    const after = result({ breakDays: 0 })
+    expect(detectTurningPoint(before, after)).toBe('welcomeBack')
+  })
+
+  it('断卡回归同时跨心里价 → 仍 welcomeBack（优先）', () => {
+    const before = result({ breakDays: 8, belowExpected: false })
+    const after = result({ breakDays: 0, belowExpected: true })
+    expect(detectTurningPoint(before, after)).toBe('welcomeBack')
+  })
+
   it('课包打满 → fullPaid（优先级最高）', () => {
     const before = result({ full: false })
     const after = result({ full: true, belowExpected: true })

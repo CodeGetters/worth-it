@@ -72,6 +72,7 @@ export const zh = {
     savedTotal: '比单次买总共省下',
     lostTotal: '这些卡目前总共在亏',
     evenTotal: '填上心里价，就能看总共省了多少',
+    pendingTotal: '再打几次，就能看总共省了多少',
     countActive: '在用',
     countBurning: '在亏',
     countReview: '已结束',
@@ -162,6 +163,17 @@ export const zh = {
       bigDrop: '↓ ¥{diff} · 这一次，单价掉了一大截',
       fullPaid: '这张卡打满了，最终每次 ¥{price}',
       welcomeBack: '欢迎回来 · 继续去，把单价打下去',
+    },
+    // 里程碑 Toast：大字 big + 小字 small 两段（移植自原型 showToast）
+    toast: {
+      welcomeBackBig: '欢迎回来 👊',
+      welcomeBackSmall: '继续去，把单价打下去',
+      goodDealBig: '划算了！',
+      goodDealSmall: '每次 ¥{price}，已低于你心里价',
+      bigDropBig: '↓ ¥{diff}',
+      bigDropSmall: '这一次，单价掉了一大截',
+      fullPaidBig: '打满了！',
+      fullPaidSmall: '最终每次 ¥{price}，到期看复盘',
     },
   },
 } as const

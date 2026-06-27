@@ -32,6 +32,8 @@ interface CardState {
   activeCardId: string | null
   /** 正在复盘的卡 id（复盘屏渲染哪张）；空表示未进复盘 */
   reviewCardId: string | null
+  /** 进入复盘前的来源视图（返回时回到这里）：打卡屏或总览屏 */
+  reviewFrom: ViewTab
   /** 续卡预填：进添加表单时用上期卡信息预填；null 为全新空表单 */
   prefillCard: NewCardInput | null
 
@@ -49,6 +51,8 @@ interface CardState {
   openReview: (cardId: string) => void
   /** 续卡：用上一张卡的信息预填添加表单（购买日重置今天），切到添加屏 */
   startRenew: (card: Card) => void
+  /** 手动添加：清掉续卡预填，以全新空表单进添加屏（顶栏 + 入口用） */
+  openAddForm: () => void
   /** 切换底部 tab 视图 */
   setTab: (tab: ViewTab) => void
   /** 选卡：定位到某张卡并切回打卡屏（总览点卡用） */
@@ -65,6 +69,7 @@ export const useCardStore = create<CardState>((set, get) => ({
   activeTab: 'checkin',
   activeCardId: null,
   reviewCardId: null,
+  reviewFrom: 'overview',
   prefillCard: null,
 
   async load() {
@@ -140,8 +145,11 @@ export const useCardStore = create<CardState>((set, get) => ({
   },
 
   openReview(cardId) {
-    console.log(`[worthit:store] 打开复盘 cardId=${cardId}`)
-    set({ reviewCardId: cardId, activeTab: 'review' })
+    // 记录来源视图：从打卡屏「看复盘」进则回打卡屏，从总览待复盘卡进则回总览
+    const from = get().activeTab
+    const reviewFrom: ViewTab = from === 'checkin' || from === 'overview' ? from : 'overview'
+    console.log(`[worthit:store] 打开复盘 cardId=${cardId} from=${reviewFrom}`)
+    set({ reviewCardId: cardId, reviewFrom, activeTab: 'review' })
   },
 
   startRenew(card) {
@@ -158,6 +166,11 @@ export const useCardStore = create<CardState>((set, get) => ({
     }
     console.log(`[worthit:store] 续卡预填 name=${card.name} 切到添加屏`)
     set({ prefillCard: prefill, activeTab: 'add' })
+  },
+
+  openAddForm() {
+    // 手动添加：清掉任何残留的续卡预填，保证是全新空表单
+    set({ prefillCard: null, activeTab: 'add' })
   },
 
   setTab(tab) {

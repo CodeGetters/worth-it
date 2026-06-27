@@ -108,8 +108,14 @@ export type CardStatus = 'active' | 'burning' | 'review'
  */
 export type BreakLevel = 'none' | 'mild' | 'number' | 'harsh' | 'stop'
 
-/** 转折点：跨过某条线的瞬间，UI 据此弹庆祝/提示（由「打卡前后两个 CalcResult」对比得出） */
-export type TurningPoint = 'none' | 'becameGoodDeal' | 'bigDrop' | 'fullPaid'
+/** 转折点：跨过某条线的瞬间，UI 据此弹庆祝/提示（由「打卡前后两个 CalcResult」对比得出）。
+ *  welcomeBack：断卡状态下重新打卡（回归），优先级最高。 */
+export type TurningPoint =
+  | 'none'
+  | 'welcomeBack'
+  | 'becameGoodDeal'
+  | 'bigDrop'
+  | 'fullPaid'
 
 /**
  * 到期复盘结论（指导下次决策，见 README 功能5 / TODO 防陷阱 C）：

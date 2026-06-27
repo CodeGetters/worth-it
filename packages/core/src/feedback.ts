@@ -62,6 +62,8 @@ export function getFeedback(result: CalcResult): FeedbackResult {
  * 优先级：打满 > 跨过心里价 > 单次大跌 > 无。
  */
 export function detectTurningPoint(before: CalcResult, after: CalcResult): TurningPoint {
+  // 断卡回归：之前在断卡状态，这一打把断卡清零（优先级最高，对齐原型「wasBroken 最先判」）
+  if ((before.breakDays ?? 0) > 0 && (after.breakDays ?? 0) === 0) return 'welcomeBack'
   // 课包打满：这一打把最后一次用掉
   if (!before.full && after.full) return 'fullPaid'
   // 跨过心里价：从「还贵」变「划算」
