@@ -57,6 +57,32 @@ export const zh = {
     demoCardName: '健身年卡',
   },
 
+  // 总览页（屏 7）：汇总票 + 卡列表
+  overview: {
+    // 汇总票
+    summaryCap: '至今汇总 / TOTAL',
+    savedTotal: '比单次买总共省下',
+    lostTotal: '这些卡目前总共在亏',
+    evenTotal: '填上心里价，就能看总共省了多少',
+    countActive: '在用',
+    countBurning: '在亏',
+    countReview: '已结束',
+    // 卡列表
+    listCap: '我的卡 · {count} · 点任一张进去打卡',
+    // 行摘要
+    rowUnit: '已去 {count} 次 · ¥{price}/次',
+    rowLimited: '用 {used}/{total} · ¥{price}/{unit}',
+    rowFewSample: '已去 {count} 次 · 再打几次算单价',
+    rowNoCheckIn: '还没打卡 · 去一次看单价',
+    unitTime: '次',
+    unitClass: '节',
+    // 状态印章
+    stampSave: '越用越省',
+    stampActive: '在用',
+    stampBurn: '在亏钱',
+    stampReview: '待复盘',
+  },
+
   // —— core 枚举映射 ——
   feedback: {
     break: {

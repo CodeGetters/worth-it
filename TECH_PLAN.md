@@ -113,8 +113,13 @@ interface IStorage {
   loadCards(): Promise<Card[]>
   saveCard(card: Card): Promise<void>
   deleteCard(id: string): Promise<void>
-  sync?(): Promise<void>           // 将来云同步
-  bindUser?(userId: string): Promise<void>
+
+  loadCheckIns(cardId: string): Promise<CheckIn[]>
+  saveCheckIn(checkIn: CheckIn): Promise<void>
+  deleteCheckIn(id: string): Promise<void>
+
+  sync?(): Promise<void>           // 将来云同步（本地实现可不提供）
+  bindUser?(userId: string): Promise<void>  // 将来绑定用户
 }
 ```
 
@@ -168,10 +173,14 @@ interface Card {
 
 原则:小程序保"能用不卡有基本动效",H5 放开了炫;**粘性来自"单价掉下来"的数据反馈本身,动画只是放大它**。
 
-## 八、第一步落地动作
+## 八、第一步落地动作（✅ 已完成）
 
 零返工风险、纯赚:**把原型验证过的计算逻辑抽成 `core` 模块(TS + 单元测试)**。
 与框架/后端/动效均无关,是整套架构地基。
+
+> 状态:已落地。`packages/core`(calc + feedback + types)实现完毕,单元测试 42 用例全绿；
+> storage 适配层与 Taro 打卡屏也已接通,「添加卡 → 打卡 → 单价掉」核心闭环可跑。
+> 后续重心转向补齐 MVP 其余屏(添加卡表单 / 多卡总览 / 到期复盘)。
 
 ## 九、待展开(尚未讨论)
 

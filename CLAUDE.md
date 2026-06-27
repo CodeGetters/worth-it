@@ -6,15 +6,18 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 「值啦 / Worthit」是一个打卡看真实单价往下掉的轻量工具:用户给办过的卡（健身年卡、私教课包等按次消费的卡）打卡,看真实单次成本 = 总价 ÷ 实际打卡次数 一次次下降。追求最快验证、最低成本。产品方案见 `README.md`,技术决策见 `TECH_PLAN.md`,已决策/待办见 `TODO.md`。
 
-## 当前状态:脚手架阶段
+## 当前状态:核心闭环已落地
 
-monorepo 骨架已搭好,但**核心业务逻辑尚未实现**:
+monorepo 骨架已搭好,**「添加卡 → 打卡 → 单价掉」核心闭环已跑通**(脚手架阶段已结束):
 
-- `packages/core/src/calc.ts` 的 `calcCard()` 仍 `throw new Error('尚未实现')`
-- `packages/core/src/feedback.ts` 是空占位（状态分级/负反馈/转折判定全是 TODO）
-- `apps/taro-app/src/pages/index/index.tsx` 是占位首页,没有真正的打卡屏
+- `packages/core/` — 已完整实现。`calcCard()` 产出全部派生「数字事实」(真实单价/剩余次数/断卡天数/日烧钱/心里价里程碑/到期浪费等),边界兜底齐全；`feedback.ts` 的状态分级 / 负反馈四档 / 转折判定均已实现。`pnpm core:test` 全绿(42 用例,覆盖 `calc` / `feedback` / 边界)。
+- `packages/storage/` — `IStorage` / `KVDriver` / `LocalStorage`(软删除 + upsert)均已实现。
+- `apps/taro-app/` — `pages/index/index.tsx` 是真正的打卡屏(286 行):接 Zustand store、实时调 `calcCard` 现算、清醒小票风组件库(`Ticket`/`PriceDisplay`/`Stamp`/`Tear` 等十余个)、i18n、数字滚动 hook。空状态种一张可玩示例卡。
+- 全仓 `pnpm typecheck` 通过。
 
-落地这些逻辑时,**从 `design/prototype/checkin.js`（已验证过的原型）抽取并翻成 TS**。`design/` 下还有 `index.html` / `desktop.html` / `mobile.html` 等交互原型与 `tokens.css` 设计变量,是实现界面与算法的参考来源。
+**MVP 仍缺的屏**(下一步):添加卡表单、多卡总览、到期复盘。这些屏尚未建页,首页 `+` / 总览 / 我的 / 补打入口当前走 `comingSoon()` toast 占位(`app.config.ts` 只注册了 `pages/index/index` 一个页面)。
+
+落地新逻辑时,**优先参考 `design/prototype/checkin.js`（已验证过的原型）翻成 TS**。`design/` 下还有 `index.html` / `desktop.html` / `mobile.html` 等交互原型与 `tokens.css` 设计变量,是实现界面与算法的参考来源。
 
 ## 常用命令
 
@@ -67,7 +70,8 @@ packages/storage/   统一 IStorage 接口,屏蔽各端存储差异
         ↑
 apps/taro-app/      Taro + React + TS,编译微信小程序 + H5
    ├─ services/storage.ts  注入 taroKVDriver,导出全局 storage 实例
-   └─ src/pages/...        页面/组件,状态用 Zustand（尚未接入）
+   ├─ store/useCardStore.ts 状态用 Zustand,只存原始 cards/checkins,派生数字渲染时现算
+   └─ src/pages/...        页面/组件
 ```
 
 ### 必须遵守的设计原则
@@ -86,7 +90,7 @@ apps/taro-app/      Taro + React + TS,编译微信小程序 + H5
 
 ### Taro 跨端注意
 
-- 样式单位 `px` 自动换 `rpx`（`designWidth: 750`）,H5 表现需单独测,尤其「大数字怼脸」。
+- 样式单位 `px` 自动换 `rpx`,`designWidth` 必须设 `375`(不是 Taro 默认 750,配 `deviceRatio { 375: 2 }`；用 750 会导致两端 UI 整体缩小约一半,详见 TECH_PLAN「踩坑记录」),H5 表现需单独测,尤其「大数字怼脸」。
 - 小程序是双线程、无 DOM,GSAP/Framer Motion/标准 Three.js 用不了,主包 2MB 限制。需分端的代码用 `process.env.TARO_ENV` 区分。
 - 动效定调「先朴素、验证后再加」,第一版所有端只做最朴素动画,先把核心闭环跑顺。
 

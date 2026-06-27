@@ -1,7 +1,14 @@
 import { useEffect, useMemo, useRef, useState } from 'react'
 import { View, Text } from '@tarojs/components'
 import Taro from '@tarojs/taro'
-import { calcCard, getFeedback, detectTurningPoint, type CalcResult, type Card } from '@worthit/core'
+import {
+  calcCard,
+  getFeedback,
+  detectTurningPoint,
+  type CalcResult,
+  type Card,
+  type CheckIn,
+} from '@worthit/core'
 import {
   AppBar,
   IconButton,
@@ -16,6 +23,9 @@ import {
   DashRule,
   LineItem,
   Icon,
+  OverviewList,
+  type OverviewSummary,
+  type OverviewRow,
   type PriceTone,
   type TicketTone,
   type TabKey,
@@ -37,16 +47,29 @@ function comingSoon() {
 }
 
 export default function Index() {
-  const { cards, checkins: allCheckins, load, checkIn, undoCheckIn } = useCardStore()
+  const {
+    cards,
+    checkins: allCheckins,
+    activeTab,
+    activeCardId,
+    load,
+    checkIn,
+    undoCheckIn,
+    setTab,
+    selectCard,
+  } = useCardStore()
   const [flash, setFlash] = useState<Flash | null>(null)
-  // 多卡左右滑：当前卡索引（第一版只渲染当前卡，指示器已就绪）
-  const [activeIdx] = useState(0)
   const beforeRef = useRef<CalcResult | null>(null)
 
   useEffect(() => {
     void load()
   }, [load])
 
+  // 当前卡：按 activeCardId 定位（兜底第一张），替代此前写死的 activeIdx=0
+  const activeIdx = useMemo(() => {
+    const i = cards.findIndex((c) => c.id === activeCardId)
+    return i >= 0 ? i : 0
+  }, [cards, activeCardId])
   const card = cards[activeIdx]
   // 订阅原始 checkins 状态并实时过滤（软删除 + 本卡）：打卡/撤销后能触发重算
   const checkins = useMemo(
@@ -86,18 +109,27 @@ export default function Index() {
   }
 
   function handleTab(key: TabKey) {
-    if (key !== 'checkin') comingSoon()
+    if (key === 'checkin' || key === 'overview') {
+      setFlash(null) // 切视图清掉打卡瞬时反馈，避免回到打卡屏残留旧 flash
+      setTab(key)
+    } else {
+      comingSoon()
+    }
   }
+
+  const isOverview = activeTab === 'overview'
 
   return (
     <View className="checkin">
       <AppBar
-        title={t('nav.myCards')}
+        title={isOverview ? t('nav.tabOverview') : t('nav.myCards')}
         right={<IconButton name="plus" ariaLabel={t('nav.addCard')} onClick={comingSoon} />}
       />
 
       <View className="checkin__body">
-        {card && calc && feedback ? (
+        {isOverview ? (
+          <OverviewView cards={cards} allCheckins={allCheckins} onSelect={selectCard} />
+        ) : card && calc && feedback ? (
           <>
             <Dots total={cards.length} activeIndex={activeIdx} className="checkin__dots" />
             <CardTicket
@@ -118,7 +150,7 @@ export default function Index() {
       </View>
 
       <TabBar
-        active="checkin"
+        active={activeTab}
         onChange={handleTab}
         labels={{
           checkin: t('nav.tabCheckin'),
@@ -128,6 +160,96 @@ export default function Index() {
       />
     </View>
   )
+}
+
+/**
+ * 总览视图：遍历各卡实时调 core 算每行摘要 + 汇总（派生数字不入库），
+ * 把算好的纯数据交给展示组件 OverviewList。
+ */
+function OverviewView({
+  cards,
+  allCheckins,
+  onSelect,
+}: {
+  cards: Card[]
+  allCheckins: CheckIn[]
+  onSelect: (cardId: string) => void
+}) {
+  const { summary, rows } = useMemo(() => {
+    const td = today()
+    const summary: OverviewSummary = {
+      savedTotal: 0,
+      activeCount: 0,
+      burningCount: 0,
+      reviewCount: 0,
+    }
+    const rows: OverviewRow[] = cards.map((card) => {
+      const cis = allCheckins.filter((c) => !c.deleted && c.cardId === card.id)
+      const calc = calcCard(card, cis, td)
+      const { status } = getFeedback(calc)
+
+      // 汇总：只有填了心里价且已打卡的卡贡献金额（savedVsExpected 否则为 null）
+      summary.savedTotal += calc.savedVsExpected ?? 0
+      if (status === 'active') summary.activeCount += 1
+      else if (status === 'burning') summary.burningCount += 1
+      else summary.reviewCount += 1
+
+      return {
+        cardId: card.id,
+        title: `${card.name} · ${card.type === 'unlimited' ? '不限次' : '有限次'}`,
+        summary: rowSummary(card, calc),
+        status,
+        stampText: stampText(status),
+      }
+    })
+    return { summary, rows }
+  }, [cards, allCheckins])
+
+  const summaryLabel =
+    summary.savedTotal > 0
+      ? t('overview.savedTotal')
+      : summary.savedTotal < 0
+        ? t('overview.lostTotal')
+        : t('overview.evenTotal')
+
+  return (
+    <OverviewList
+      summary={summary}
+      rows={rows}
+      summaryLabel={summaryLabel}
+      summaryCap={t('overview.summaryCap')}
+      listCap={t('overview.listCap', { count: cards.length })}
+      countLabels={{
+        active: t('overview.countActive'),
+        burning: t('overview.countBurning'),
+        review: t('overview.countReview'),
+      }}
+      onSelect={onSelect}
+    />
+  )
+}
+
+/** 单行副摘要文案：按少样本 / 有限次 / 不限次分别组装（口径与打卡屏一致） */
+function rowSummary(card: Card, calc: CalcResult): string {
+  if (calc.checkInCount === 0) return t('overview.rowNoCheckIn')
+  if (!calc.enoughSample) return t('overview.rowFewSample', { count: calc.checkInCount })
+  const price = calc.realUnitCost ?? 0
+  if (card.type === 'limited' && card.totalTimes) {
+    return t('overview.rowLimited', {
+      used: calc.checkInCount,
+      total: card.totalTimes,
+      price,
+      unit: t('overview.unitClass'),
+    })
+  }
+  return t('overview.rowUnit', { count: calc.checkInCount, price })
+}
+
+/** status → 印章文案 */
+function stampText(status: ReturnType<typeof getFeedback>['status']): string {
+  if (status === 'burning') return t('overview.stampBurn')
+  if (status === 'review') return t('overview.stampReview')
+  return t('overview.stampSave')
 }
 
 interface CardTicketProps {

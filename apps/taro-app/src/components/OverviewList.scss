@@ -1,0 +1,107 @@
+/* 总览页主体（移植自 design/mobile.html 屏7）：汇总票 + 卡列表。
+   色彩全走 var(--c-*)，深色汇总票用 --c-ink-paper / --c-on-ink。 */
+
+.overview {
+  display: flex;
+  flex-direction: column;
+
+  /* —— 汇总票：深色实体票 —— */
+  &__summary {
+    background: var(--c-ink-paper);
+    border: var(--bd);
+    border-radius: var(--r-md);
+    box-shadow: var(--sh-stamp-alert);
+    padding: var(--sp-5);
+    margin-bottom: var(--sp-5);
+  }
+
+  &__summary-cap {
+    color: var(--c-faint);
+  }
+
+  &__amount-row {
+    display: flex;
+    align-items: baseline;
+    gap: var(--sp-2);
+    margin-top: var(--sp-2);
+    flex-wrap: wrap;
+  }
+
+  &__amount {
+    font-family: var(--font-num);
+    font-feature-settings: var(--fnum);
+    font-size: var(--fs-hero);
+    font-weight: 800;
+    line-height: var(--lh-tight);
+  }
+
+  &__amount-label {
+    color: var(--c-on-ink);
+    font-size: var(--fs-sm);
+  }
+
+  &__counts {
+    display: flex;
+    gap: var(--sp-6);
+    margin-top: var(--sp-4);
+  }
+
+  &__counter {
+    display: flex;
+    flex-direction: column;
+    gap: var(--sp-1);
+  }
+
+  &__counter-num {
+    font-family: var(--font-num);
+    font-feature-settings: var(--fnum);
+    font-size: var(--fs-lg);
+    font-weight: 800;
+    line-height: 1;
+  }
+
+  &__counter-label {
+    color: var(--c-faint);
+  }
+
+  /* —— 卡列表 —— */
+  &__list-cap {
+    margin-bottom: var(--sp-3);
+  }
+
+  &__list {
+    display: flex;
+    flex-direction: column;
+    gap: var(--sp-3);
+  }
+
+  /* 行：复用 Ticket flat，重置内边距让行更紧凑 */
+  &__row .ticket__body {
+    padding: var(--sp-4);
+  }
+
+  &__row-inner {
+    display: flex;
+    align-items: center;
+    gap: var(--sp-3);
+  }
+
+  &__row-main {
+    flex: 1;
+    min-width: 0;
+    display: flex;
+    flex-direction: column;
+    gap: var(--sp-1);
+  }
+
+  &__row-title {
+    font-weight: 800;
+    font-size: var(--fs-sm);
+    color: var(--c-ink);
+  }
+
+  &__row-summary {
+    font-size: var(--fs-xs);
+    color: var(--c-faint);
+  }
+}

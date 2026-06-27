@@ -14,10 +14,19 @@ import { t } from '../i18n'
  * - 只走注入的 storage（IStorage），绝不直接碰 Taro.setStorage / localStorage。
  * - 每条记录写入时维护同步元信息（updatedAt / _dirty），接云前也维护。
  */
+/** 顶层视图（底部 tab）：打卡屏 / 总览屏。「我的」尚未建，走 comingSoon */
+export type ViewTab = 'checkin' | 'overview'
+
 interface CardState {
   cards: Card[]
   checkins: CheckIn[]
   loading: boolean
+
+  // —— UI 态（不持久化、不入库）：当前视图与当前选中卡 ——
+  /** 当前视图（打卡 / 总览），由底部 tab 切换 */
+  activeTab: ViewTab
+  /** 当前选中卡 id（打卡屏渲染哪张 / 总览点卡定位）；空表示未选 */
+  activeCardId: string | null
 
   /** 从存储加载全部卡与打卡记录；空数据时种一张示例卡（首次甜头） */
   load: () => Promise<void>
@@ -27,6 +36,10 @@ interface CardState {
   undoCheckIn: (checkInId: string) => Promise<void>
   /** 取某卡的打卡记录（已按 store 内存过滤软删除） */
   checkInsOf: (cardId: string) => CheckIn[]
+  /** 切换底部 tab 视图 */
+  setTab: (tab: ViewTab) => void
+  /** 选卡：定位到某张卡并切回打卡屏（总览点卡用） */
+  selectCard: (cardId: string) => void
 }
 
 /** 内存态也过滤软删除，避免组件看到墓碑记录 */
@@ -36,6 +49,8 @@ export const useCardStore = create<CardState>((set, get) => ({
   cards: [],
   checkins: [],
   loading: false,
+  activeTab: 'checkin',
+  activeCardId: null,
 
   async load() {
     set({ loading: true })
@@ -62,7 +77,10 @@ export const useCardStore = create<CardState>((set, get) => ({
 
     // 加载所有卡的打卡记录
     const checkinLists = await Promise.all(cards.map((c) => storage.loadCheckIns(c.id)))
-    set({ cards, checkins: checkinLists.flat(), loading: false })
+    // 默认选中第一张卡（若之前已选且仍存在则保留）
+    const prev = get().activeCardId
+    const activeCardId = prev && cards.some((c) => c.id === prev) ? prev : (cards[0]?.id ?? null)
+    set({ cards, checkins: checkinLists.flat(), loading: false, activeCardId })
   },
 
   async checkIn(cardId, date) {
@@ -86,5 +104,14 @@ export const useCardStore = create<CardState>((set, get) => ({
 
   checkInsOf(cardId) {
     return alive(get().checkins).filter((c) => c.cardId === cardId)
+  },
+
+  setTab(tab) {
+    set({ activeTab: tab })
+  },
+
+  selectCard(cardId) {
+    console.log(`[worthit:store] 选卡 cardId=${cardId} 并切回打卡屏`)
+    set({ activeCardId: cardId, activeTab: 'checkin' })
   },
 }))
