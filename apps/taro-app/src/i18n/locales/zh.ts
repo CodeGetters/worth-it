@@ -28,6 +28,7 @@ export const zh = {
     // 大单价区
     priceLabelNormal: '你每去一次，这一次实际花了',
     priceLabelBreak: '你没去的这段时间，单价一直卡在',
+    priceLabelExpired: '这张卡已到期，最终单价冻结在',
     currency: '¥',
     perTime: '/ 次',
     countGone: '已去 {count} 次',
@@ -35,6 +36,7 @@ export const zh = {
     btnCheckIn: '今天去了，打卡',
     btnUndo: '撤销上一次',
     btnFull: '已用完',
+    btnExpired: '已过期 · 看复盘',
     backfill: '补打过去的卡 ›',
     // delta（这次比上次便宜了多少）
     deltaCheaper: '这次比上次便宜 ¥{diff}',
@@ -43,9 +45,15 @@ export const zh = {
     hintBelow: '已低于你心里价 ¥{worth}/次 · 去越多越省',
     hintAbove: '比你心里价 ¥{worth}/次 还贵 ¥{over} · 不限次，继续去会更便宜',
     hintNoWorth: '不限次卡，去越多越便宜',
+    // hint（过期态：给结论，不再引导继续去）
+    hintExpiredBelow: '最终单价 ¥{worth}/次 以内 · 这卡你用值了',
+    hintExpiredAbove: '最终比心里价 ¥{worth}/次 还贵 ¥{over} · 下次可换更小的卡',
+    hintExpiredNoWorth: '已到期 · 最终单价已冻结',
     // 进度参照
     togoBelow: '已比心里价划算',
     togoNeed: '再去 {n} 次就低于心里价',
+    togoExpiredBelow: '最终低于心里价',
+    togoExpiredAbove: '到期仍高于心里价',
     compareWorth: '对比你心里价 ¥{worth}',
     // 少样本
     fewSampleTitle: '再打 {n} 次，就能算出你的真实单价',
@@ -81,6 +89,62 @@ export const zh = {
     stampActive: '在用',
     stampBurn: '在亏钱',
     stampReview: '待复盘',
+  },
+
+  // 添加卡表单（屏 3）：开一张新票
+  addCard: {
+    title: '开一张新票',
+    // 卡型选择
+    typeLimited: '有限次课包',
+    typeLimitedHint: '如 40 节私教',
+    typeUnlimited: '不限次年卡',
+    typeUnlimitedHint: '如健身年卡',
+    // 字段 label
+    labelName: '套餐名称',
+    labelTotalPrice: '总价(元)',
+    labelTotalTimes: '总次数',
+    labelExpire: '有效期',
+    labelExpected: '你心里一次值多少钱?(可先不填)',
+    // placeholder
+    phName: '例:XX 健身私教 40 节',
+    phTotalPrice: '如 9800',
+    phTotalTimes: '如 40',
+    phExpected: '作参照基准，后面随时改',
+    // 有效期
+    expireAuto: '已自动填:今天+1年',
+    // 保存
+    save: '保存，开始打卡',
+    // 校验提示
+    errName: '给这张卡起个名字吧',
+    errPrice: '填一下总价(大于 0)',
+    errTimes: '有限次课包要填总次数(大于 0)',
+  },
+
+  // 到期复盘（屏 6）：结算总票 + 下次怎么选
+  review: {
+    title: '到期复盘',
+    finalReceipt: 'FINAL RECEIPT · 结算总票',
+    // 三档结论标题（ReviewVerdict: worthIt/soso/notWorth）
+    titleWorth: '这张卡，你用得很值',
+    titleSoso: '这张卡，还算划算',
+    titleNotWorth: '这张卡，用得有点少',
+    // 副标：{name} · 共去 {count} 次
+    subtitle: '{name} · 共去 {count} 次',
+    // 账目行
+    finalUnit: '最终每次只花',
+    yourWorth: '你心里价',
+    savedVs: '比单次买省下',
+    lostVs: '比单次买多花',
+    wastedUnused: '没用完浪费',
+    perTime: '/ 次',
+    // 下次怎么选
+    nextTitle: '下次怎么选',
+    adviceWorth: '你这频率，这卡办得值。下次放心续。',
+    adviceSoso: '用得还行。下次按这个频率，续不续都不亏。',
+    adviceNotWorth: '这卡用得太少，下次别办这么大的，换更小的包更省。',
+    // 操作
+    renew: '续这张卡 · 开新周期',
+    exportData: '导出这张卡的数据 ›',
   },
 
   // —— core 枚举映射 ——

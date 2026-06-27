@@ -1,0 +1,98 @@
+/* 添加卡表单（移植自 design/mobile.html 屏3）。色彩全走 var(--c-*)。 */
+
+.addform {
+  display: flex;
+  flex-direction: column;
+
+  /* 卡型选择：两张小票并排 */
+  &__types {
+    display: flex;
+    gap: var(--sp-3);
+    margin-bottom: var(--sp-5);
+  }
+
+  &__fields {
+    display: flex;
+    flex-direction: column;
+    gap: var(--sp-4);
+  }
+
+  /* 总价 + 总次数 并排 */
+  &__row {
+    display: flex;
+    gap: var(--sp-3);
+  }
+
+  &__col {
+    flex: 1;
+    min-width: 0;
+  }
+
+  /* 有效期选择框（点开 Picker） */
+  &__expire {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: var(--sp-2);
+    height: var(--touch);
+    padding: 0 var(--sp-4);
+    background: var(--c-card);
+    border: var(--bd);
+    border-radius: var(--r-sm);
+
+    &-val {
+      font-family: var(--font-num);
+      font-feature-settings: var(--fnum);
+      font-weight: 700;
+      color: var(--c-ink);
+    }
+
+    /* 「已自动填」印章：省钱绿小标 */
+    &-auto {
+      font-size: var(--fs-mono-cap);
+      font-weight: 700;
+      color: var(--c-save);
+      background: var(--c-save-bg);
+      border: 1px solid var(--c-save);
+      border-radius: var(--r-sm);
+      padding: 2px 8px;
+    }
+  }
+
+  &__save {
+    margin-top: var(--sp-6);
+  }
+}
+
+/* 卡型选择小票 */
+.typecard {
+  flex: 1;
+  min-width: 0;
+
+  /* 选中态：黄底硬影（Ticket alert tone 已给黄底，这里补硬影对齐原型） */
+  &--on {
+    box-shadow: var(--sh-stamp-alert);
+  }
+
+  .ticket__body {
+    padding: var(--sp-3);
+  }
+
+  &__inner {
+    text-align: center;
+    display: flex;
+    flex-direction: column;
+    gap: 2px;
+  }
+
+  &__title {
+    font-weight: 800;
+    font-size: var(--fs-sm);
+    color: var(--c-ink);
+  }
+
+  &__hint {
+    font-size: var(--fs-xs);
+    color: var(--c-mute);
+  }
+}

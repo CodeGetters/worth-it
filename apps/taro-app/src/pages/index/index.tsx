@@ -1,5 +1,6 @@
 import { useEffect, useMemo, useRef, useState } from 'react'
-import { View, Text } from '@tarojs/components'
+import { View, Text, Swiper, SwiperItem, Picker } from '@tarojs/components'
+import type { BaseEventOrig } from '@tarojs/components'
 import Taro from '@tarojs/taro'
 import {
   calcCard,
@@ -31,6 +32,8 @@ import {
   type TabKey,
 } from '@/components'
 import { useCardStore } from '../../store/useCardStore'
+import { AddCardForm } from './AddCardForm'
+import { ReviewScreen } from './ReviewScreen'
 import { today } from '../../utils/date'
 import { t } from '../../i18n'
 import './index.scss'
@@ -52,9 +55,14 @@ export default function Index() {
     checkins: allCheckins,
     activeTab,
     activeCardId,
+    reviewCardId,
+    prefillCard,
     load,
     checkIn,
     undoCheckIn,
+    addCard,
+    openReview,
+    startRenew,
     setTab,
     selectCard,
   } = useCardStore()
@@ -77,13 +85,13 @@ export default function Index() {
     [card, allCheckins],
   )
 
-  // 派生数字实时算（单一真相）：今天作参数传入，core 不碰时间
+  // 派生数字实时算（单一真相）：今天作参数传入，core 不碰时间。
+  // 这里只算「当前卡」给打卡/撤销/转折比对用；各 SwiperItem 的票面由 CardSlide 各自算。
   const calc = useMemo(() => (card ? calcCard(card, checkins, today()) : null), [card, checkins])
-  const feedback = calc ? getFeedback(calc) : null
 
   async function handleCheckIn() {
     if (!card || !calc) return
-    if (calc.full) return // 打满冻结，禁止再打
+    if (calc.full || calc.expired) return // 打满 / 过期冻结，禁止再打
     beforeRef.current = calc
     await checkIn(card.id)
   }
@@ -108,6 +116,24 @@ export default function Index() {
     await undoCheckIn(last.id)
   }
 
+  // 补打过去的卡：Picker 已把范围限在购买日~今天，core 再兜一层越界过滤。
+  // 补打是过去的日期，不设 beforeRef → 不触发「这次便宜」即时反馈（那是「今天去了」的爽感）。
+  async function handleBackfill(date: string) {
+    if (!card) return
+    setFlash(null)
+    await checkIn(card.id, date)
+  }
+
+  // Swiper 切卡：同步选中卡 + 清掉上一张的瞬时反馈，避免 delta 串卡
+  function handleSwiperChange(e: BaseEventOrig<{ current: number }>) {
+    const idx = e.detail.current
+    const next = cards[idx]
+    if (next && next.id !== activeCardId) {
+      setFlash(null)
+      selectCard(next.id)
+    }
+  }
+
   function handleTab(key: TabKey) {
     if (key === 'checkin' || key === 'overview') {
       setFlash(null) // 切视图清掉打卡瞬时反馈，避免回到打卡屏残留旧 flash
@@ -117,30 +143,74 @@ export default function Index() {
     }
   }
 
+  // 总览点卡：待复盘（已过期）卡进复盘屏，其余切回打卡屏定位
+  function handleOverviewSelect(cardId: string) {
+    const c = cards.find((x) => x.id === cardId)
+    if (c && calcCard(c, [], today()).expired) {
+      openReview(cardId)
+    } else {
+      selectCard(cardId)
+    }
+  }
+
   const isOverview = activeTab === 'overview'
+  const isAdd = activeTab === 'add'
+  const isReview = activeTab === 'review'
+  const reviewCard = isReview ? cards.find((c) => c.id === reviewCardId) : undefined
 
   return (
     <View className="checkin">
-      <AppBar
-        title={isOverview ? t('nav.tabOverview') : t('nav.myCards')}
-        right={<IconButton name="plus" ariaLabel={t('nav.addCard')} onClick={comingSoon} />}
-      />
+      {isAdd ? (
+        <AppBar title={t('addCard.title')} showBack onBack={() => setTab('checkin')} />
+      ) : isReview ? (
+        <AppBar title={t('review.title')} showBack onBack={() => setTab('overview')} />
+      ) : (
+        <AppBar
+          title={isOverview ? t('nav.tabOverview') : t('nav.myCards')}
+          right={
+            <IconButton name="plus" ariaLabel={t('nav.addCard')} onClick={() => setTab('add')} />
+          }
+        />
+      )}
 
       <View className="checkin__body">
-        {isOverview ? (
-          <OverviewView cards={cards} allCheckins={allCheckins} onSelect={selectCard} />
-        ) : card && calc && feedback ? (
+        {isAdd ? (
+          <AddCardForm onSubmit={addCard} prefill={prefillCard} />
+        ) : isReview && reviewCard ? (
+          <ReviewScreen
+            card={reviewCard}
+            allCheckins={allCheckins}
+            onRenew={startRenew}
+            onExport={comingSoon}
+          />
+        ) : isOverview ? (
+          <OverviewView cards={cards} allCheckins={allCheckins} onSelect={handleOverviewSelect} />
+        ) : cards.length > 0 ? (
           <>
             <Dots total={cards.length} activeIndex={activeIdx} className="checkin__dots" />
-            <CardTicket
-              card={card}
-              calc={calc}
-              feedback={feedback}
-              flash={flash}
-              onCheckIn={handleCheckIn}
-              onUndo={handleUndo}
-              onBackfill={comingSoon}
-            />
+            <Swiper
+              className="checkin__swiper"
+              current={activeIdx}
+              onChange={handleSwiperChange}
+              circular={false}
+            >
+              {cards.map((c) => (
+                <SwiperItem key={c.id} className="checkin__swiper-item">
+                  {/* 仅当前卡参与打卡/反馈交互；非当前卡也算 calc（卡数量级小，简单可靠、无切卡闪烁）。
+                      key=c.id 让换卡时 PriceDisplay 重挂载，初始即终值不滚动——切卡不该误触「单价掉了」动画 */}
+                  <CardSlide
+                    card={c}
+                    allCheckins={allCheckins}
+                    isActive={c.id === card?.id}
+                    flash={c.id === card?.id ? flash : null}
+                    onCheckIn={handleCheckIn}
+                    onUndo={handleUndo}
+                    onBackfill={handleBackfill}
+                    onReview={() => openReview(c.id)}
+                  />
+                </SwiperItem>
+              ))}
+            </Swiper>
           </>
         ) : (
           <View className="checkin__loading">
@@ -150,7 +220,7 @@ export default function Index() {
       </View>
 
       <TabBar
-        active={activeTab}
+        active={isAdd || isReview ? 'checkin' : activeTab}
         onChange={handleTab}
         labels={{
           checkin: t('nav.tabCheckin'),
@@ -159,6 +229,50 @@ export default function Index() {
         }}
       />
     </View>
+  )
+}
+
+/**
+ * 单张卡的滑动页：自算 calc/feedback（每张卡独立），渲染票面。
+ * 把「算派生数字」下放到每个 SwiperItem，使多卡各自正确，不依赖父层只算当前卡。
+ */
+function CardSlide({
+  card,
+  allCheckins,
+  isActive,
+  flash,
+  onCheckIn,
+  onUndo,
+  onBackfill,
+  onReview,
+}: {
+  card: Card
+  allCheckins: CheckIn[]
+  isActive: boolean
+  flash: Flash | null
+  onCheckIn: () => void
+  onUndo: () => void
+  onBackfill: (date: string) => void
+  onReview: () => void
+}) {
+  const checkins = useMemo(
+    () => allCheckins.filter((c) => !c.deleted && c.cardId === card.id),
+    [allCheckins, card.id],
+  )
+  const calc = useMemo(() => calcCard(card, checkins, today()), [card, checkins])
+  const feedback = getFeedback(calc)
+
+  return (
+    <CardTicket
+      card={card}
+      calc={calc}
+      feedback={feedback}
+      flash={isActive ? flash : null}
+      onCheckIn={onCheckIn}
+      onUndo={onUndo}
+      onBackfill={onBackfill}
+      onReview={onReview}
+    />
   )
 }
 
@@ -259,16 +373,42 @@ interface CardTicketProps {
   flash: Flash | null
   onCheckIn: () => void
   onUndo: () => void
-  onBackfill: () => void
+  onBackfill: (date: string) => void
+  onReview: () => void
 }
 
 /** 票面：卡名印章 + 大单价怼脸 + 状态文案 + 进度 + 打卡/撤销/补打 */
-function CardTicket({ card, calc, feedback, flash, onCheckIn, onUndo, onBackfill }: CardTicketProps) {
+function CardTicket({
+  card,
+  calc,
+  feedback,
+  flash,
+  onCheckIn,
+  onUndo,
+  onBackfill,
+  onReview,
+}: CardTicketProps) {
   const worth = card.expectedPrice
-  const broken = feedback.breakLevel !== 'none'
+  // 过期优先于断卡：卡都到期了，不再显示「快回来打卡」的断卡负反馈，只显过期复盘态
+  const broken = feedback.breakLevel !== 'none' && !calc.expired
   const tone: TicketTone = broken ? 'burn' : calc.expired ? 'review' : 'normal'
   const priceTone: PriceTone = broken ? 'burn' : calc.belowExpected ? 'save' : 'normal'
   const typeLabel = card.type === 'unlimited' ? '不限次' : '有限次'
+  // 价格区标签：断卡 > 过期 > 正常
+  const priceLabel = broken
+    ? t('checkin.priceLabelBreak')
+    : calc.expired
+      ? t('checkin.priceLabelExpired')
+      : t('checkin.priceLabelNormal')
+  // 主按钮：打满 → 禁用「已用完」；过期 → 可点「看复盘」走 onReview；正常 → 打卡
+  const btnLabel = calc.full
+    ? t('checkin.btnFull')
+    : calc.expired
+      ? t('checkin.btnExpired')
+      : t('checkin.btnCheckIn')
+  const btnDisabled = calc.full // 仅打满真禁用；过期按钮可点（进复盘）
+  const onPrimary = calc.expired && !calc.full ? onReview : onCheckIn
+  const showCheckIcon = !calc.full && !calc.expired
 
   return (
     <Ticket tone={tone} toothed className="checkin__ticket">
@@ -282,7 +422,7 @@ function CardTicket({ card, calc, feedback, flash, onCheckIn, onUndo, onBackfill
 
       {/* 大单价区：垂直居中怼脸 */}
       <View className="ticket-price">
-        <MonoCap>{broken ? t('checkin.priceLabelBreak') : t('checkin.priceLabelNormal')}</MonoCap>
+        <MonoCap>{priceLabel}</MonoCap>
 
         {calc.enoughSample ? (
           <PriceDisplay value={calc.realUnitCost} tone={priceTone} unit={t('checkin.perTime')} />
@@ -302,9 +442,13 @@ function CardTicket({ card, calc, feedback, flash, onCheckIn, onUndo, onBackfill
           <LineItem
             label={t('checkin.compareWorth', { worth })}
             value={
-              calc.belowExpected
-                ? t('checkin.togoBelow')
-                : t('checkin.togoNeed', { n: calc.checkInsToExpected ?? 0 })
+              calc.expired
+                ? calc.belowExpected
+                  ? t('checkin.togoExpiredBelow')
+                  : t('checkin.togoExpiredAbove')
+                : calc.belowExpected
+                  ? t('checkin.togoBelow')
+                  : t('checkin.togoNeed', { n: calc.checkInsToExpected ?? 0 })
             }
             valueColor={calc.belowExpected ? 'var(--c-save)' : 'var(--c-warn)'}
             emphasize
@@ -313,26 +457,33 @@ function CardTicket({ card, calc, feedback, flash, onCheckIn, onUndo, onBackfill
         </View>
       )}
 
-      {/* 操作区：大打卡按钮 + 补打 / 撤销 */}
+      {/* 操作区：大打卡按钮 + 撤销（有打卡时）+ 补打（常驻） */}
       <View className="ticket-actions">
         <Button
           variant="alert"
           size="large"
-          disabled={calc.full}
-          icon={!calc.full ? <Icon name="check" size={24} strokeWidth={2.8} color="var(--c-ink)" /> : undefined}
-          onClick={onCheckIn}
+          disabled={btnDisabled}
+          icon={showCheckIcon ? <Icon name="check" size={24} strokeWidth={2.8} color="var(--c-ink)" /> : undefined}
+          onClick={onPrimary}
         >
-          {calc.full ? t('checkin.btnFull') : t('checkin.btnCheckIn')}
+          {btnLabel}
         </Button>
-        {calc.checkInCount > 0 ? (
-          <Text className="ticket-actions__link" onClick={onUndo}>
-            {t('checkin.btnUndo')}
-          </Text>
-        ) : (
-          <Text className="ticket-actions__link" onClick={onBackfill}>
-            {t('checkin.backfill')}
-          </Text>
-        )}
+        <View className="ticket-actions__links">
+          {calc.checkInCount > 0 && (
+            <Text className="ticket-actions__link" onClick={onUndo}>
+              {t('checkin.btnUndo')}
+            </Text>
+          )}
+          <Picker
+            mode="date"
+            value={today()}
+            start={card.purchaseDate}
+            end={today()}
+            onChange={(e) => onBackfill(String(e.detail.value))}
+          >
+            <Text className="ticket-actions__link">{t('checkin.backfill')}</Text>
+          </Picker>
+        </View>
       </View>
     </Ticket>
   )
@@ -389,11 +540,19 @@ function DeltaHint({
     else if (flash.diff > 0) delta = t('checkin.deltaCheaper', { diff: flash.diff })
   }
 
-  // hint：跟心里价比
+  // hint：跟心里价比。过期态给「结论」，不再引导「继续去」
   let hint: string
-  if (worth == null) hint = t('checkin.hintNoWorth')
-  else if (calc.belowExpected) hint = t('checkin.hintBelow', { worth })
-  else hint = t('checkin.hintAbove', { worth, over: price - worth })
+  if (calc.expired) {
+    if (worth == null) hint = t('checkin.hintExpiredNoWorth')
+    else if (calc.belowExpected) hint = t('checkin.hintExpiredBelow', { worth })
+    else hint = t('checkin.hintExpiredAbove', { worth, over: price - worth })
+  } else if (worth == null) {
+    hint = t('checkin.hintNoWorth')
+  } else if (calc.belowExpected) {
+    hint = t('checkin.hintBelow', { worth })
+  } else {
+    hint = t('checkin.hintAbove', { worth, over: price - worth })
+  }
 
   return (
     <View className="ticket-feedback">

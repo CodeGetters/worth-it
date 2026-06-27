@@ -14,8 +14,11 @@ import { t } from '../i18n'
  * - 只走注入的 storage（IStorage），绝不直接碰 Taro.setStorage / localStorage。
  * - 每条记录写入时维护同步元信息（updatedAt / _dirty），接云前也维护。
  */
-/** 顶层视图（底部 tab）：打卡屏 / 总览屏。「我的」尚未建，走 comingSoon */
-export type ViewTab = 'checkin' | 'overview'
+/** 顶层视图（底部 tab + 添加表单 + 复盘）：打卡屏 / 总览屏 / 添加卡 / 到期复盘。 */
+export type ViewTab = 'checkin' | 'overview' | 'add' | 'review'
+
+/** 添加卡表单产出的卡字段：业务字段由用户填，id 与同步元信息由 store 补 */
+export type NewCardInput = Omit<Card, 'id' | 'updatedAt' | 'deleted' | '_dirty'>
 
 interface CardState {
   cards: Card[]
@@ -23,10 +26,14 @@ interface CardState {
   loading: boolean
 
   // —— UI 态（不持久化、不入库）：当前视图与当前选中卡 ——
-  /** 当前视图（打卡 / 总览），由底部 tab 切换 */
+  /** 当前视图（打卡 / 总览 / 添加 / 复盘），由底部 tab、+ 入口或复盘入口切换 */
   activeTab: ViewTab
   /** 当前选中卡 id（打卡屏渲染哪张 / 总览点卡定位）；空表示未选 */
   activeCardId: string | null
+  /** 正在复盘的卡 id（复盘屏渲染哪张）；空表示未进复盘 */
+  reviewCardId: string | null
+  /** 续卡预填：进添加表单时用上期卡信息预填；null 为全新空表单 */
+  prefillCard: NewCardInput | null
 
   /** 从存储加载全部卡与打卡记录；空数据时种一张示例卡（首次甜头） */
   load: () => Promise<void>
@@ -36,6 +43,12 @@ interface CardState {
   undoCheckIn: (checkInId: string) => Promise<void>
   /** 取某卡的打卡记录（已按 store 内存过滤软删除） */
   checkInsOf: (cardId: string) => CheckIn[]
+  /** 添加卡：补 id 与同步元信息后入库，新卡成为当前卡并切回打卡屏；清掉预填 */
+  addCard: (input: NewCardInput) => Promise<void>
+  /** 打开某卡的到期复盘屏 */
+  openReview: (cardId: string) => void
+  /** 续卡：用上一张卡的信息预填添加表单（购买日重置今天），切到添加屏 */
+  startRenew: (card: Card) => void
   /** 切换底部 tab 视图 */
   setTab: (tab: ViewTab) => void
   /** 选卡：定位到某张卡并切回打卡屏（总览点卡用） */
@@ -51,6 +64,8 @@ export const useCardStore = create<CardState>((set, get) => ({
   loading: false,
   activeTab: 'checkin',
   activeCardId: null,
+  reviewCardId: null,
+  prefillCard: null,
 
   async load() {
     set({ loading: true })
@@ -104,6 +119,45 @@ export const useCardStore = create<CardState>((set, get) => ({
 
   checkInsOf(cardId) {
     return alive(get().checkins).filter((c) => c.cardId === cardId)
+  },
+
+  async addCard(input) {
+    const card: Card = {
+      ...input,
+      id: genId('card'),
+      updatedAt: Date.now(),
+      _dirty: true,
+    }
+    console.log(`[worthit:store] 添加卡 cardId=${card.id} name=${card.name} type=${card.type}`)
+    await storage.saveCard(card)
+    // 入内存 + 新卡成为当前卡并切回打卡屏（对齐原型「保存，开始打卡」）；清掉续卡预填
+    set({
+      cards: [...get().cards, card],
+      activeCardId: card.id,
+      activeTab: 'checkin',
+      prefillCard: null,
+    })
+  },
+
+  openReview(cardId) {
+    console.log(`[worthit:store] 打开复盘 cardId=${cardId}`)
+    set({ reviewCardId: cardId, activeTab: 'review' })
+  },
+
+  startRenew(card) {
+    // 用上期卡信息预填，购买日重置今天、有效期顺延一年（仅不限次年卡有意义，有限次也给个默认）
+    const purchaseDate = getToday()
+    const prefill: NewCardInput = {
+      name: card.name,
+      totalPrice: card.totalPrice,
+      type: card.type,
+      purchaseDate,
+      expireDate: addYears(purchaseDate, 1),
+      ...(card.totalTimes != null ? { totalTimes: card.totalTimes } : {}),
+      ...(card.expectedPrice != null ? { expectedPrice: card.expectedPrice } : {}),
+    }
+    console.log(`[worthit:store] 续卡预填 name=${card.name} 切到添加屏`)
+    set({ prefillCard: prefill, activeTab: 'add' })
   },
 
   setTab(tab) {

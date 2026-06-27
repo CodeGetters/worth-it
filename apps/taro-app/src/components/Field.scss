@@ -1,0 +1,50 @@
+/* 表单输入控件（移植自 design/mobile.html 屏3 录入字段）。
+   已填墨黑硬描边、选填未填虚线灰框。色彩全走 var(--c-*)。 */
+
+.field-group {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+
+  &__label {
+    display: block;
+  }
+}
+
+.field {
+  display: flex;
+  align-items: center;
+  gap: var(--sp-2);
+  height: var(--touch);
+  padding: 0 var(--sp-4);
+  background: var(--c-card);
+  border: var(--bd);
+  border-radius: var(--r-sm);
+
+  /* 选填未填：暖纸底 + 虚线灰框（待填态） */
+  &--dashed {
+    background: var(--c-paper-2);
+    border: 1.5px dashed var(--c-dash);
+  }
+
+  /* 数字字段：等宽数字字体、加粗，对齐原型金额/次数样式 */
+  &--num .field__input {
+    font-family: var(--font-num);
+    font-feature-settings: var(--fnum);
+    font-weight: 800;
+    font-size: var(--fs-md);
+  }
+
+  &__input {
+    flex: 1;
+    min-width: 0;
+    height: 100%;
+    color: var(--c-ink);
+    font-size: var(--fs-base);
+  }
+
+  /* placeholder：faint 弱化 */
+  &__ph {
+    color: var(--c-faint);
+  }
+}

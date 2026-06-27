@@ -23,6 +23,22 @@
     margin: var(--sp-1) 0 var(--sp-4);
   }
 
+  /* Swiper 多卡容器：跨端默认高度仅 150px，必须显式撑满剩余高度（H5/小程序都需要）。
+     SwiperItem 内票面再 flex 撑开。 */
+  &__swiper {
+    flex: 1;
+    min-height: 0;
+    width: 100%;
+  }
+
+  &__swiper-item {
+    display: flex;
+    flex-direction: column;
+    /* SwiperItem 默认不撑满高度，强制占满让票面 flex:1 生效 */
+    height: 100%;
+    box-sizing: border-box;
+  }
+
   /* 票面撑开剩余空间，内部再纵向分布（大单价 margin:auto 居中） */
   &__ticket {
     flex: 1;
@@ -135,6 +151,14 @@
   align-items: center;
   gap: var(--sp-3);
   margin-top: var(--sp-5);
+
+  /* 撤销 + 补打 横排（补打常驻，撤销有打卡时才显示） */
+  &__links {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: var(--sp-5);
+  }
 
   &__link {
     font-size: var(--fs-sm);

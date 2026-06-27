@@ -15,6 +15,7 @@ export { Tear } from './Tear'
 export { DashRule } from './DashRule'
 export { MonoCap } from './MonoCap'
 export { LineItem } from './LineItem'
+export { Field, type FieldType } from './Field'
 
 // —— 交互与容器 ——
 export { Button, type ButtonVariant, type ButtonSize } from './Button'

@@ -1,5 +1,11 @@
 import { describe, it, expect } from 'vitest'
-import { getBreakLevel, getStatus, getFeedback, detectTurningPoint } from './feedback'
+import {
+  getBreakLevel,
+  getStatus,
+  getFeedback,
+  detectTurningPoint,
+  getReviewVerdict,
+} from './feedback'
 import type { CalcResult } from './types'
 
 /** 构造一个「正常态」CalcResult，测试时只覆盖关心的字段 */
@@ -86,5 +92,49 @@ describe('detectTurningPoint · 转折判定', () => {
     const before = result({ realUnitCost: 210 })
     const after = result({ realUnitCost: 200 })
     expect(detectTurningPoint(before, after)).toBe('none')
+  })
+})
+
+describe('getReviewVerdict · 到期复盘结论', () => {
+  it('从未打卡 → notWorth', () => {
+    expect(getReviewVerdict(result({ checkInCount: 0, realUnitCost: null }))).toBe('notWorth')
+  })
+
+  it('有心里价 · 单价 ≤ 心里价 → worthIt', () => {
+    // 单价 21，心里价 150
+    expect(getReviewVerdict(result({ realUnitCost: 21, checkInCount: 96 }), 2000, 150)).toBe(
+      'worthIt',
+    )
+  })
+
+  it('有心里价 · 单价 > 心里价×2 → notWorth', () => {
+    // 单价 408，心里价 150（>300）
+    expect(getReviewVerdict(result({ realUnitCost: 408, checkInCount: 10 }), 16000, 150)).toBe(
+      'notWorth',
+    )
+  })
+
+  it('有心里价 · 单价在心里价与其2倍之间 → soso', () => {
+    // 单价 200，心里价 150（150~300 之间）
+    expect(getReviewVerdict(result({ realUnitCost: 200, checkInCount: 10 }), 2000, 150)).toBe('soso')
+  })
+
+  it('有限次卡 · 到期未用浪费 ≥ 总价一半 → notWorth（优先于单价判定）', () => {
+    // 即便单价低于心里价，浪费过半仍判不值
+    expect(
+      getReviewVerdict(
+        result({ realUnitCost: 100, checkInCount: 5, wastedUnused: 1500 }),
+        3000,
+        150,
+      ),
+    ).toBe('notWorth')
+  })
+
+  it('无心里价 · 打卡次数 ≥ 20 → worthIt', () => {
+    expect(getReviewVerdict(result({ checkInCount: 25, checkInsToExpected: null }))).toBe('worthIt')
+  })
+
+  it('无心里价 · 打卡次数少 → soso', () => {
+    expect(getReviewVerdict(result({ checkInCount: 5, checkInsToExpected: null }))).toBe('soso')
   })
 })

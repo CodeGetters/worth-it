@@ -112,6 +112,15 @@ export type BreakLevel = 'none' | 'mild' | 'number' | 'harsh' | 'stop'
 export type TurningPoint = 'none' | 'becameGoodDeal' | 'bigDrop' | 'fullPaid'
 
 /**
+ * 到期复盘结论（指导下次决策，见 README 功能5 / TODO 防陷阱 C）：
+ * - worthIt   这卡用得很值（最终单价低于心里价，或频率足够高）
+ * - soso      还算划算（中间档）
+ * - notWorth  用得太少（单价远超心里价、或大量次数没用完浪费）→ 下次别办这么大的
+ * UI 按此枚举映射「结算总票」标题与「下次怎么选」建议文案，core 不产文案。
+ */
+export type ReviewVerdict = 'worthIt' | 'soso' | 'notWorth'
+
+/**
  * feedback 的反馈结果：离散状态枚举，不含文案。
  * UI 拿这些枚举去映射各端文案、颜色、动画（文案可分端微调，判定四端一致）。
  */
