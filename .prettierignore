@@ -1,0 +1,6 @@
+dist
+node_modules
+.taro
+design
+*.d.ts
+pnpm-lock.yaml

@@ -27,7 +27,7 @@ APP(iOS/安卓) → 跨端框架直接打包即可,验证期不投原生
 
 ```
 ┌──────────────────────────────────┐
-│  packages/core/   纯 TS,零依赖,零框架               │  ← 四端共享,永不改
+│  packages/core/   纯 TS,仅依赖 dayjs,零框架            │  ← 四端共享,永不改
 │  ├─ calc.ts      calcCard / 频率 / 回本 / 预测        │     已在原型验证
 │  ├─ feedback.ts  状态分级 / 负反馈三档 / 转折判定      │
 │  └─ types.ts     Card / CheckIn / CalcResult         │
@@ -78,6 +78,18 @@ true-cost-calculator/
 3. 日历组件:补卡日历用 Taro 生态跨端组件,别自写两套
 4. 本地存储:小程序 `Taro.setStorage` vs H5 `localStorage` → 由 storage 适配层兜住
 
+#### 踩坑记录(2026-06,搭首页时遇到并解决)
+
+- **`designWidth` 必须设 `375`,不能用 Taro 默认 `750`**(`config/index.ts`,配 `deviceRatio { 375: 2 }`)。
+  - 现象:小程序 + H5 两端 UI 整体等比缩小约一半,字号/间距/触摸区全偏小。
+  - 根因:设计稿 `design/tokens.css` 按 ~390 逻辑宽画,token 全是真实 CSS px(`--fs-mega:72px`、`--touch:44px`)。`designWidth:750` 让 Taro 把这些 px 当"750 设计稿单位"按 1:1 转换 → 小程序出 `--fs-mega:72rpx`(750rpx=满屏,375 屏 1rpx=0.5px → 渲染 36px);H5 出 `--fs-mega:1.8rem` + 根字号脚本 `40*w/750`(375 屏根字号 20px → 36px)。两端都减半。
+  - 解决:改 `designWidth:375` → 小程序 `144rpx`、H5 `3.6rem` + 脚本 `20*w/375`,两端还原成 72px,与设计稿对齐。
+  - 注意:H5 用 **rem**(不是 vw),同样受 `designWidth` 影响,不要误以为只有小程序受影响。
+  - 诊断手法:grep 产物 token 编译值——小程序看 `dist/weapp/**/*.wxss` 应是 `--fs-mega:144rpx`,H5 看 `dist/h5/css/*.css` 应是 `3.6rem`(若是 `72rpx`/`1.8rem` 即减半信号)。
+- **改 `config/index.ts` 后必须重启 dev server**。`pnpm dev:h5` / `dev:weapp` 是 watch 进程,启动时只读一次配置,运行中改 config 不热重载——否则浏览器怎么刷新都"没变化"。改完构建配置先 `pkill` 掉旧 watch 再重启。
+- **设计令牌选择器要写 `:root, page`**(`src/styles/tokens.scss`),不能只写 `page`。`page` 是小程序概念,H5 根是 `<html>`,只挂 `page` 会让 H5 全部 `var(--c-*)` 失效、整页颜色丢失。同理全局底色用 `body, page`。
+- **`@/*` 路径别名要在 `config/index.ts` 的 `alias` 里单独配**。Taro vite 构建不读 tsconfig paths,只配 tsconfig 会 typecheck 通过但构建报 `Rollup failed to resolve import "@/..."`。
+
 ## 五、core 模块设计
 
 ```
@@ -90,7 +102,7 @@ core/
 
 原则:
 - **纯函数、无副作用、不碰时间**:`calcCard(card, today)`,"今天"作参数传入 → 可测
-- **不依赖任何框架**:纯 TS,node/浏览器/小程序/将来后端都能跑
+- **不依赖框架**:纯 TS,仅依赖 dayjs(日期运算,挂 utc 插件强制 UTC、不碰本地时区),node/浏览器/小程序/将来后端都能跑
 
 ## 六、存储与后端
 

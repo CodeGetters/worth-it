@@ -1,0 +1,14 @@
+/* 图标：mask 着色，零资源。尺寸/颜色由组件 props 注入到内联 style */
+
+.icon {
+  display: inline-block;
+  flex: 0 0 auto;
+  vertical-align: middle;
+  /* mask 重复/尺寸/位置兜底，保证 SVG 充满方框且不平铺 */
+  mask-repeat: no-repeat;
+  mask-position: center;
+  mask-size: contain;
+  -webkit-mask-repeat: no-repeat;
+  -webkit-mask-position: center;
+  -webkit-mask-size: contain;
+}

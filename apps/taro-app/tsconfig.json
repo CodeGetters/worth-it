@@ -1,0 +1,32 @@
+{
+  "compilerOptions": {
+    "target": "ES2017",
+    "module": "ESNext",
+    "moduleResolution": "node",
+    "removeComments": false,
+    "preserveConstEnums": true,
+    "moduleDetection": "force",
+    "useDefineForClassFields": true,
+    "outDir": "lib",
+    "sourceMap": true,
+    "baseUrl": ".",
+    "rootDir": ".",
+    "jsx": "react-jsx",
+    "jsxImportSource": "react",
+    "allowSyntheticDefaultImports": true,
+    "esModuleInterop": true,
+    "experimentalDecorators": true,
+    "resolveJsonModule": true,
+    "noImplicitAny": false,
+    "allowJs": true,
+    "strictNullChecks": true,
+    "skipLibCheck": true,
+    "forceConsistentCasingInFileNames": true,
+    "paths": {
+      "@/*": ["./src/*"]
+    },
+    "types": ["@tarojs/taro"]
+  },
+  "include": ["./src", "./types", "./config"],
+  "exclude": ["node_modules", "dist"]
+}

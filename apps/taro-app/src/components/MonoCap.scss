@@ -1,0 +1,9 @@
+/* 等宽小标签 / 凭证编号（移植自 design/tokens.css .mono-cap） */
+
+.mono-cap {
+  font-family: var(--font-num);
+  font-size: var(--fs-mono-cap);
+  letter-spacing: var(--tracking-cap);
+  text-transform: uppercase;
+  color: var(--c-mute);
+}

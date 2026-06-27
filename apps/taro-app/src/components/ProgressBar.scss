@@ -1,0 +1,20 @@
+/* 小票进度条（移植自 design/mobile.html .bar / .bar-fill） */
+
+.bar {
+  height: 14px;
+  background: var(--c-paper-2);
+  border: var(--bd);
+  border-radius: var(--r-pill);
+  overflow: hidden;
+
+  &__fill {
+    height: 100%;
+    width: 0;
+    background: var(--c-save);
+    transition: width var(--t-slow) var(--ease);
+
+    &--done {
+      background: var(--c-alert);
+    }
+  }
+}

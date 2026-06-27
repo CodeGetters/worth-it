@@ -1,0 +1,33 @@
+/* 小票账目行（移植自 design/tokens.css .line-item） */
+
+.line-item {
+  display: flex;
+  align-items: baseline;
+  gap: var(--sp-2);
+  font-size: var(--fs-sm);
+
+  &__k {
+    color: var(--c-mute);
+    white-space: nowrap;
+
+    &--emphasize {
+      font-weight: 800;
+      color: var(--c-ink);
+    }
+  }
+
+  &__fill {
+    flex: 1;
+    height: 0;
+    border-bottom: 1.5px dotted var(--c-dash);
+    transform: translateY(-3px);
+  }
+
+  &__v {
+    font-family: var(--font-num);
+    font-feature-settings: var(--fnum);
+    font-weight: 700;
+    color: var(--c-ink);
+    white-space: nowrap;
+  }
+}

@@ -1,0 +1,22 @@
+/* 滑卡指示器（移植自 design/mobile.html .dotsrow） */
+
+.dotsrow {
+  display: flex;
+  gap: 6px;
+  justify-content: center;
+
+  &__dot {
+    width: 5px;
+    height: 5px;
+    border-radius: 3px;
+    background: var(--c-dash);
+    transition:
+      width var(--t-base) var(--ease),
+      background var(--t-base) var(--ease);
+
+    &--on {
+      width: 22px;
+      background: var(--c-ink);
+    }
+  }
+}

@@ -1,0 +1,10 @@
+/* 全局样式入口 */
+@use './styles/tokens.scss';
+
+/* 页面底色与正文字体。H5 命中 body，小程序命中 page，两个都写保证四端一致 */
+body,
+page {
+  background: var(--c-paper);
+  color: var(--c-ink);
+  font-family: var(--font-sans);
+}

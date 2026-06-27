@@ -1,0 +1,33 @@
+{
+  "name": "worthit",
+  "version": "0.1.0",
+  "private": true,
+  "description": "值啦 · 打卡看真实单价往下掉的轻量工具（monorepo 根）",
+  "packageManager": "pnpm@10.14.0",
+  "engines": {
+    "node": ">=20"
+  },
+  "scripts": {
+    "core:build": "pnpm --filter @worthit/core build",
+    "core:test": "pnpm --filter @worthit/core test",
+    "storage:build": "pnpm --filter @worthit/storage build",
+    "build:packages": "pnpm -r --filter \"./packages/**\" build",
+    "dev:h5": "pnpm --filter @worthit/taro-app dev:h5",
+    "dev:weapp": "pnpm --filter @worthit/taro-app dev:weapp",
+    "build:h5": "pnpm --filter @worthit/taro-app build:h5",
+    "build:weapp": "pnpm --filter @worthit/taro-app build:weapp",
+    "typecheck": "pnpm -r typecheck",
+    "lint": "eslint . --ext .ts,.tsx",
+    "format": "prettier --write \"**/*.{ts,tsx,js,json,md}\""
+  },
+  "devDependencies": {
+    "@typescript-eslint/eslint-plugin": "^8.18.0",
+    "@typescript-eslint/parser": "^8.18.0",
+    "eslint": "^8.57.1",
+    "eslint-config-prettier": "^9.1.0",
+    "eslint-plugin-react": "^7.37.2",
+    "eslint-plugin-react-hooks": "^5.1.0",
+    "prettier": "^3.4.2",
+    "typescript": "^5.7.2"
+  }
+}
