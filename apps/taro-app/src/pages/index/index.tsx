@@ -1,9 +1,9 @@
 import { useEffect, useMemo, useRef, useState } from 'react'
-import { View, Text, Swiper, SwiperItem } from '@tarojs/components'
+import { View, Swiper, SwiperItem } from '@tarojs/components'
 import type { BaseEventOrig } from '@tarojs/components'
 import Taro from '@tarojs/taro'
 import { calcCard, detectTurningPoint, type CalcResult } from '@worthit/core'
-import { AppBar, IconButton, TabBar, Dots, Toast, ConfirmDialog, type TabKey } from '@/components'
+import { AppBar, IconButton, TabBar, Dots, Toast, ConfirmDialog, Skeleton, EmptyState, type TabKey } from '@/components'
 import { useCardStore } from '../../store/useCardStore'
 import { AddCardForm } from './AddCardForm'
 import { ReviewScreen } from './ReviewScreen'
@@ -48,6 +48,7 @@ export default function Index() {
     reviewCardId,
     reviewFrom,
     prefillCard,
+    loading,
     load,
     checkIn,
     undoCheckIn,
@@ -252,10 +253,15 @@ export default function Index() {
               ))}
             </Swiper>
           </>
+        ) : loading ? (
+          <Skeleton />
         ) : (
-          <View className="checkin__loading">
-            <Text className="checkin__loading-text">{t('app.name')}</Text>
-          </View>
+          <EmptyState
+            title={t('checkin.emptyTitle')}
+            hint={t('checkin.emptyHint')}
+            actionText={t('checkin.emptyAction')}
+            onAction={openAddForm}
+          />
         )}
       </View>
 

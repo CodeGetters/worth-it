@@ -38,18 +38,5 @@
     height: 100%;
     box-sizing: border-box;
   }
-
-  &__loading {
-    flex: 1;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-  }
-
-  &__loading-text {
-    font-size: var(--fs-xl);
-    font-weight: 800;
-    color: var(--c-faint);
-  }
 }
 

@@ -47,6 +47,10 @@ export const zh = {
     btnFull: '已用完',
     btnExpired: '已过期 · 看复盘',
     backfill: '补打过去的卡 ›',
+    // 空数据态（无卡时）
+    emptyTitle: '还没有卡',
+    emptyHint: '办了张卡? 加进来，每次去都看它越用越值。',
+    emptyAction: '添加第一张卡',
     // delta（这次比上次便宜了多少）
     deltaCheaper: '这次比上次便宜 ¥{diff}',
     deltaTryFirst: '去一次试试，看单价怎么掉',
