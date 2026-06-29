@@ -27,6 +27,12 @@
     border: 1.5px dashed var(--c-dash);
   }
 
+  /* 校验错误：烧钱红描边，醒目但不刺眼 */
+  &--error {
+    border-color: var(--c-burn);
+    background: var(--c-burn-bg);
+  }
+
   /* 数字字段：等宽数字字体、加粗，对齐原型金额/次数样式 */
   &--num .field__input {
     font-family: var(--font-num);
@@ -47,4 +53,13 @@
   &__ph {
     color: var(--c-faint);
   }
+}
+
+/* 行内错误提示：烧钱红小字，紧贴字段下方 */
+.field__error {
+  display: block;
+  font-size: var(--fs-xs);
+  color: var(--c-burn);
+  font-weight: 700;
+  line-height: 1.4;
 }

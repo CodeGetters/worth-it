@@ -1,6 +1,5 @@
 import { useState } from 'react'
 import { View, Text, Picker } from '@tarojs/components'
-import Taro from '@tarojs/taro'
 import type { CardType } from '@worthit/core'
 import type { NewCardInput } from '../../store/useCardStore'
 import { Ticket, MonoCap, Field, Button } from '@/components'
@@ -33,6 +32,10 @@ export function AddCardForm({ onSubmit, prefill }: AddCardFormProps) {
   )
   // 有效期默认今天+1年（可改）；购买日固定今天（第一版不暴露输入）
   const [expireDate, setExpireDate] = useState(() => prefill?.expireDate ?? addYears(today(), 1))
+  // 行内校验错误（失焦或提交时填充；输入时清掉对应项）
+  const [errName, setErrName] = useState('')
+  const [errPrice, setErrPrice] = useState('')
+  const [errTimes, setErrTimes] = useState('')
 
   const isLimited = type === 'limited'
   // 有效期是否仍是默认值（今天+1年），用于显示「已自动填」印章
@@ -49,36 +52,43 @@ export function AddCardForm({ onSubmit, prefill }: AddCardFormProps) {
           ? t('addCard.expireDays', { n: expireDays })
           : expireDate
 
-  function fail(msg: string) {
-    void Taro.showToast({ title: msg, icon: 'none' })
+  // —— 单字段校验：返回错误文案（空串=通过）。失焦与提交共用，口径一致 ——
+  function checkName(v: string): string {
+    return v.trim() ? '' : t('addCard.errName')
+  }
+  function checkPrice(v: string): string {
+    const n = Number(v)
+    return Number.isFinite(n) && n > 0 ? '' : t('addCard.errPrice')
+  }
+  function checkTimes(v: string): string {
+    if (!isLimited) return ''
+    const n = Number(v)
+    return Number.isFinite(n) && n > 0 ? '' : t('addCard.errTimes')
   }
 
   function handleSave() {
-    const trimmedName = name.trim()
-    if (!trimmedName) return fail(t('addCard.errName'))
-
-    const price = Number(totalPrice)
-    if (!Number.isFinite(price) || price <= 0) return fail(t('addCard.errPrice'))
-
-    let times: number | undefined
-    if (isLimited) {
-      times = Number(totalTimes)
-      if (!Number.isFinite(times) || times <= 0) return fail(t('addCard.errTimes'))
-    }
+    // 提交时全量校验，错误一次性铺到各字段下方（不再用 toast 抢镜）
+    const eName = checkName(name)
+    const ePrice = checkPrice(totalPrice)
+    const eTimes = checkTimes(totalTimes)
+    setErrName(eName)
+    setErrPrice(ePrice)
+    setErrTimes(eTimes)
+    if (eName || ePrice || eTimes) return
 
     const expected = Number(expectedPrice)
     const hasExpected = expectedPrice.trim().length > 0 && Number.isFinite(expected) && expected > 0
 
     const input: NewCardInput = {
-      name: trimmedName,
-      totalPrice: price,
+      name: name.trim(),
+      totalPrice: Number(totalPrice),
       type,
       purchaseDate: today(),
       expireDate,
-      ...(isLimited ? { totalTimes: times } : {}),
+      ...(isLimited ? { totalTimes: Number(totalTimes) } : {}),
       ...(hasExpected ? { expectedPrice: expected } : {}),
     }
-    console.log(`[worthit:addform] 提交新卡 name=${trimmedName} type=${type} price=${price}`)
+    console.log(`[worthit:addform] 提交新卡 name=${name.trim()} type=${type} price=${Number(totalPrice)}`)
     onSubmit(input)
   }
 
@@ -104,7 +114,12 @@ export function AddCardForm({ onSubmit, prefill }: AddCardFormProps) {
         <Field
           label={t('addCard.labelName')}
           value={name}
-          onChange={setName}
+          onChange={(v) => {
+            setName(v)
+            if (errName) setErrName('')
+          }}
+          onBlur={() => setErrName(checkName(name))}
+          error={errName}
           placeholder={t('addCard.phName')}
         />
 
@@ -112,7 +127,12 @@ export function AddCardForm({ onSubmit, prefill }: AddCardFormProps) {
           <Field
             label={t('addCard.labelTotalPrice')}
             value={totalPrice}
-            onChange={setTotalPrice}
+            onChange={(v) => {
+              setTotalPrice(v)
+              if (errPrice) setErrPrice('')
+            }}
+            onBlur={() => setErrPrice(checkPrice(totalPrice))}
+            error={errPrice}
             placeholder={t('addCard.phTotalPrice')}
             type="number"
             className="addform__col"
@@ -121,7 +141,12 @@ export function AddCardForm({ onSubmit, prefill }: AddCardFormProps) {
             <Field
               label={t('addCard.labelTotalTimes')}
               value={totalTimes}
-              onChange={setTotalTimes}
+              onChange={(v) => {
+                setTotalTimes(v)
+                if (errTimes) setErrTimes('')
+              }}
+              onBlur={() => setErrTimes(checkTimes(totalTimes))}
+              error={errTimes}
               placeholder={t('addCard.phTotalTimes')}
               type="number"
               className="addform__col"

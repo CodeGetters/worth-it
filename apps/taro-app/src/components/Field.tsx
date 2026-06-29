@@ -1,4 +1,4 @@
-import { View, Input } from '@tarojs/components'
+import { View, Input, Text } from '@tarojs/components'
 import type { ReactNode } from 'react'
 import { MonoCap } from './MonoCap'
 import './Field.scss'
@@ -20,6 +20,10 @@ interface FieldProps {
    * 必填字段恒用墨黑硬描边。
    */
   optional?: boolean
+  /** 校验错误文案：非空时框转烧钱红描边，下方显红字提示 */
+  error?: string
+  /** 失焦回调（用于失焦即时校验） */
+  onBlur?: () => void
   /** 右侧附加节点（如有效期的「已自动填」印章） */
   suffix?: ReactNode
   className?: string
@@ -38,13 +42,21 @@ export function Field({
   placeholder,
   type = 'text',
   optional,
+  error,
+  onBlur,
   suffix,
   className = '',
 }: FieldProps) {
   const filled = value.trim().length > 0
   // 选填且未填 → 虚线灰框；其余（必填，或选填已填）→ 墨黑实框
   const dashed = optional && !filled
-  const cls = ['field', dashed && 'field--dashed', type === 'number' && 'field--num', className]
+  const cls = [
+    'field',
+    dashed && 'field--dashed',
+    error && 'field--error',
+    type === 'number' && 'field--num',
+    className,
+  ]
     .filter(Boolean)
     .join(' ')
 
@@ -59,9 +71,12 @@ export function Field({
           placeholder={placeholder}
           placeholderClass="field__ph"
           onInput={(e) => onChange(e.detail.value)}
+          onBlur={onBlur}
         />
         {suffix}
       </View>
+      {error && <Text className="field__error">{error}</Text>}
     </View>
   )
 }
+
