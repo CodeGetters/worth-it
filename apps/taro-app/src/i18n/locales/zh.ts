@@ -13,6 +13,12 @@ export const zh = {
     slogan: '又去了一次，值啦。',
   },
 
+  // 通用：跨页复用的按钮/动作文案
+  common: {
+    cancel: '取消',
+    confirm: '确定',
+  },
+
   // 顶栏 / 底部导航 / 通用
   nav: {
     myCards: '我的卡',
@@ -35,6 +41,9 @@ export const zh = {
     // 按钮
     btnCheckIn: '今天去了，打卡',
     btnUndo: '撤销上一次',
+    undoConfirmTitle: '撤销上一次打卡?',
+    undoConfirmMsg: '会把最近一次打卡记录删掉，单价随之回升。',
+    undoConfirmOk: '撤销',
     btnFull: '已用完',
     btnExpired: '已过期 · 看复盘',
     backfill: '补打过去的卡 ›',

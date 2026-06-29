@@ -1,0 +1,82 @@
+/* 小票风确认弹窗：遮罩 + 居中票面（硬描边 + 偏移硬影）。
+   与 Toast/Ticket 同一套「清醒小票」语言。色彩全走 var(--c-*)。 */
+
+.confirm {
+  position: fixed;
+  inset: 0;
+  z-index: var(--z-overlay);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+
+  &__mask {
+    position: absolute;
+    inset: 0;
+    background: rgba(22, 20, 15, 0.45);
+    animation: confirm-fade var(--t-base) ease;
+  }
+
+  &__card {
+    position: relative;
+    width: 78%;
+    max-width: 320px;
+    background: var(--c-card);
+    border: var(--bd);
+    box-shadow: var(--sh-stamp);
+    border-radius: var(--r-md);
+    padding: var(--sp-5);
+    text-align: center;
+    animation: confirm-pop var(--t-base) var(--ease-spring);
+  }
+
+  &__title {
+    display: block;
+    font-weight: 800;
+    font-size: var(--fs-md);
+    color: var(--c-ink);
+    line-height: 1.4;
+  }
+
+  &__msg {
+    display: block;
+    font-size: var(--fs-sm);
+    color: var(--c-mute);
+    line-height: 1.5;
+    margin-top: var(--sp-2);
+  }
+
+  &__actions {
+    display: flex;
+    justify-content: center;
+    gap: var(--sp-3);
+    margin-top: var(--sp-5);
+  }
+}
+
+@keyframes confirm-fade {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+}
+
+@keyframes confirm-pop {
+  from {
+    opacity: 0;
+    transform: scale(0.85) translateY(8px);
+  }
+  to {
+    opacity: 1;
+    transform: scale(1) translateY(0);
+  }
+}
+
+/* 降低动态偏好：去掉弹入动画 */
+@media (prefers-reduced-motion: reduce) {
+  .confirm__card,
+  .confirm__mask {
+    animation: none;
+  }
+}

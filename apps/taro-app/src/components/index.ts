@@ -29,6 +29,7 @@ export { Icon } from './Icon'
 export { AppBar, IconButton } from './AppBar'
 export { TabBar, type TabKey } from './TabBar'
 export { Toast } from './Toast'
+export { ConfirmDialog } from './ConfirmDialog'
 
 // —— 总览页主体 ——
 export {

@@ -3,7 +3,7 @@ import { View, Text, Swiper, SwiperItem } from '@tarojs/components'
 import type { BaseEventOrig } from '@tarojs/components'
 import Taro from '@tarojs/taro'
 import { calcCard, detectTurningPoint, type CalcResult } from '@worthit/core'
-import { AppBar, IconButton, TabBar, Dots, Toast, type TabKey } from '@/components'
+import { AppBar, IconButton, TabBar, Dots, Toast, ConfirmDialog, type TabKey } from '@/components'
 import { useCardStore } from '../../store/useCardStore'
 import { AddCardForm } from './AddCardForm'
 import { ReviewScreen } from './ReviewScreen'
@@ -60,6 +60,8 @@ export default function Index() {
   } = useCardStore()
   const [flash, setFlash] = useState<Flash | null>(null)
   const [toast, setToast] = useState<ToastMsg | null>(null)
+  // 撤销确认弹窗：避免误触撤掉刚打的卡
+  const [confirmUndo, setConfirmUndo] = useState(false)
   const beforeRef = useRef<CalcResult | null>(null)
   // 打卡进行中标记：await 落库期间拒绝重入，防误触连点导致同一下多次写入
   const checkingRef = useRef(false)
@@ -130,7 +132,15 @@ export default function Index() {
     setToast(null)
   }
 
-  async function handleUndo() {
+  // 撤销分两步：点「撤销上一次」先弹确认，确认后才真正删（防误触撤掉刚打的卡）
+  function handleUndo() {
+    if (!card) return
+    if (!checkins[checkins.length - 1]) return
+    setConfirmUndo(true)
+  }
+
+  async function doUndo() {
+    setConfirmUndo(false)
     if (!card) return
     const last = checkins[checkins.length - 1]
     if (!last) return
@@ -268,6 +278,17 @@ export default function Index() {
           onHide={() => setToast(null)}
         />
       )}
+
+      {/* 撤销打卡确认：误触保护，撤销是把刚打的记录删掉 */}
+      <ConfirmDialog
+        show={confirmUndo}
+        title={t('checkin.undoConfirmTitle')}
+        message={t('checkin.undoConfirmMsg')}
+        confirmText={t('checkin.undoConfirmOk')}
+        cancelText={t('common.cancel')}
+        onConfirm={doUndo}
+        onCancel={() => setConfirmUndo(false)}
+      />
     </View>
   )
 }
