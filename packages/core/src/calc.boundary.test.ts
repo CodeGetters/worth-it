@@ -27,12 +27,14 @@ describe('calcCard · 少样本不预测', () => {
     expect(r.checkInsToSample).toBe(1)
   })
 
-  it('距购买<7天：即使打卡够3次，样本仍不足', () => {
-    const r = calcCard(card(), ci(['2026-01-02', '2026-01-03', '2026-01-04']), '2026-01-05')
-    expect(r.enoughSample).toBe(false)
+  it('当天办卡当天打满3次：样本即充分（不再受「距购买天数」门槛限制）', () => {
+    // 购买日=打卡日=今天，仅靠次数判定。修复「当天办卡看不到单价」的死锁。
+    const r = calcCard(card(), ci(['2026-01-01', '2026-01-01', '2026-01-01']), '2026-01-01')
+    expect(r.enoughSample).toBe(true)
+    expect(r.checkInsToSample).toBe(0)
   })
 
-  it('打卡≥3次且距购买≥7天：样本充分', () => {
+  it('打卡≥3次：样本充分', () => {
     const r = calcCard(card(), ci(['2026-01-02', '2026-01-05', '2026-01-08']), '2026-01-20')
     expect(r.enoughSample).toBe(true)
     expect(r.checkInsToSample).toBe(0)

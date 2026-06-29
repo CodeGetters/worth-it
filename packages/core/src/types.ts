@@ -69,7 +69,7 @@ export interface CalcResult {
   full: boolean
 
   // —— 样本充分性（少样本不预测，见 README）——
-  /** 样本是否充分：打卡 ≥ 3 次 且 距购买 ≥ 7 天。不足时 UI 藏住大数字、改引导 */
+  /** 样本是否充分：打卡 ≥ 3 次。不足时 UI 藏住大数字、改引导 */
   enoughSample: boolean
   /** 距样本充分还差几次打卡（已达标为 0），用于「再打 N 次就能算」引导 */
   checkInsToSample: number

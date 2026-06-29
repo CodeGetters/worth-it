@@ -19,8 +19,6 @@ dayjs.extend(customParseFormat)
 
 /** 少样本阈值：打卡次数下限（含），低于此不给预测 */
 const MIN_SAMPLE_COUNT = 3
-/** 少样本阈值：距购买天数下限（含），低于此不给预测 */
-const MIN_SAMPLE_DAYS = 7
 
 // ——————————————————— 纯日期工具（dayjs.utc，不碰本地时区）———————————————————
 
@@ -77,12 +75,10 @@ export function calcCard(card: Card, checkIns: CheckIn[], today: string): CalcRe
   // 过期判定：今天晚于有效期截止日
   const expired = dayDiff(today, card.expireDate) > 0
 
-  // 样本充分性：打卡次数 ≥ 3 且 距购买 ≥ 7 天
-  const daysSincePurchase = dayDiff(today, card.purchaseDate)
-  const enoughSample =
-    checkInCount >= MIN_SAMPLE_COUNT &&
-    !Number.isNaN(daysSincePurchase) &&
-    daysSincePurchase >= MIN_SAMPLE_DAYS
+  // 样本充分性：打卡次数 ≥ 3 即可给预测。
+  // 不再设「距购买 ≥ N 天」门槛——否则当天办卡、当天连打多次的用户看不到任何单价，
+  // 而「打一次看单价掉一截」正是核心爽点。防天价由「≥3 次」本身兜住（单次不预测）。
+  const enoughSample = checkInCount >= MIN_SAMPLE_COUNT
   const checkInsToSample = Math.max(0, MIN_SAMPLE_COUNT - checkInCount)
 
   // 断卡天数：今天 − 最后一次打卡日；从未打卡为 null
