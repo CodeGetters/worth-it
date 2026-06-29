@@ -211,7 +211,7 @@ export default function Index() {
         />
       )}
 
-      <View className="checkin__body">
+      <View className="checkin__body checkin__body--fade" key={activeTab}>
         {isAdd ? (
           <AddCardForm onSubmit={addCard} prefill={prefillCard} />
         ) : isReview ? (

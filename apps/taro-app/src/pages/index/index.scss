@@ -19,6 +19,11 @@
     overflow-y: auto;
   }
 
+  /* 视图切换淡入：切 tab 时 body 以 key 重挂载，replay 这段轻量淡入上移 */
+  &__body--fade {
+    animation: body-fade var(--t-base) var(--ease-out, ease);
+  }
+
   &__dots {
     margin: var(--sp-1) 0 var(--sp-4);
   }
@@ -37,6 +42,23 @@
     /* SwiperItem 默认不撑满高度，强制占满让票面 flex:1 生效 */
     height: 100%;
     box-sizing: border-box;
+  }
+}
+
+@keyframes body-fade {
+  from {
+    opacity: 0;
+    transform: translateY(6px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .checkin__body--fade {
+    animation: none;
   }
 }
 
