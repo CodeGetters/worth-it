@@ -1,0 +1,936 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>值啦 iOS 首页原型</title>
+  <style>
+    :root {
+      --shell: oklch(8% 0.006 260);
+      --bg: oklch(11.5% 0.008 255);
+      --surface: oklch(18.5% 0.01 255);
+      --surface-2: oklch(24% 0.011 252);
+      --card-top: oklch(29% 0.012 255);
+      --card-base: oklch(19% 0.01 255);
+      --card-low: oklch(14.5% 0.008 255);
+      --fg: oklch(96% 0.003 105);
+      --ink: oklch(94% 0.004 105);
+      --muted: oklch(68% 0.008 255);
+      --border: rgba(255,255,255,.1);
+      --accent: oklch(75% 0.065 86);
+      --success: oklch(69% 0.105 150);
+      --success-ink: oklch(76% 0.085 150);
+      --progress: oklch(63% 0.028 88);
+      --progress-deep: oklch(36% 0.012 255);
+      --focus: oklch(78% 0.07 86);
+      --warn: oklch(74% 0.11 76);
+      --danger: oklch(63% 0.16 28);
+      --glass: rgba(255,255,255,.075);
+      --font-display: 'Avenir Next', 'SF Pro Display', -apple-system, BlinkMacSystemFont, system-ui, sans-serif;
+      --font-body: -apple-system, BlinkMacSystemFont, 'SF Pro Text', system-ui, sans-serif;
+      --font-mono: 'SF Mono', ui-monospace, Menlo, monospace;
+    }
+
+    * { box-sizing: border-box; }
+    html, body { margin: 0; min-height: 100%; }
+    body {
+      display: grid;
+      place-items: center;
+      min-height: 100vh;
+      padding: 28px;
+      color: var(--fg);
+      background:
+        radial-gradient(circle at 50% 0%, rgba(255,255,255,.06), transparent 36%),
+        linear-gradient(145deg, oklch(12% 0.01 255), oklch(6.5% 0.006 255));
+      font-family: var(--font-body);
+      -webkit-font-smoothing: antialiased;
+    }
+
+    .phone {
+      position: relative;
+      width: min(430px, calc(100vw - 28px));
+      height: min(932px, calc(100vh - 28px));
+      min-height: 720px;
+      overflow: hidden;
+      border: 1px solid rgba(255,255,255,.18);
+      border-radius: 54px;
+      background: var(--bg);
+      box-shadow: 0 36px 120px rgba(0,0,0,.56), inset 0 0 0 10px #050609;
+    }
+
+    .island {
+      position: absolute;
+      z-index: 20;
+      top: 13px;
+      left: 50%;
+      width: 126px;
+      height: 36px;
+      transform: translateX(-50%);
+      border-radius: 999px;
+      background: #050609;
+    }
+
+    .status {
+      position: absolute;
+      z-index: 19;
+      top: 18px;
+      left: 0;
+      right: 0;
+      display: flex;
+      justify-content: space-between;
+      padding: 0 34px;
+      color: rgba(255,255,255,.86);
+      font: 600 14px/1 var(--font-body);
+      letter-spacing: .01em;
+    }
+
+    .signals {
+      display: flex;
+      gap: 5px;
+      align-items: center;
+    }
+
+    .dot { width: 4px; height: 4px; border-radius: 50%; background: currentColor; opacity: .88; }
+    .battery { width: 22px; height: 10px; border: 1.4px solid currentColor; border-radius: 3px; position: relative; }
+    .battery::before { content: ''; position: absolute; right: 2px; top: 2px; width: 10px; height: 4px; border-radius: 1px; background: currentColor; }
+
+    .app {
+      height: 100%;
+      overflow: hidden;
+      padding: 66px 18px 92px;
+      background:
+        linear-gradient(180deg, rgba(255,255,255,.055), transparent 20%),
+        var(--bg);
+    }
+
+    .scroll {
+      height: 100%;
+      overflow: auto;
+      padding: 0 2px 20px;
+      scrollbar-width: none;
+    }
+    .scroll::-webkit-scrollbar { display: none; }
+
+    header {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 10px 4px 18px;
+    }
+
+    .brand h1 {
+      margin: 0;
+      font-family: var(--font-display);
+      font-size: 31px;
+      line-height: 1.05;
+      letter-spacing: -0.025em;
+    }
+
+    .brand p {
+      margin: 6px 0 0;
+      color: var(--muted);
+      font-size: 13px;
+      line-height: 1.5;
+    }
+
+    .profile {
+      width: 44px;
+      height: 44px;
+      border: 1px solid var(--border);
+      border-radius: 50%;
+      background: linear-gradient(145deg, rgba(255,255,255,.16), rgba(255,255,255,.04));
+      color: var(--accent);
+      display: grid;
+      place-items: center;
+      font: 700 16px/1 var(--font-display);
+    }
+
+    .summary {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 10px;
+      margin-bottom: 16px;
+    }
+
+    .metric {
+      min-height: 92px;
+      padding: 14px;
+      border: 1px solid var(--border);
+      border-radius: 22px;
+      background: linear-gradient(180deg, rgba(255,255,255,.07), rgba(255,255,255,.04));
+    }
+
+    .label {
+      color: rgba(255,255,255,.56);
+      font-size: 11px;
+      line-height: 1;
+      letter-spacing: .075em;
+      text-transform: uppercase;
+    }
+
+    .sr-only {
+      position: absolute;
+      width: 1px;
+      height: 1px;
+      padding: 0;
+      margin: -1px;
+      overflow: hidden;
+      clip: rect(0, 0, 0, 0);
+      white-space: nowrap;
+      border: 0;
+    }
+
+    .metric strong {
+      display: block;
+      margin-top: 14px;
+      font-family: var(--font-display);
+      font-size: 26px;
+      line-height: 1;
+      letter-spacing: -0.025em;
+      font-variant-numeric: tabular-nums;
+    }
+
+    .metric span {
+      display: block;
+      margin-top: 8px;
+      color: var(--muted);
+      font-size: 12px;
+    }
+
+    .wallet {
+      position: relative;
+      height: 288px;
+      margin: 6px 0 20px;
+      transition: height .42s cubic-bezier(.2,.8,.2,1), margin .42s cubic-bezier(.2,.8,.2,1);
+    }
+
+    .wallet.expanded {
+      height: 612px;
+      margin-bottom: 28px;
+    }
+
+    .pass {
+      position: absolute;
+      left: 0;
+      right: 0;
+      min-height: 214px;
+      padding: 20px;
+      border-radius: 30px;
+      color: var(--ink);
+      border: 1px solid rgba(255,255,255,.1);
+      background:
+        radial-gradient(circle at 18% 0%, rgba(255,255,255,.13), transparent 34%),
+        linear-gradient(145deg, var(--card-top), var(--card-base) 56%, var(--card-low));
+      box-shadow: 0 22px 56px rgba(0,0,0,.44), inset 0 1px 0 rgba(255,255,255,.12), inset 0 -1px 0 rgba(0,0,0,.22);
+      transition: transform .42s cubic-bezier(.2,.8,.2,1), opacity .25s ease, box-shadow .25s ease;
+    }
+
+    .pass.bump { animation: passBump .54s cubic-bezier(.2,.8,.2,1); }
+
+    .pass:nth-child(1) { z-index: 3; top: 0; }
+    .pass:nth-child(2) { z-index: 2; top: 34px; transform: scale(.94); opacity: .74; background: linear-gradient(145deg, oklch(23% 0.009 252), oklch(15.5% 0.007 252)); }
+    .pass:nth-child(3) { z-index: 1; top: 68px; transform: scale(.88); opacity: .48; background: linear-gradient(145deg, oklch(20% 0.008 252), oklch(13.5% 0.006 240)); }
+    .wallet.expanded .pass { opacity: 1; box-shadow: 0 18px 42px rgba(0,0,0,.34), inset 0 1px 0 rgba(255,255,255,.1); }
+    .wallet.expanded .pass:nth-child(2) { transform: translateY(168px) scale(.97); }
+    .wallet.expanded .pass:nth-child(3) { transform: translateY(322px) scale(.94); }
+
+    .pass-top {
+      display: flex;
+      justify-content: space-between;
+      gap: 14px;
+      align-items: flex-start;
+    }
+
+    .pass h2 {
+      margin: 7px 0 0;
+      font-family: var(--font-display);
+      font-size: 24px;
+      line-height: 1.06;
+      letter-spacing: -0.02em;
+    }
+
+    .chip {
+      display: inline-flex;
+      align-items: center;
+      min-height: 28px;
+      padding: 0 10px;
+      border-radius: 999px;
+      background: rgba(255,255,255,.08);
+      color: rgba(255,255,255,.68);
+      font-size: 12px;
+      font-weight: 600;
+    }
+
+    .cost {
+      display: grid;
+      grid-template-columns: 1fr auto;
+      align-items: end;
+      gap: 10px;
+      margin-top: 24px;
+    }
+
+    .cost .num {
+      font-family: var(--font-display);
+      font-size: 52px;
+      line-height: .92;
+      letter-spacing: -0.035em;
+      font-variant-numeric: tabular-nums;
+    }
+
+    .cost .num.bump { animation: numberDrop .62s cubic-bezier(.2,.8,.2,1); }
+
+    .drop {
+      min-width: 84px;
+      padding: 10px 12px;
+      border-radius: 18px;
+      border: 1px solid rgba(255,255,255,.1);
+      background: linear-gradient(180deg, rgba(255,255,255,.105), rgba(255,255,255,.045));
+      color: rgba(255,255,255,.58);
+      text-align: right;
+      font: 650 12px/1.15 var(--font-body);
+      box-shadow: inset 0 1px 0 rgba(255,255,255,.1);
+    }
+
+    .drop strong {
+      display: block;
+      margin-top: 2px;
+      color: var(--success-ink);
+      font: 760 16px/.95 var(--font-display);
+      letter-spacing: -0.025em;
+      font-variant-numeric: tabular-nums;
+    }
+
+    .progress {
+      height: 9px;
+      margin-top: 20px;
+      overflow: hidden;
+      border-radius: 999px;
+      border: 1px solid rgba(255,255,255,.08);
+      background: linear-gradient(180deg, rgba(0,0,0,.58), rgba(255,255,255,.04));
+    }
+
+    .bar {
+      width: 38%;
+      height: 100%;
+      border-radius: inherit;
+      background: linear-gradient(90deg, var(--progress-deep), var(--progress));
+      box-shadow: inset 0 1px 0 rgba(255,255,255,.2), 0 0 16px rgba(197,178,130,.1);
+      transition: width .45s ease;
+    }
+
+    .bar::after {
+      content: '';
+      display: block;
+      width: 18px;
+      height: 100%;
+      margin-left: auto;
+      border-radius: inherit;
+      background: rgba(255,255,255,.34);
+    }
+
+    .bar.pulse { animation: progressPulse .7s ease; }
+
+    .pass-foot {
+      display: flex;
+      justify-content: space-between;
+      margin-top: 12px;
+      color: rgba(255,255,255,.5);
+      font-size: 12px;
+    }
+
+    .mini-pass-body {
+      display: grid;
+      grid-template-columns: 1fr auto;
+      align-items: end;
+      gap: 12px;
+      margin-top: 22px;
+      padding-top: 18px;
+      border-top: 1px solid rgba(255,255,255,.08);
+    }
+
+    .mini-cost {
+      font-family: var(--font-display);
+      font-size: 34px;
+      line-height: 1;
+      letter-spacing: -0.03em;
+      font-variant-numeric: tabular-nums;
+    }
+
+    .mini-hint {
+      max-width: 116px;
+      color: rgba(255,255,255,.54);
+      text-align: right;
+      font-size: 12px;
+      line-height: 1.35;
+    }
+
+    .actions {
+      position: sticky;
+      bottom: 0;
+      z-index: 10;
+      display: grid;
+      grid-template-columns: 1fr 56px;
+      gap: 10px;
+      padding: 10px 0 14px;
+      background: linear-gradient(180deg, transparent, var(--bg) 34%);
+    }
+
+    button {
+      min-height: 52px;
+      border: 0;
+      border-radius: 18px;
+      font-family: var(--font-body);
+      font-weight: 700;
+      letter-spacing: .02em;
+      cursor: pointer;
+      touch-action: manipulation;
+      transition: transform .18s ease, opacity .18s ease, background .18s ease;
+    }
+    button:active { transform: translateY(2px) scale(.99); }
+    button:focus-visible { outline: 2px solid var(--focus); outline-offset: 3px; }
+    button:disabled { cursor: wait; opacity: .72; transform: none; }
+
+    .checkin {
+      color: #10120f;
+      background: var(--accent);
+      box-shadow: 0 12px 30px rgba(212,178,104,.22);
+    }
+
+    .checkin.is-loading { color: rgba(16,18,15,.72); }
+
+    .add {
+      color: var(--fg);
+      background: rgba(255,255,255,.1);
+      border: 1px solid var(--border);
+      font-size: 22px;
+    }
+
+    .section-title {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      margin: 22px 4px 10px;
+    }
+
+    .section-title h3 {
+      margin: 0;
+      font-family: var(--font-display);
+      font-size: 18px;
+      line-height: 1.15;
+      letter-spacing: -0.015em;
+    }
+
+    .section-title button {
+      min-height: 34px;
+      padding: 0 12px;
+      border-radius: 999px;
+      color: var(--fg);
+      background: rgba(255,255,255,.08);
+      font-size: 12px;
+      font-weight: 600;
+    }
+
+    .feed {
+      display: grid;
+      gap: 10px;
+    }
+
+    .row {
+      display: grid;
+      grid-template-columns: 42px 1fr auto;
+      align-items: center;
+      gap: 12px;
+      min-height: 72px;
+      padding: 12px;
+      border: 1px solid var(--border);
+      border-radius: 22px;
+      background: rgba(255,255,255,.06);
+    }
+
+    .badge {
+      width: 42px;
+      height: 42px;
+      border-radius: 15px;
+      display: grid;
+      place-items: center;
+      color: rgba(255,255,255,.82);
+      background: rgba(255,255,255,.08);
+      font: 800 16px/1 var(--font-display);
+    }
+
+    .row.action-row { cursor: pointer; transition: transform .18s ease, border-color .18s ease, background .18s ease; }
+    .row.action-row:active { transform: translateY(1px) scale(.995); }
+    .row.action-row:focus-visible { outline: 2px solid var(--focus); outline-offset: 3px; }
+    .row.action-row.selected { border-color: rgba(212,178,104,.42); background: rgba(212,178,104,.075); }
+
+    .row strong {
+      display: block;
+      font-size: 14px;
+      line-height: 1.2;
+    }
+
+    .row span {
+      display: block;
+      margin-top: 5px;
+      color: var(--muted);
+      font-size: 12px;
+    }
+
+    .pill {
+      padding: 7px 9px;
+      border-radius: 999px;
+      background: rgba(92, 206, 130, .12);
+      color: var(--success);
+      font: 700 12px/1 var(--font-body);
+      font-variant-numeric: tabular-nums;
+      white-space: nowrap;
+    }
+
+    .empty-state {
+      margin: 0;
+      padding: 18px 16px;
+      border: 1px dashed rgba(255,255,255,.16);
+      border-radius: 22px;
+      color: var(--muted);
+      background: rgba(255,255,255,.04);
+      font-size: 13px;
+      line-height: 1.5;
+    }
+
+    .toast {
+      position: absolute;
+      z-index: 30;
+      left: 24px;
+      right: 24px;
+      bottom: 94px;
+      display: grid;
+      grid-template-columns: 1fr auto;
+      gap: 10px;
+      align-items: center;
+      padding: 14px 16px;
+      border: 1px solid rgba(255,255,255,.13);
+      border-radius: 22px;
+      background: rgba(12,14,18,.88);
+      backdrop-filter: blur(18px);
+      opacity: 0;
+      transform: translateY(16px);
+      pointer-events: none;
+      transition: opacity .25s ease, transform .25s ease;
+    }
+
+    .toast.show { opacity: 1; transform: translateY(0); }
+    .toast strong { font-size: 14px; }
+    .toast span { color: var(--muted); font-size: 12px; }
+    .toast b { color: var(--success); font-variant-numeric: tabular-nums; }
+
+    .sheet {
+      position: absolute;
+      z-index: 25;
+      left: 0;
+      right: 0;
+      bottom: 0;
+      padding: 18px 18px 36px;
+      border-radius: 32px 32px 0 0;
+      background: oklch(18% 0.015 255);
+      border-top: 1px solid var(--border);
+      box-shadow: 0 -22px 70px rgba(0,0,0,.45);
+      transform: translateY(104%);
+      transition: transform .35s cubic-bezier(.2,.8,.2,1);
+    }
+    .sheet.open { transform: translateY(0); }
+
+    .handle {
+      width: 42px;
+      height: 5px;
+      margin: 0 auto 18px;
+      border-radius: 999px;
+      background: rgba(255,255,255,.25);
+    }
+
+    .sheet h3 { margin: 0 0 14px; font-size: 22px; letter-spacing: -0.02em; }
+    .field { display: grid; gap: 6px; margin-top: 10px; }
+    .field label { color: var(--muted); font-size: 12px; letter-spacing: .06em; text-transform: uppercase; }
+    .field input {
+      width: 100%;
+      min-height: 48px;
+      padding: 0 14px;
+      border: 1px solid var(--border);
+      border-radius: 16px;
+      color: var(--fg);
+      background: rgba(255,255,255,.08);
+      font: 600 15px/1 var(--font-body);
+      outline: none;
+    }
+    .field input:focus { border-color: var(--focus); box-shadow: 0 0 0 3px rgba(212,178,104,.12); }
+    .form-error { display: none; margin-top: 10px; color: oklch(76% 0.14 28); font-size: 13px; line-height: 1.45; }
+    .sheet[data-invalid="true"] .form-error { display: block; }
+    .sheet-actions { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-top: 16px; }
+    .secondary { color: var(--fg); background: rgba(255,255,255,.08); border: 1px solid var(--border); }
+
+    .tabs {
+      position: absolute;
+      left: 18px;
+      right: 18px;
+      bottom: 22px;
+      z-index: 18;
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 8px;
+      padding: 8px;
+      border: 1px solid var(--border);
+      border-radius: 26px;
+      background: rgba(8,10,14,.76);
+      backdrop-filter: blur(20px);
+    }
+    .tab {
+      min-height: 44px;
+      border-radius: 18px;
+      color: rgba(255,255,255,.6);
+      background: transparent;
+      font-size: 12px;
+      font-weight: 700;
+    }
+    .tab.active { color: #10120f; background: var(--accent); }
+
+    .home-indicator {
+      position: absolute;
+      z-index: 22;
+      left: 50%;
+      bottom: 8px;
+      width: 138px;
+      height: 5px;
+      transform: translateX(-50%);
+      border-radius: 999px;
+      background: rgba(255,255,255,.78);
+    }
+
+    @media (max-height: 780px) {
+      body { padding: 10px; }
+      .phone { min-height: 680px; border-radius: 42px; }
+      .app { padding-top: 58px; }
+      .wallet { height: 250px; }
+      .pass { min-height: 198px; }
+      .cost .num { font-size: 45px; }
+      .summary { display: none; }
+    }
+
+    @media (max-width: 380px) {
+      body { padding: 0; }
+      .phone { width: 100vw; height: 100vh; min-height: 100vh; border-radius: 0; border: 0; }
+      .app { padding-left: 14px; padding-right: 14px; }
+      .cost .num { font-size: 46px; }
+      .row { grid-template-columns: 38px 1fr auto; gap: 10px; }
+      .badge { width: 38px; height: 38px; border-radius: 13px; }
+    }
+
+    @media (prefers-reduced-motion: reduce) {
+      *, *::before, *::after { animation-duration: .001ms !important; animation-iteration-count: 1 !important; scroll-behavior: auto !important; transition-duration: .001ms !important; }
+    }
+
+    @keyframes passBump {
+      0% { transform: translateY(0) scale(1); }
+      42% { transform: translateY(-8px) scale(1.012); }
+      100% { transform: translateY(0) scale(1); }
+    }
+
+    @keyframes numberDrop {
+      0% { transform: translateY(0); color: var(--ink); }
+      36% { transform: translateY(-5px); color: var(--success-ink); }
+      100% { transform: translateY(0); color: var(--ink); }
+    }
+
+    @keyframes progressPulse {
+      0% { filter: brightness(1); }
+      45% { filter: brightness(1.12) saturate(1.08); }
+      100% { filter: brightness(1); }
+    }
+  </style>
+</head>
+<body>
+  <main class="phone" aria-label="值啦 iOS 首页原型" data-od-id="ios-home-shell">
+    <div class="status" aria-hidden="true"><span>9:41</span><div class="signals"><span class="dot"></span><span class="dot"></span><span class="dot"></span><span class="battery"></span></div></div>
+    <div class="island" aria-hidden="true"></div>
+
+    <section class="app" data-od-id="app-canvas">
+      <div class="scroll" id="scrollArea">
+        <header data-od-id="home-header">
+          <div class="brand">
+            <h1>值啦</h1>
+            <p>卡都办了，就别让它躺死。</p>
+          </div>
+          <div class="profile" aria-label="用户头像">Z</div>
+        </header>
+
+        <div class="summary" aria-label="本周用卡概览" data-od-id="weekly-summary">
+          <article class="metric">
+            <div class="label">本周打卡</div>
+            <strong id="weekCount">3 次</strong>
+            <span>离上周多 1 次</span>
+          </article>
+          <article class="metric">
+            <div class="label">已追回</div>
+            <strong id="savedMoney">¥426</strong>
+            <span>按原始单价估算</span>
+          </article>
+        </div>
+
+        <section class="wallet" id="wallet" aria-label="我的卡包" data-od-id="wallet-stack">
+          <article class="pass">
+            <div class="pass-top">
+              <div><span class="chip">健身年卡 · 活跃</span><h2>超级猩猩全年卡</h2></div>
+              <span class="chip" id="usesText">已去 24 次</span>
+            </div>
+            <div class="cost">
+              <div><div class="label" style="color:rgba(255,255,255,.54)">当前单次成本</div><div class="num" id="costText">¥125</div></div>
+              <div class="drop" id="dropText">再去一次<strong>-¥5</strong></div>
+            </div>
+            <div class="progress"><div class="bar" id="bar"></div></div>
+            <div class="pass-foot"><span>目标：降到 ¥90/次</span><span>原价 ¥3,000</span></div>
+          </article>
+
+          <article class="pass" aria-hidden="true">
+            <div class="pass-top"><div><span class="chip">瑜伽课包 · 停滞</span><h2>梵音 20 次卡</h2></div><span class="chip">剩 12 次</span></div>
+            <div class="mini-pass-body">
+              <div><div class="label" style="color:rgba(255,255,255,.5)">当前单次成本</div><div class="mini-cost">¥158</div></div>
+              <div class="mini-hint">今晚去一次，预计再降 ¥9</div>
+            </div>
+          </article>
+          <article class="pass" aria-hidden="true">
+            <div class="pass-top"><div><span class="chip">护理疗程 · 待唤醒</span><h2>皮肤管理 8 次</h2></div><span class="chip">已用 1 次</span></div>
+            <div class="mini-pass-body">
+              <div><div class="label" style="color:rgba(255,255,255,.5)">当前单次成本</div><div class="mini-cost">¥680</div></div>
+              <div class="mini-hint">再拖 21 天，基本等于办了白办</div>
+            </div>
+          </article>
+        </section>
+
+        <div class="actions" data-od-id="primary-actions">
+          <button class="checkin" id="checkinBtn" type="button">去了一次，值啦</button>
+          <button class="add" id="addBtn" type="button" aria-label="开一张新卡">＋</button>
+        </div>
+
+        <div class="section-title">
+          <h3>哪张卡最该被打开</h3>
+          <button type="button" id="stackBtn" aria-controls="wallet" aria-expanded="false">展示卡包</button>
+        </div>
+        <div class="feed" id="feed" aria-label="卡片提醒列表" data-od-id="card-reminders">
+          <article class="row action-row" tabindex="0" role="button" aria-pressed="false" data-card="梵音 20 次卡" data-hint="今晚 19:30 可约一节，让单次成本继续下降。">
+            <div class="badge">瑜</div>
+            <div><strong>梵音 20 次卡</strong><span>14 天没去，单次成本停在 ¥158</span></div>
+            <span class="pill">可降 ¥9</span>
+          </article>
+          <article class="row action-row" tabindex="0" role="button" aria-pressed="false" data-card="拳击私教 12 节" data-hint="剩 5 节、28 天过期，优先安排下一次。">
+            <div class="badge">拳</div>
+            <div><strong>拳击私教 12 节</strong><span>剩 5 节，距离过期 28 天</span></div>
+            <span class="pill">该约课</span>
+          </article>
+          <article class="row action-row" tabindex="0" role="button" aria-pressed="false" data-card="皮肤管理 8 次" data-hint="第一次使用后，真实单次成本会立刻从总价开始下降。">
+            <div class="badge">美</div>
+            <div><strong>皮肤管理 8 次</strong><span>刚开卡，第一次会把单价打下来</span></div>
+            <span class="pill">开卡</span>
+          </article>
+          <p class="empty-state" id="emptyState" hidden>还没有按次消费卡。先开一张卡，值啦会从第一次使用开始追踪真实单次成本。</p>
+        </div>
+      </div>
+    </section>
+
+    <nav class="tabs" aria-label="底部导航" data-od-id="bottom-tabs">
+      <button class="tab active" type="button" aria-current="page">卡包</button>
+      <button class="tab" type="button">记录</button>
+      <button class="tab" type="button">我的</button>
+    </nav>
+
+    <aside class="toast" id="toast" role="status" aria-live="polite" data-od-id="checkin-toast">
+      <div><strong>这次打卡让单价下降</strong><br><span>当前单次成本变为 <b id="toastCost">¥120</b></span></div>
+      <b id="toastDrop">-¥5</b>
+    </aside>
+
+    <section class="sheet" id="sheet" role="dialog" aria-modal="true" aria-labelledby="sheetTitle" aria-hidden="true" data-od-id="new-card-sheet">
+      <div class="handle" aria-hidden="true"></div>
+      <h3 id="sheetTitle">开一张按次消费卡</h3>
+      <div class="field"><label for="cardName">卡片名称</label><input id="cardName" value="普拉提 30 次卡" aria-describedby="formError" /></div>
+      <div class="field"><label for="cardPrice">总价</label><input id="cardPrice" value="¥4,800" inputmode="decimal" aria-describedby="formError" /></div>
+      <div class="field"><label for="cardGoal">想降到</label><input id="cardGoal" value="¥120/次" /></div>
+      <p class="form-error" id="formError" role="alert">请至少填写卡片名称和有效总价，值啦会用它计算真实单次成本。</p>
+      <div class="sheet-actions">
+        <button class="secondary" id="closeSheet" type="button">稍后再说</button>
+        <button class="checkin" id="createCard" type="button">确认开卡</button>
+      </div>
+    </section>
+    <div class="home-indicator" aria-hidden="true"></div>
+  </main>
+
+  <script>
+    const state = { uses: 24, price: 3000, week: 3, saved: 426, expanded: false };
+    const costText = document.getElementById('costText');
+    const usesText = document.getElementById('usesText');
+    const dropText = document.getElementById('dropText');
+    const bar = document.getElementById('bar');
+    const toast = document.getElementById('toast');
+    const toastDrop = document.getElementById('toastDrop');
+    const weekCount = document.getElementById('weekCount');
+    const savedMoney = document.getElementById('savedMoney');
+    const wallet = document.getElementById('wallet');
+    const stackBtn = document.getElementById('stackBtn');
+    const sheet = document.getElementById('sheet');
+    const feed = document.getElementById('feed');
+    const emptyState = document.getElementById('emptyState');
+    const firstPass = document.querySelector('.pass');
+    const stackedPasses = Array.from(document.querySelectorAll('.wallet .pass')).slice(1);
+    const checkinBtn = document.getElementById('checkinBtn');
+
+    function currency(value) { return '¥' + Math.round(value); }
+    function parseMoney(value) { return Number(String(value).replace(/[^0-9.]/g, '')); }
+    function currentCost() { return state.price / state.uses; }
+    function nextDrop() { return currentCost() - state.price / (state.uses + 1); }
+
+    function flash(element, className) {
+      element.classList.remove(className);
+      void element.offsetWidth;
+      element.classList.add(className);
+      window.setTimeout(() => element.classList.remove(className), 760);
+    }
+
+    function showToast(title, detail, tag) {
+      toast.querySelector('strong').textContent = title;
+      toast.querySelector('span').innerHTML = detail;
+      toastDrop.textContent = tag;
+      toast.classList.add('show');
+      window.setTimeout(() => toast.classList.remove('show'), 2400);
+    }
+
+    function paint() {
+      costText.textContent = currency(currentCost());
+      usesText.textContent = '已去 ' + state.uses + ' 次';
+      dropText.innerHTML = '再去一次<strong>-¥' + nextDrop().toFixed(2).replace('.00', '') + '</strong>';
+      weekCount.textContent = state.week + ' 次';
+      savedMoney.textContent = currency(state.saved);
+      bar.style.width = Math.min(82, 18 + state.uses * 1.15) + '%';
+      const visibleRows = feed.querySelectorAll('.action-row').length;
+      if (emptyState) emptyState.hidden = visibleRows > 0;
+    }
+
+    checkinBtn.addEventListener('click', () => {
+      const before = currentCost();
+      checkinBtn.disabled = true;
+      checkinBtn.classList.add('is-loading');
+      checkinBtn.textContent = '正在记录这一次';
+      state.uses += 1;
+      state.week += 1;
+      state.saved += Math.round(before - currentCost()) + 18;
+      paint();
+      flash(costText, 'bump');
+      flash(bar, 'pulse');
+      flash(firstPass, 'bump');
+      showToast('这次打卡让单价下降', '当前单次成本变为 <b>' + currency(currentCost()) + '</b>', '-' + currency(before - currentCost()));
+      window.setTimeout(() => {
+        checkinBtn.disabled = false;
+        checkinBtn.classList.remove('is-loading');
+        checkinBtn.textContent = '去了一次，值啦';
+      }, 520);
+    });
+
+    stackBtn.addEventListener('click', () => {
+      state.expanded = !state.expanded;
+      wallet.classList.toggle('expanded', state.expanded);
+      stackedPasses.forEach(pass => pass.setAttribute('aria-hidden', String(!state.expanded)));
+      stackBtn.textContent = state.expanded ? '收起卡包' : '展示卡包';
+      stackBtn.setAttribute('aria-expanded', String(state.expanded));
+      showToast(state.expanded ? '已展示全部卡包' : '已收起卡包', state.expanded ? '<b>优先处理停滞最久的卡</b>' : '<b>首页回到当前主卡</b>', '卡包');
+    });
+
+    document.getElementById('addBtn').addEventListener('click', () => {
+      sheet.dataset.invalid = 'false';
+      document.getElementById('cardName').removeAttribute('aria-invalid');
+      document.getElementById('cardPrice').removeAttribute('aria-invalid');
+      sheet.classList.add('open');
+      sheet.setAttribute('aria-hidden', 'false');
+      document.getElementById('cardName').focus();
+    });
+
+    document.getElementById('closeSheet').addEventListener('click', () => {
+      sheet.classList.remove('open');
+      sheet.setAttribute('aria-hidden', 'true');
+      sheet.dataset.invalid = 'false';
+      document.getElementById('cardName').removeAttribute('aria-invalid');
+      document.getElementById('cardPrice').removeAttribute('aria-invalid');
+    });
+
+    document.getElementById('createCard').addEventListener('click', () => {
+      const name = document.getElementById('cardName').value.trim();
+      const price = parseMoney(document.getElementById('cardPrice').value);
+      const goal = document.getElementById('cardGoal').value.trim() || '待设目标';
+      if (!name || !price || price <= 0) {
+        sheet.dataset.invalid = 'true';
+        document.getElementById('cardName').setAttribute('aria-invalid', String(!name));
+        document.getElementById('cardPrice').setAttribute('aria-invalid', String(!price || price <= 0));
+        return;
+      }
+      sheet.dataset.invalid = 'false';
+      document.getElementById('cardName').removeAttribute('aria-invalid');
+      document.getElementById('cardPrice').removeAttribute('aria-invalid');
+      sheet.classList.remove('open');
+      sheet.setAttribute('aria-hidden', 'true');
+      document.querySelectorAll('.action-row').forEach((item) => {
+        item.classList.remove('selected');
+        item.setAttribute('aria-pressed', 'false');
+      });
+      const row = document.createElement('article');
+      row.className = 'row action-row selected';
+      row.tabIndex = 0;
+      row.setAttribute('role', 'button');
+      row.setAttribute('aria-pressed', 'true');
+      row.dataset.card = name;
+      row.dataset.hint = '刚开卡，第一次打卡会从 ' + currency(price) + ' 开始把真实单次成本往下打。';
+      row.innerHTML = '<div class="badge">新</div><div><strong>' + name + '</strong><span>目标 ' + goal + '，等待第一次使用</span></div><span class="pill">开卡</span>';
+      feed.prepend(row);
+      attachRow(row);
+      paint();
+      showToast('新卡已放入卡包', '<b>' + name + '</b> 等待第一次打卡', '开卡');
+    });
+
+    function attachRow(row) {
+      const activate = () => {
+        document.querySelectorAll('.action-row').forEach((item) => {
+          item.classList.remove('selected');
+          item.setAttribute('aria-pressed', 'false');
+        });
+        row.classList.add('selected');
+        row.setAttribute('aria-pressed', 'true');
+        showToast('已选中 ' + row.dataset.card, '<b>' + row.dataset.hint + '</b>', '打开');
+      };
+      row.addEventListener('click', activate);
+      row.addEventListener('keydown', (event) => {
+        if (event.key === 'Enter' || event.key === ' ') {
+          event.preventDefault();
+          activate();
+        }
+      });
+    }
+
+    document.querySelectorAll('.tab').forEach((tab) => {
+      tab.addEventListener('click', () => {
+        document.querySelectorAll('.tab').forEach((item) => item.classList.remove('active'));
+        document.querySelectorAll('.tab').forEach((item) => item.removeAttribute('aria-current'));
+        tab.classList.add('active');
+        tab.setAttribute('aria-current', 'page');
+        if (tab.textContent !== '卡包') {
+          showToast(tab.textContent + '页先保持轻量', '<b>首页聚焦卡包和打卡闭环</b>', '首页');
+        }
+      });
+    });
+
+    document.querySelectorAll('.action-row').forEach(attachRow);
+
+    document.addEventListener('keydown', (event) => {
+      if (event.key === 'Escape' && sheet.classList.contains('open')) {
+        sheet.classList.remove('open');
+        sheet.setAttribute('aria-hidden', 'true');
+        sheet.dataset.invalid = 'false';
+      }
+    });
+
+    paint();
+  </script>
+</body>
+</html>

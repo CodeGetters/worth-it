@@ -1,0 +1,11 @@
+{
+  "kind": "critique-panel",
+  "score": 4.4,
+  "axes": {
+    "clarity": { "score": 4.5, "notes": "卡包展示从溢出堆叠改为明确展开列表，按钮文案也更贴近用户动作。" },
+    "hierarchy": { "score": 4.4, "notes": "主卡仍保持最高层级，次级卡展开后露出成本信息但不抢主行动。" },
+    "typography": { "score": 4.2, "notes": "次级卡数字采用较小 display 规模，和主卡成本形成清晰主次。" },
+    "motion": { "score": 4.3, "notes": "展开高度、卡片位移与 toast 状态同步，避免卡片覆盖下方内容。" },
+    "brand": { "score": 4.5, "notes": "黑钛卡包体系延续，绿色仍只用于成本下降语义。" }
+  }
+}

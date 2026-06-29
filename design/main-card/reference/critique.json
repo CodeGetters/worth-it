@@ -1,0 +1,35 @@
+{
+  "kind": "critique-panel",
+  "iteration": "wallet-stack-native-switching",
+  "score": 4.8,
+  "axes": {
+    "clarity": {
+      "score": 5,
+      "notes": "回退横向选择轨后，多卡切换重新发生在卡堆内部：当前卡完整展示，后两张作为可点击预览。"
+    },
+    "hierarchy": {
+      "score": 5,
+      "notes": "堆叠只承载当前卡与后续两张，不再用额外列表分散注意力，保持我的钱包式焦点。"
+    },
+    "interaction": {
+      "score": 4.8,
+      "notes": "点击当前卡打开详情，点击后层卡置顶并循环显示后续卡，保留上一版直接翻卡的手感。"
+    },
+    "motion": {
+      "score": 4.7,
+      "notes": "沿用克制的 transform/opacity 动效，卡堆切换稳定，没有横向滚动带来的割裂。"
+    },
+    "accessibility": {
+      "score": 4.7,
+      "notes": "保留 button 语义、aria-pressed、详情 dialog 关联和减少动态效果分支；新增卡序计数作为视觉辅助。"
+    }
+  },
+  "checks": [
+    "removed horizontal card picker",
+    "kept six-card data model",
+    "stack shows current plus next two cards",
+    "script syntax passed",
+    "no scrollIntoView",
+    "no default AI indigo"
+  ]
+}
