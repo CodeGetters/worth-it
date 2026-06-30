@@ -1,0 +1,625 @@
+<!doctype html>
+<html lang="zh">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>值啦 · 全功能低保真线框</title>
+<style>
+  :root {
+    --ink: #2b2b2b; --mute: #888; --line: #bbb; --line2: #ddd;
+    --bg: #f4f4f4; --paper: #fff; --fill: #ececec; --r: 8px;
+  }
+  * { box-sizing: border-box; }
+  body {
+    margin: 0; background: var(--bg); color: var(--ink);
+    font: 14px/1.5 -apple-system, "Segoe UI", "PingFang SC", sans-serif;
+  }
+  header.top { padding: 28px 32px 8px; }
+  header.top h1 { margin: 0 0 4px; font-size: 22px; }
+  header.top p { margin: 0; color: var(--mute); }
+  .legend { padding: 0 32px 16px; color: var(--mute); font-size: 12px; }
+  .legend code { background: var(--fill); padding: 1px 5px; border-radius: 4px; }
+  /* 功能墙：手机屏自动排版 */
+  .wall {
+    display: grid; gap: 28px 24px; padding: 8px 32px 64px;
+    grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+    align-items: start;
+  }
+  .screen { min-width: 0; }
+  .screen > .cap { margin: 0 0 8px; }
+  .screen .cap b { font-size: 14px; }
+  .screen .cap .tag {
+    font-size: 11px; color: var(--mute); border: 1px solid var(--line2);
+    border-radius: 999px; padding: 1px 8px; margin-left: 6px; white-space: nowrap;
+  }
+  .screen .cap .tag.done { color: #2e7d32; border-color: #aed5b0; }
+  .screen .cap .tag.todo { color: #b26a00; border-color: #e3c08a; }
+  .screen .note { color: var(--mute); font-size: 12px; margin: 6px 2px 0; }
+  /* 手机外框：统一 iPhone 12 Pro 比例 390:844 */
+  .phone {
+    width: 300px; max-width: 100%; aspect-ratio: 390 / 844;
+    display: flex; flex-direction: column;
+    background: var(--paper);
+    border: 1px solid var(--line); border-radius: 28px; overflow: hidden;
+    box-shadow: 0 1px 0 rgba(0,0,0,.04);
+  }
+  /* 手机内部 */
+  .bar {
+    flex: none;
+    display: flex; align-items: center; justify-content: space-between;
+    padding: 10px 14px; border-bottom: 1px solid var(--line2); font-size: 13px;
+  }
+  .bar .ttl { font-weight: 600; }
+  .bar .ic {
+    width: 26px; height: 26px; border: 1px solid var(--line); border-radius: 6px;
+    display: grid; place-items: center; color: var(--mute);
+  }
+  .body {
+    flex: 1; min-height: 0; overflow-y: auto;
+    padding: 14px; position: relative;
+  }
+  .body::-webkit-scrollbar { display: none; }
+  .body { scrollbar-width: none; }
+  .tabbar {
+    flex: none;
+    display: flex; border-top: 1px solid var(--line2);
+  }
+  .tabbar div {
+    flex: 1; text-align: center; padding: 9px 0; font-size: 12px; color: var(--mute);
+    border-right: 1px dashed var(--line2);
+  }
+  .tabbar div:last-child { border-right: 0; }
+  .tabbar div.on { color: var(--ink); font-weight: 600; }
+  /* 通用低保真块 */
+  .box { border: 1px dashed var(--line); border-radius: var(--r); padding: 12px; }
+  .box + .box { margin-top: 10px; }
+  .ph { background: var(--fill); border-radius: 4px; }
+  .lbl { font-size: 11px; color: var(--mute); }
+  .hugeprice {
+    font-size: 46px; font-weight: 800; letter-spacing: -1px; line-height: 1;
+    text-align: center; margin: 6px 0;
+  }
+  .sub { text-align: center; color: var(--mute); font-size: 12px; }
+  .dots { text-align: center; letter-spacing: 4px; color: var(--line); font-size: 10px; }
+  .dots b { color: var(--ink); }
+  .ruler {
+    margin: 14px 2px; height: 1px; border-top: 1px dashed var(--line);
+    position: relative;
+  }
+  .ruler::after {
+    content: "心里价 ¥150"; position: absolute; right: 0; top: -8px;
+    font-size: 10px; color: var(--mute); background: var(--paper); padding-left: 4px;
+  }
+  .btn {
+    text-align: center; padding: 13px; border-radius: var(--r);
+    border: 1.5px solid var(--ink); font-weight: 600; margin-top: 12px;
+  }
+  .btn.ghost { border-style: dashed; border-color: var(--line); color: var(--mute); font-weight: 400; }
+  .row { display: flex; gap: 8px; }
+  .row > * { flex: 1; }
+  .miniact {
+    text-align: center; font-size: 12px; color: var(--mute); margin-top: 10px;
+  }
+  .miniact span { border-bottom: 1px dashed var(--line); padding-bottom: 1px; }
+  .field { margin-bottom: 12px; }
+  .field .lbl { display: block; margin-bottom: 4px; }
+  .field .inp {
+    height: 34px; border: 1px solid var(--line); border-radius: 6px;
+    display: flex; align-items: center; padding: 0 10px; color: var(--mute); font-size: 13px;
+  }
+  .seg { display: flex; gap: 0; border: 1px solid var(--line); border-radius: 6px; overflow: hidden; }
+  .seg div { flex: 1; text-align: center; padding: 8px 0; font-size: 12px; color: var(--mute); border-right: 1px solid var(--line); }
+  .seg div:last-child { border-right: 0; }
+  .seg div.on { background: var(--fill); color: var(--ink); font-weight: 600; }
+  .err { color: #c0392b; font-size: 11px; margin-top: 3px; }
+  /* 总览卡条 */
+  .cardrow {
+    display: flex; align-items: center; gap: 10px; padding: 10px 12px;
+    border: 1px solid var(--line2); border-radius: var(--r); margin-bottom: 8px;
+  }
+  .cardrow .dot { width: 8px; height: 8px; border-radius: 50%; flex: none; }
+  .dot.green { background: #2e7d32; } .dot.red { background: #c0392b; } .dot.gray { background: #aaa; }
+  .cardrow .grow { flex: 1; min-width: 0; }
+  .cardrow .price { font-weight: 700; }
+  .cardrow .meta { font-size: 11px; color: var(--mute); }
+  .summary {
+    border: 1px dashed var(--line); border-radius: var(--r); padding: 12px;
+    text-align: center; margin-bottom: 12px;
+  }
+  .summary .big { font-size: 24px; font-weight: 800; }
+  /* Toast / 弹层 */
+  .overlay {
+    position: absolute; inset: 0; background: rgba(0,0,0,.28);
+    display: grid; place-items: center; border-radius: 0;
+  }
+  .toast {
+    background: var(--paper); border: 1px solid var(--line); border-radius: 12px;
+    padding: 18px 22px; text-align: center; width: 80%;
+  }
+  .toast .big { font-size: 20px; font-weight: 800; }
+  .toast .small { color: var(--mute); font-size: 12px; margin-top: 4px; }
+  .dialog {
+    background: var(--paper); border: 1px solid var(--line); border-radius: 12px;
+    padding: 16px; width: 84%;
+  }
+  .dialog .dt { font-weight: 600; margin-bottom: 6px; }
+  .dialog .dm { color: var(--mute); font-size: 12px; margin-bottom: 14px; }
+  .negbar {
+    border: 1px solid #e3c08a; background: #fff8ec; border-radius: var(--r);
+    padding: 10px 12px; font-size: 12px; color: #8a5a00; margin-bottom: 10px;
+  }
+  .negbar b { display: block; font-size: 11px; opacity: .7; margin-bottom: 2px; }
+  .ticketcut { border-top: 1px dashed var(--line); margin: 12px -12px; }
+  ul.feat { margin: 8px 0 0; padding-left: 18px; color: var(--mute); font-size: 12px; }
+  ul.feat li { margin: 2px 0; }
+  /* —— dark-style 首页线框专用 —— */
+  .brandhd { display: flex; align-items: center; justify-content: space-between; padding: 2px 2px 12px; }
+  .brandhd .brandL { display: flex; align-items: center; gap: 7px; }
+  .brandhd .logo { width: 32px; height: 32px; flex: none; object-fit: contain; }
+  .brandhd .bn { font-size: 18px; font-weight: 800; }
+  .metrics { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; margin-bottom: 14px; }
+  .metric2 { border: 1px solid var(--line2); border-radius: var(--r); padding: 10px; }
+  .metric2 .lbl { text-transform: uppercase; letter-spacing: .04em; }
+  .metric2 b { display: block; font-size: 20px; font-weight: 800; margin-top: 8px; }
+  .metric2 .meta { font-size: 11px; color: var(--mute); margin-top: 4px; }
+  /* 卡包堆叠：主卡撑开高度，后两张绝对定位露右边，暗示可左右滑 */
+  .stack { position: relative; margin-top: 4px; }
+  .stack .pass {
+    border: 1px solid var(--line);
+    border-radius: 14px; padding: 14px; background: var(--paper);
+  }
+  .stack .pass.p1 { position: relative; z-index: 3; }
+  /* 单卡（无堆叠）与弹层背景里的暗化卡 */
+  .pass.solo { border: 1px solid var(--line); border-radius: 14px; padding: 14px; background: var(--paper); }
+  .pass.dim { opacity: .45; }
+  .pass .big2 { font-size: 46px; font-weight: 800; letter-spacing: -1px; line-height: 1; margin-top: 6px; }
+  .pass .muteprice { color: var(--mute); }
+  .stack .pass.p2 { position: absolute; top: 0; bottom: 0; left: 0; right: 0; z-index: 2; transform: scale(.96) translateX(10px); opacity: .55; }
+  .stack .pass.p3 { position: absolute; top: 0; bottom: 0; left: 0; right: 0; z-index: 1; transform: scale(.92) translateX(20px); opacity: .3; }
+  .stack .ptop { display: flex; justify-content: space-between; align-items: flex-start; gap: 10px; }
+  .stack .chip { font-size: 10px; color: var(--mute); border: 1px solid var(--line2); border-radius: 999px; padding: 1px 7px; }
+  .stack h2 { margin: 8px 0 0; font-size: 16px; }
+  .costline { display: flex; justify-content: space-between; align-items: flex-end; margin-top: 22px; }
+  .costline .num { font-size: 46px; font-weight: 800; line-height: .9; letter-spacing: -1px; }
+  .drop { border: 1px solid var(--line2); border-radius: 10px; padding: 6px 10px; text-align: right; font-size: 10px; color: var(--mute); }
+  .drop b { display: block; font-size: 14px; color: var(--ink); margin-top: 2px; }
+  .prog { height: 7px; border-radius: 999px; background: var(--fill); margin-top: 14px; overflow: hidden; }
+  .prog i { display: block; height: 100%; width: 40%; background: var(--line); }
+  .acts { display: grid; grid-template-columns: 1fr 48px; gap: 8px; margin: 8px 0 16px; }
+  .acts .checkin { text-align: center; padding: 13px; border: 1.5px solid var(--ink); border-radius: var(--r); font-weight: 700; }
+  .acts .addsq { border: 1px dashed var(--line); border-radius: var(--r); display: grid; place-items: center; color: var(--mute); font-size: 20px; }
+  /* 本周打卡节奏：7 天点阵 */
+  .week { border: 1px solid var(--line2); border-radius: var(--r); padding: 12px 14px; margin-bottom: 16px; }
+  .week .whd { display: flex; justify-content: space-between; align-items: center; font-size: 12px; color: var(--mute); margin-bottom: 11px; }
+  .week .whd .wcnt b { color: var(--ink); }
+  .week .wdots { display: flex; justify-content: space-between; }
+  .week .wd { display: flex; flex-direction: column; align-items: center; gap: 6px; }
+  .week .wd i { width: 18px; height: 18px; border-radius: 50%; border: 1px solid var(--line); background: var(--paper); display: grid; place-items: center; font-size: 10px; font-style: normal; font-weight: 700; color: transparent; line-height: 1; }
+  .week .wd span { font-size: 10px; color: var(--mute); }
+  .week .wd.on i { background: var(--ink); border-color: var(--ink); color: var(--paper); }
+  .week .wd.on span { color: var(--ink); }
+  .week .wd.today i { box-shadow: 0 0 0 2px var(--paper), 0 0 0 3.5px var(--ink); }
+  .feedttl { display: flex; justify-content: space-between; align-items: center; margin: 14px 2px 8px; }
+  .feedttl b { font-size: 13px; }
+  .feedttl .more { font-size: 11px; color: var(--mute); border: 1px solid var(--line2); border-radius: 999px; padding: 2px 9px; }
+  /* 卡片下方居中圆点（横滑指示） */
+  .pgdots { display: flex; justify-content: center; gap: 6px; margin: 12px 0 0; }
+  .pgdots i { width: 6px; height: 6px; border-radius: 50%; background: var(--line); }
+  .pgdots i.on { width: 16px; border-radius: 999px; background: var(--ink); }
+  /* 单价趋势小图 */
+  .spark { margin-top: 14px; }
+  .spark .cap2 { display: flex; justify-content: space-between; font-size: 10px; color: var(--mute); margin-bottom: 4px; }
+  .spark svg { display: block; width: 100%; height: 34px; }
+  /* 心里价目标进度 */
+  .goal { margin-top: 14px; }
+  .goal .grow2 { display: flex; justify-content: space-between; font-size: 10px; color: var(--mute); margin-bottom: 5px; }
+  .goal .grow2 b { color: var(--ink); }
+  /* 当前卡打卡记录 */
+  .logs { margin-top: 0; }
+  .logs .lhd { display: flex; justify-content: space-between; align-items: center; margin: 0 2px 8px; }
+  .logs .lhd b { font-size: 13px; }
+  .logs .lhd .cnt { font-size: 11px; color: var(--mute); }
+  .logs .lhd .more { font-size: 11px; color: var(--mute); }
+  .logrow { display: flex; align-items: center; gap: 10px; padding: 9px 2px; border-bottom: 1px dashed var(--line2); }
+  .logrow:last-child { border-bottom: 0; }
+  .logrow .stamp { width: 26px; height: 26px; border: 1px solid var(--line); border-radius: 50%; display: grid; place-items: center; font-size: 11px; color: var(--mute); flex: none; }
+  .logrow .grow { flex: 1; min-width: 0; }
+  .logrow .d { font-size: 13px; }
+  .logrow .wd2 { font-size: 11px; color: var(--mute); }
+  .logrow .delta { font-size: 11px; color: var(--mute); font-variant-numeric: tabular-nums; }
+</style>
+</head>
+<body>
+<header class="top">
+  <h1><img src="assets/logo.svg" alt="" style="width:30px;height:30px;vertical-align:-6px;margin-right:8px" />值啦 · 全功能低保真线框</h1>
+  <p>办卡之后每次去用就打卡，看真实单次成本 = 总价 ÷ 实际次数一次次往下掉。下面把全部屏与功能点铺开。</p>
+</header>
+<div class="legend">
+  灰度线框 · 不带视觉风格（三套设计稿待选定）。标签：
+  <span style="color:#2e7d32">已接通</span> = 当前代码已跑通 ·
+  <span style="color:#b26a00">待建</span> = MVP 内尚未落地。
+</div>
+
+<div class="wall">
+
+<!-- 1. 打卡灵魂屏 · 常规态（参考 dark-style 首页：卡包堆叠 + 概览 + 提醒列表） -->
+<section class="screen">
+  <p class="cap"><b>1 · 打卡灵魂屏（默认首页）</b><span class="tag done">已接通</span></p>
+  <div class="phone">
+    <div class="body" style="padding-top:16px">
+      <div class="brandhd">
+        <div class="brandL">
+          <img class="logo" src="assets/logo.svg" alt="值啦" />
+          <div class="bn">值啦</div>
+        </div>
+      </div>
+
+      <div class="stack">
+        <div class="pass p3"></div>
+        <div class="pass p2"></div>
+        <div class="pass p1">
+          <div class="ptop">
+            <div><span class="chip">健身年卡 · 活跃</span><h2>超级猩猩全年卡</h2></div>
+            <span class="chip">已去 8 次</span>
+          </div>
+          <div class="costline">
+            <div><div class="lbl">现在每次</div><div class="num">¥250</div></div>
+            <div class="drop">再去一次<b>-¥28</b></div>
+          </div>
+
+          <!-- 心里价目标进度：把参照线变成可追的目标 -->
+          <div class="goal">
+            <div class="grow2"><span>距心里价 <b>¥150/次</b></span><span>还差 <b>¥100</b></span></div>
+            <div class="prog"><i></i></div>
+          </div>
+        </div>
+      </div>
+
+      <!-- 横滑指示：圆点居中在卡片下方 -->
+      <div class="pgdots"><i class="on"></i><i></i><i></i></div>
+
+      <div class="acts">
+        <div class="checkin">今天去了，打卡</div>
+        <div class="addsq">＋</div>
+      </div>
+
+      <!-- 当前卡的本周打卡节奏：7 天点阵，去过的点亮，制造"补齐本周"的动机（随滑卡切换） -->
+      <div class="week">
+        <div class="whd"><span>本周节奏</span><span class="wcnt">去了 <b>4</b> 次</span></div>
+        <div class="wdots">
+          <div class="wd on"><i></i><span>一</span></div>
+          <div class="wd"><i></i><span>二</span></div>
+          <div class="wd on"><i></i><span>三</span></div>
+          <div class="wd"><i></i><span>四</span></div>
+          <div class="wd on today"><i>2</i><span>五</span></div>
+          <div class="wd"><i></i><span>六</span></div>
+          <div class="wd"><i></i><span>日</span></div>
+        </div>
+      </div>
+
+      <!-- 当前卡的打卡记录：每条带日期 + 这次把单价打到多少 -->
+      <div class="logs">
+        <div class="lhd"><b>打卡记录</b><span class="more">查看全部 ›</span></div>
+        <div class="logrow"><span class="stamp">✓</span><div class="grow"><div class="d">今天 19:30</div><div class="wd2">单价已打到 ¥250</div></div><span class="delta">→ ¥250</span></div>
+        <div class="logrow"><span class="stamp">✓</span><div class="grow"><div class="d">今天 09:10</div><div class="wd2">单价已打到 ¥263</div></div><span class="delta">→ ¥263</span></div>
+        <div class="logrow"><span class="stamp">✓</span><div class="grow"><div class="d">6 月 26 日 18:40</div><div class="wd2">单价已打到 ¥286</div></div><span class="delta">→ ¥286</span></div>
+        <div class="logrow"><span class="stamp">✓</span><div class="grow"><div class="d">6 月 24 日 20:05</div><div class="wd2">单价已打到 ¥333</div></div><span class="delta">→ ¥333</span></div>
+      </div>
+    </div>
+    <div class="tabbar"><div class="on">打卡</div><div>总览</div><div>我的</div></div>
+  </div>
+  <ul class="feat">
+    <li>卡包堆叠：主卡突出大单价 + 降幅，后压 2 张预览</li>
+    <li>心里价目标进度（还差 ¥X 到目标），制造下次动机</li>
+    <li>本周节奏：7 天点阵，去过的点亮；当天去多次的，圆点内显次数</li>
+    <li>打卡记录带时间戳，支持当天多次打卡（按时间倒序，同日多条不冲突）</li>
+    <li>多卡横向滑动切换，圆点指示居中在卡片下方</li>
+    <li>信息架构：本周节奏 + 打卡记录均绑定「当前卡片」，随左右滑卡同步切换（带轻过渡）；跨卡汇总归「总览」tab</li>
+  </ul>
+</section>
+
+<!-- 1b. 少样本期 -->
+<section class="screen">
+  <p class="cap"><b>1b · 少样本期（前 7 天 / 前 3 次）</b><span class="tag done">已接通</span></p>
+  <div class="phone">
+    <div class="body" style="padding-top:16px">
+      <div class="brandhd"><div class="brandL"><img class="logo" src="assets/logo.svg" alt="值啦" /><div class="bn">值啦</div></div></div>
+      <div class="stack">
+        <div class="pass p1">
+          <div class="ptop">
+            <div><span class="chip">瑜伽课包 · 有限次</span><h2>瑜伽 20 次课包</h2></div>
+            <span class="chip">已去 1 次</span>
+          </div>
+          <div class="costline">
+            <div><div class="lbl">现在每次</div><div class="num muteprice" style="font-size:38px">—</div></div>
+          </div>
+          <div class="goal"><div class="grow2"><span>再打 <b>2</b> 次就能算出真实成本</span></div><div class="prog"><i style="width:12%"></i></div></div>
+        </div>
+      </div>
+      <div class="pgdots"><i class="on"></i><i></i><i></i></div>
+      <div class="acts"><div class="checkin">今天去了，打卡</div><div class="addsq">＋</div></div>
+      <div class="miniact"><span>撤销上一次</span> · <span>补打</span></div>
+    </div>
+    <div class="tabbar"><div class="on">打卡</div><div>总览</div><div>我的</div></div>
+  </div>
+  <ul class="feat">
+    <li>样本太少不给会乱跳的预测</li>
+    <li>破折号代替天价，引导先攒次数</li>
+  </ul>
+</section>
+
+<!-- 1c. 打满 / 过期冻结 -->
+<section class="screen">
+  <p class="cap"><b>1c · 打满 / 过期冻结</b><span class="tag done">已接通</span></p>
+  <div class="phone">
+    <div class="body" style="padding-top:16px">
+      <div class="brandhd"><div class="brandL"><img class="logo" src="assets/logo.svg" alt="值啦" /><div class="bn">值啦</div></div></div>
+      <div class="stack">
+        <div class="pass p1">
+          <div class="ptop">
+            <div><span class="chip">私教 40 节 · 已打满</span><h2>私教 40 节课包</h2></div>
+            <span class="chip">已去 40 次</span>
+          </div>
+          <div class="costline">
+            <div><div class="lbl">最终单价 · 已冻结</div><div class="num">¥50</div></div>
+            <div class="drop">比心里价<b>省 ¥40</b></div>
+          </div>
+          <div class="goal"><div class="grow2"><span>40 节已用满 · 单价不再变化</span></div><div class="prog"><i style="width:100%"></i></div></div>
+        </div>
+      </div>
+      <div class="pgdots"><i></i><i class="on"></i><i></i></div>
+      <div class="acts"><div class="checkin" style="border-style:dashed;border-color:var(--line);color:var(--mute);font-weight:400">已打满，不能再打</div><div class="addsq">＋</div></div>
+      <div class="miniact"><span>看复盘</span></div>
+    </div>
+    <div class="tabbar"><div class="on">打卡</div><div>总览</div><div>我的</div></div>
+  </div>
+  <ul class="feat">
+    <li>有限次打满后冻结，禁止打第 N+1 次</li>
+    <li>过期同样冻结，引导去到期复盘</li>
+  </ul>
+</section>
+
+<!-- 2. 里程碑 Toast（即时反馈） -->
+<section class="screen">
+  <p class="cap"><b>2 · 里程碑 Toast（打卡即时反馈）</b><span class="tag done">已接通</span></p>
+  <div class="phone">
+    <div class="body" style="padding-top:16px">
+      <div class="brandhd" style="opacity:.45"><div class="brandL"><img class="logo" src="assets/logo.svg" alt="值啦" /><div class="bn">值啦</div></div></div>
+      <div class="stack" style="opacity:.45">
+        <div class="pass p1">
+          <div class="ptop"><div><span class="chip">健身年卡 · 活跃</span><h2>超级猩猩全年卡</h2></div><span class="chip">已去 9 次</span></div>
+          <div class="costline"><div><div class="lbl">现在每次</div><div class="num">¥222</div></div><div class="drop">再去一次<b>-¥22</b></div></div>
+        </div>
+      </div>
+      <div class="acts" style="opacity:.45"><div class="checkin">今天去了，打卡</div><div class="addsq">＋</div></div>
+      <div class="overlay">
+        <div class="toast">
+          <div class="big">划算了！</div>
+          <div class="small">这次只花 ¥222，已低过心里价</div>
+        </div>
+      </div>
+    </div>
+    <div class="tabbar"><div class="on">打卡</div><div>总览</div><div>我的</div></div>
+  </div>
+  <ul class="feat">
+    <li>转折才弹：回归 / 划算了 / 单价大跌 / 打满</li>
+    <li>常规小幅下降只在票面显 delta，不弹</li>
+    <li>1.8s 自隐 · 仅打卡屏弹</li>
+  </ul>
+</section>
+
+<!-- 2b. 撤销确认 -->
+<section class="screen">
+  <p class="cap"><b>2b · 撤销上一次（误触保护）</b><span class="tag done">已接通</span></p>
+  <div class="phone">
+    <div class="body" style="padding-top:16px">
+      <div class="brandhd" style="opacity:.45"><div class="brandL"><img class="logo" src="assets/logo.svg" alt="值啦" /><div class="bn">值啦</div></div></div>
+      <div class="stack" style="opacity:.45">
+        <div class="pass p1">
+          <div class="ptop"><div><span class="chip">健身年卡 · 活跃</span><h2>超级猩猩全年卡</h2></div><span class="chip">已去 8 次</span></div>
+          <div class="costline"><div><div class="lbl">现在每次</div><div class="num">¥250</div></div></div>
+        </div>
+      </div>
+      <div class="overlay">
+        <div class="dialog">
+          <div class="dt">撤销刚才这次打卡？</div>
+          <div class="dm">会把最近一条打卡记录删掉，单价回到 ¥285。</div>
+          <div class="row"><div class="btn ghost" style="margin:0">取消</div><div class="btn" style="margin:0">撤销</div></div>
+        </div>
+      </div>
+    </div>
+    <div class="tabbar"><div class="on">打卡</div><div>总览</div><div>我的</div></div>
+  </div>
+  <ul class="feat"><li>单条打卡可删，删前二次确认防误触</li></ul>
+</section>
+
+<!-- 2c. 补打 Picker -->
+<section class="screen">
+  <p class="cap"><b>2c · 补打过去（限购买日~今天）</b><span class="tag done">已接通</span></p>
+  <div class="phone">
+    <div class="body" style="padding-top:16px">
+      <div class="brandhd" style="opacity:.45"><div class="brandL"><img class="logo" src="assets/logo.svg" alt="值啦" /><div class="bn">值啦</div></div></div>
+      <div class="stack" style="opacity:.45">
+        <div class="pass p1">
+          <div class="ptop"><div><span class="chip">健身年卡 · 活跃</span><h2>超级猩猩全年卡</h2></div><span class="chip">已去 8 次</span></div>
+          <div class="costline"><div><div class="lbl">现在每次</div><div class="num">¥250</div></div></div>
+        </div>
+      </div>
+      <div class="overlay" style="align-items:flex-end">
+        <div class="dialog" style="width:100%;border-radius:12px 12px 0 0">
+          <div class="dt">补打哪一天？</div>
+          <div class="box" style="border-style:solid;text-align:center;margin:6px 0">
+            <div class="lbl">‹ 2026 年 6 月 ›</div>
+            <div style="font-size:18px;font-weight:700;margin-top:4px">6 / 24</div>
+          </div>
+          <div class="dm">只能补办卡当天 ~ 今天之间</div>
+          <div class="btn" style="margin:0">确认补打</div>
+        </div>
+      </div>
+    </div>
+    <div class="tabbar"><div class="on">打卡</div><div>总览</div><div>我的</div></div>
+  </div>
+  <ul class="feat"><li>范围锁定购买日~今天，core 再兜一层越界过滤</li><li>补过去不触发"这次便宜"即时反馈</li></ul>
+</section>
+
+<!-- 3. 断卡负反馈四档 -->
+<section class="screen">
+  <p class="cap"><b>3 · 断卡负反馈（随天数递进，打开时被动叠加）</b><span class="tag done">已接通</span></p>
+  <div class="phone">
+    <div class="body" style="padding-top:16px">
+      <div class="brandhd"><div class="brandL"><img class="logo" src="assets/logo.svg" alt="值啦" /><div class="bn">值啦</div></div></div>
+      <div class="negbar"><b>温和 · 断卡 3~6 天</b>好几天没见啦，今天动一动？</div>
+      <div class="negbar"><b>给数字 · 7~14 天</b>停了一周，单价卡在 ¥250 降不下来。</div>
+      <div class="negbar"><b>扎心 · 15 天+</b>断卡 16 天，白付了 ¥80 会籍钱（日烧 ¥5.5）。</div>
+      <div class="negbar" style="border-color:#bbb;background:#f3f3f3;color:#555"><b>止损 · 21 天+</b>也许这卡本就不适合你。接受沉没成本，下次别续更省。</div>
+    </div>
+    <div class="tabbar"><div class="on">打卡</div><div>总览</div><div>我的</div></div>
+  </div>
+  <ul class="feat">
+    <li>不去用 → 单价卡住降不下来</li>
+    <li>语气随断卡天数升级，21 天+ 从"快回来"转"接受止损"</li>
+    <li>第一版只做打开时被动显示，不主动推送</li>
+  </ul>
+</section>
+
+<!-- 4. 添加卡表单 -->
+<section class="screen">
+  <p class="cap"><b>4 · 添加我的卡（像填一张待开小票）</b><span class="tag done">已接通</span></p>
+  <div class="phone">
+    <div class="bar"><span class="ic">‹</span><span class="ttl">添加卡</span><span style="width:26px"></span></div>
+    <div class="body">
+      <div class="field"><span class="lbl">卡名</span><div class="inp">健身年卡</div></div>
+      <div class="field"><span class="lbl">卡型</span>
+        <div class="seg"><div class="on">不限次年卡</div><div>有限次课包</div></div>
+      </div>
+      <div class="field"><span class="lbl">总价</span><div class="inp">¥ 2000</div></div>
+      <div class="field"><span class="lbl">有效期（默认购买日 +1 年）</span><div class="inp">2027-06-29</div></div>
+      <div class="field"><span class="lbl">总次数（仅有限次显示）</span><div class="inp" style="opacity:.4">不限次无需填</div></div>
+      <div class="field"><span class="lbl">心里一次值多少（可先不填）</span><div class="inp">¥ 150</div></div>
+      <div class="btn">保存，开始打卡</div>
+    </div>
+  </div>
+  <ul class="feat">
+    <li>尽量少填，能默认就默认</li>
+    <li>行内校验（替代提交才报错）</li>
+    <li>有限次才显总次数 · 续卡可预填上期信息</li>
+  </ul>
+</section>
+
+<!-- 5. 多卡总览 -->
+<section class="screen">
+  <p class="cap"><b>5 · 多卡总览（哪张值、哪张在亏）</b><span class="tag done">已接通</span></p>
+  <div class="phone">
+    <div class="bar"><span class="ttl">总览</span><span class="ic">＋</span></div>
+    <div class="body">
+      <div class="summary">
+        <div class="lbl">这些卡上你总共</div>
+        <div class="big">省了 ¥3,120</div>
+        <div class="lbl">较单次购买</div>
+      </div>
+      <div class="cardrow"><span class="dot green"></span><div class="grow"><div>健身年卡</div><div class="meta">去 8 次 · 在用</div></div><div class="price">¥250</div></div>
+      <div class="cardrow"><span class="dot red"></span><div class="grow"><div>瑜伽课包</div><div class="meta">断卡 18 天 · 在亏</div></div><div class="price">¥420</div></div>
+      <div class="cardrow"><span class="dot gray"></span><div class="grow"><div>私教 40 节</div><div class="meta">已到期 · 待复盘</div></div><div class="price">›</div></div>
+    </div>
+    <div class="tabbar"><div>打卡</div><div class="on">总览</div><div>我的</div></div>
+  </div>
+  <ul class="feat">
+    <li>在用(绿) / 在亏(红) / 待复盘(灰) 一眼分</li>
+    <li>汇总：总共省了还是亏了</li>
+    <li>点卡：在用回打卡屏定位，已过期进复盘</li>
+  </ul>
+</section>
+
+<!-- 6. 到期复盘 -->
+<section class="screen">
+  <p class="cap"><b>6 · 到期复盘（结算总票 · 指导下次决策）</b><span class="tag done">已接通</span></p>
+  <div class="phone">
+    <div class="bar"><span class="ic">‹</span><span class="ttl">到期复盘</span><span style="width:26px"></span></div>
+    <div class="body">
+      <div class="box" style="border-style:solid">
+        <div class="sub" style="font-weight:600;color:var(--ink)">健身年卡 · 已到期结算</div>
+        <div class="ticketcut"></div>
+        <div class="hugeprice" style="font-size:38px">¥21</div>
+        <div class="sub">最终每次只花 ¥21 · 一年去了 96 次</div>
+        <div class="ticketcut"></div>
+        <div class="lbl">比单次购买省下 …… <b style="color:var(--ink)">¥12,400</b></div>
+        <div class="lbl">你这频率，续年卡比月卡每月省 ¥120，放心续。</div>
+      </div>
+      <div class="row">
+        <div class="btn" style="margin-top:12px">续这张卡</div>
+        <div class="btn ghost" style="margin-top:12px">导出</div>
+      </div>
+    </div>
+    <div class="tabbar"><div class="on">打卡</div><div>总览</div><div>我的</div></div>
+  </div>
+  <ul class="feat">
+    <li>用本次真实数据给下次决策结论</li>
+    <li>有限次：额外显示未用次数 = 浪费金额</li>
+    <li>续卡预填上期信息 · 导出按钮待接通</li>
+  </ul>
+</section>
+
+<!-- 7. 空状态 -->
+<section class="screen">
+  <p class="cap"><b>7 · 首次空状态（先尝甜头）</b><span class="tag done">已接通</span></p>
+  <div class="phone">
+    <div class="body" style="padding-top:16px">
+      <div class="brandhd"><div class="brandL"><img class="logo" src="assets/logo.svg" alt="值啦" /><div class="bn">值啦</div></div></div>
+      <div class="stack">
+        <div class="pass p1" style="border-style:dashed">
+          <div class="ptop"><div><span class="chip">示例卡 · 试玩</span><h2>健身年卡 ¥2000</h2></div></div>
+          <div class="costline"><div><div class="lbl">现在每次</div><div class="num">¥2000</div></div></div>
+          <div class="goal"><div class="grow2"><span>点一下打卡，看单价怎么往下掉</span></div><div class="prog"><i style="width:6%"></i></div></div>
+        </div>
+      </div>
+      <div class="acts"><div class="checkin">今天去了，打卡</div><div class="addsq">＋</div></div>
+      <div class="miniact" style="margin-top:18px"><span>添加我自己的卡</span></div>
+    </div>
+    <div class="tabbar"><div class="on">打卡</div><div>总览</div><div>我的</div></div>
+  </div>
+  <ul class="feat"><li>种一张可直接玩的示例卡，先尝"单价掉"甜头</li><li>玩过再引导添加自己的卡</li></ul>
+</section>
+
+<!-- 8. 我的页（待建） -->
+<section class="screen">
+  <p class="cap"><b>8 · 我的</b><span class="tag todo">待建</span></p>
+  <div class="phone">
+    <div class="bar"><span class="ttl">我的</span><span style="width:26px"></span></div>
+    <div class="body">
+      <div class="cardrow"><div class="grow">数据导出（备份）</div><div>›</div></div>
+      <div class="cardrow"><div class="grow">数据导入（恢复）</div><div>›</div></div>
+      <div class="cardrow"><div class="grow">已归档的卡</div><div>›</div></div>
+      <div class="cardrow" style="opacity:.5"><div class="grow">跨端同步（云）</div><div class="meta">后续</div></div>
+      <div class="cardrow" style="opacity:.5"><div class="grow">语言 / 关于</div><div>›</div></div>
+    </div>
+    <div class="tabbar"><div>打卡</div><div>总览</div><div class="on">我的</div></div>
+  </div>
+  <ul class="feat"><li>当前底部"我的" tab 走 comingSoon 占位</li><li>主放：导出/导入（云同步前的安全网）</li></ul>
+</section>
+
+<!-- 9. 导出 / 导入（待建） -->
+<section class="screen">
+  <p class="cap"><b>9 · 数据导出 / 导入</b><span class="tag todo">待建</span></p>
+  <div class="phone">
+    <div class="bar"><span class="ic">‹</span><span class="ttl">导出 / 导入</span><span style="width:26px"></span></div>
+    <div class="body">
+      <div class="box" style="border-style:solid">
+        <div class="lbl">导出全部卡 + 打卡记录</div>
+        <div class="inp" style="height:auto;padding:10px;margin-top:8px;font-family:monospace;font-size:11px">{"cards":[…],"checkins":[…]}</div>
+        <div class="row"><div class="btn" style="margin-top:10px">复制</div><div class="btn ghost" style="margin-top:10px">下载文件</div></div>
+      </div>
+      <div class="box">
+        <div class="lbl">从备份恢复（粘贴 / 选文件）</div>
+        <div class="inp" style="height:54px;margin-top:8px">粘贴备份内容…</div>
+        <div class="btn" style="margin-top:10px">导入并合并</div>
+      </div>
+    </div>
+    <div class="tabbar"><div>打卡</div><div>总览</div><div class="on">我的</div></div>
+  </div>
+  <ul class="feat"><li>云同步前的安全网，成本低价值高</li><li>导入按 id 合并去重（对齐同步元信息）</li></ul>
+</section>
+
+
+</div>
+</body>
+</html>

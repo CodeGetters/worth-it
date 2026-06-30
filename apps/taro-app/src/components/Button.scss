@@ -40,7 +40,7 @@
   }
   &--burn {
     background: var(--c-burn);
-    color: #fff;
+    color: var(--c-on-ink);
     border-color: var(--c-ink);
     box-shadow: var(--sh-stamp);
   }

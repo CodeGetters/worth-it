@@ -1,47 +1,51 @@
 /* ============================================================
-   值啦 · 设计令牌（移植自 design/tokens.css）
-   设计语言「清醒小票」。四端共用一份变量地基。
+   值啦 · 设计令牌（黑钛会员风，移植自 design/dark-style/reference）
+   设计语言「黑钛会员卡包」：深石墨底 + 暗黑材质卡 + 香槟金点睛。
+   四端共用一份变量地基，颜色统一用 oklch。
 
    ⚠️ 选择器同时写 :root 与 page：
    - H5：根是 <html>，由 :root 命中（page 在 H5 匹配不到任何元素）；
    - 小程序：无 :root / documentElement，由 page 命中（页面级 CSS 变量）。
    两个都写才能四端一致，缺 :root 时 H5 全部 var(--c-*) 失效、颜色尽失。
    这同时是「主题切换」的地基：将来在 page[data-theme] / :root[data-theme] 下重定义即可，
-   组件只用 var(--c-*)，绝不写死十六进制色。
+   组件只用 var(--c-*)，绝不写死颜色。
    ============================================================ */
 
 :root,
 page {
-  /* ---------- 基底：暖纸白 + 墨黑 ---------- */
-  --c-paper: #f7f4ec;
-  --c-paper-2: #efebe0;
-  --c-card: #ffffff;
-  --c-ink: #16140f;
-  --c-ink-2: #3d3a33;
-  --c-mute: #6b6557;
-  --c-faint: #9a9382;
-  --c-line: #d8d2c4;
-  --c-dash: #b8b1a0;
+  /* ---------- 基底：深石墨 + 浅色前景 ---------- */
+  /* paper=应用底色（最深），paper-2=次级面，card=卡面（在深底上抬高一层材质灰） */
+  --c-paper: oklch(11.5% 0.008 255);
+  --c-paper-2: oklch(18.5% 0.01 255);
+  --c-card: oklch(24% 0.011 252);
+  --c-ink: oklch(96% 0.003 105);
+  --c-ink-2: oklch(82% 0.006 255);
+  --c-mute: oklch(68% 0.008 255);
+  --c-faint: oklch(54% 0.008 255);
+  --c-line: rgba(255, 255, 255, 0.1);
+  --c-dash: rgba(255, 255, 255, 0.18);
 
-  /* ---------- 招牌色：警戒黄 ---------- */
-  --c-alert: #ffd60a;
-  --c-alert-d: #e8be00;
+  /* ---------- 招牌色：香槟金 ---------- */
+  --c-alert: oklch(75% 0.065 86);
+  --c-alert-d: oklch(63% 0.055 84);
 
-  /* ---------- 情绪色 ---------- */
-  --c-save: #07a86b;
-  --c-save-bg: #dbf5e9;
-  --c-burn: #e5242b;
-  --c-burn-bg: #fce0e0;
-  --c-warn: #c2410c;
-  --c-warn-bg: #fbe6d8;
+  /* ---------- 情绪色（深底适配：文字用亮色，底用低饱和暗色块）---------- */
+  --c-save: oklch(76% 0.085 150);
+  --c-save-bg: oklch(34% 0.06 150);
+  --c-burn: oklch(70% 0.16 28);
+  --c-burn-bg: oklch(32% 0.1 28);
+  --c-warn: oklch(78% 0.12 76);
+  --c-warn-bg: oklch(34% 0.08 76);
 
-  /* 深色票据 */
-  --c-ink-paper: #16140f;
-  --c-on-ink: #f7f4ec;
+  /* 深色票据：在黑钛体系里反过来——「墨纸」即更深的卡面，其上文字用浅色 */
+  --c-ink-paper: oklch(14.5% 0.008 255);
+  --c-on-ink: oklch(96% 0.003 105);
 
   /* ---------- 字体 ---------- */
-  --font-num: 'SF Mono', 'Roboto Mono', 'JetBrains Mono', ui-monospace, Menlo, Consolas, monospace;
-  --font-sans: -apple-system, BlinkMacSystemFont, 'PingFang SC', 'Hiragino Sans GB',
+  --font-num: 'SF Mono', 'DIN Alternate', 'Roboto Mono', ui-monospace, Menlo, Consolas, monospace;
+  --font-display: 'Avenir Next', 'SF Pro Display', -apple-system, BlinkMacSystemFont, system-ui,
+    sans-serif;
+  --font-sans: -apple-system, BlinkMacSystemFont, 'SF Pro Text', 'PingFang SC', 'Hiragino Sans GB',
     'Microsoft YaHei', 'Helvetica Neue', sans-serif;
   --fnum: 'tnum' 1, 'lnum' 1, 'zero' 1;
 
@@ -78,11 +82,13 @@ page {
   --r-pill: 999px;
 
   /* ---------- 描边 & 阴影 ---------- */
-  --bd: 1.5px solid var(--c-ink);
+  /* 深底下：边框用半透明白描边材质感；盖章硬阴影偏移色用更深的墨色（不能再用浅色 --c-ink，
+     否则深底配浅章会刺眼），香槟金阴影保留作点睛 */
+  --bd: 1.5px solid var(--c-line);
   --bd-thin: 1px solid var(--c-line);
-  --sh-stamp: 3px 3px 0 var(--c-ink);
+  --sh-stamp: 3px 3px 0 rgba(0, 0, 0, 0.5);
   --sh-stamp-alert: 3px 3px 0 var(--c-alert-d);
-  --sh-soft: 0 2px 10px rgba(22, 20, 15, 0.06);
+  --sh-soft: 0 8px 24px rgba(0, 0, 0, 0.4);
 
   /* ---------- 动效 ---------- */
   --ease: cubic-bezier(0.4, 0, 0.2, 1);
