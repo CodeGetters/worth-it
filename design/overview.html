@@ -1,0 +1,436 @@
+<!doctype html>
+<html lang="zh">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>值啦 · 「总览」板块低保真</title>
+<style>
+  :root {
+    --ink: #2b2b2b; --mute: #888; --line: #bbb; --line2: #ddd;
+    --bg: #f4f4f4; --paper: #fff; --fill: #ececec; --r: 8px;
+  }
+  * { box-sizing: border-box; }
+  body {
+    margin: 0; background: var(--bg); color: var(--ink);
+    font: 14px/1.5 -apple-system, "Segoe UI", "PingFang SC", sans-serif;
+  }
+  header.top { padding: 28px 32px 8px; }
+  header.top h1 { margin: 0 0 4px; font-size: 22px; }
+  header.top p { margin: 0; color: var(--mute); }
+  .legend { padding: 0 32px 16px; color: var(--mute); font-size: 12px; }
+  .legend code { background: var(--fill); padding: 1px 5px; border-radius: 4px; }
+  /* 功能墙：手机屏自动排版 */
+  .wall {
+    display: grid; gap: 28px 24px; padding: 8px 32px 64px;
+    grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+    align-items: start;
+  }
+  .screen { min-width: 0; }
+  .screen > .cap { margin: 0 0 8px; }
+  .screen .cap b { font-size: 14px; }
+  .screen .cap .tag {
+    font-size: 11px; color: var(--mute); border: 1px solid var(--line2);
+    border-radius: 999px; padding: 1px 8px; margin-left: 6px; white-space: nowrap;
+  }
+  .screen .cap .tag.done { color: #2e7d32; border-color: #aed5b0; }
+  .screen .cap .tag.todo { color: #b26a00; border-color: #e3c08a; }
+  .screen .note { color: var(--mute); font-size: 12px; margin: 6px 2px 0; }
+  /* 手机外框：统一 iPhone 12 Pro 比例 390:844 */
+  .phone {
+    width: 300px; max-width: 100%; aspect-ratio: 390 / 844;
+    display: flex; flex-direction: column;
+    background: var(--paper);
+    border: 1px solid var(--line); border-radius: 28px; overflow: hidden;
+    box-shadow: 0 1px 0 rgba(0,0,0,.04);
+  }
+  /* 手机内部 */
+  .bar {
+    flex: none;
+    display: flex; align-items: center; justify-content: space-between;
+    padding: 10px 14px; border-bottom: 1px solid var(--line2); font-size: 13px;
+  }
+  .bar .ttl { font-weight: 600; }
+  .bar .ic {
+    width: 26px; height: 26px; border: 1px solid var(--line); border-radius: 6px;
+    display: grid; place-items: center; color: var(--mute);
+  }
+  .body {
+    flex: 1; min-height: 0; overflow-y: auto;
+    padding: 14px; position: relative;
+  }
+  .body::-webkit-scrollbar { display: none; }
+  .body { scrollbar-width: none; }
+  .tabbar {
+    flex: none;
+    display: flex; border-top: 1px solid var(--line2);
+  }
+  .tabbar div {
+    flex: 1; text-align: center; padding: 9px 0; font-size: 12px; color: var(--mute);
+    border-right: 1px dashed var(--line2);
+  }
+  .tabbar div:last-child { border-right: 0; }
+  .tabbar div.on { color: var(--ink); font-weight: 600; }
+  /* 通用低保真块 */
+  .box { border: 1px dashed var(--line); border-radius: var(--r); padding: 12px; }
+  .box + .box { margin-top: 10px; }
+  .ph { background: var(--fill); border-radius: 4px; }
+  .lbl { font-size: 11px; color: var(--mute); }
+  .hugeprice {
+    font-size: 46px; font-weight: 800; letter-spacing: -1px; line-height: 1;
+    text-align: center; margin: 6px 0;
+  }
+  .sub { text-align: center; color: var(--mute); font-size: 12px; }
+  .dots { text-align: center; letter-spacing: 4px; color: var(--line); font-size: 10px; }
+  .dots b { color: var(--ink); }
+  .ruler {
+    margin: 14px 2px; height: 1px; border-top: 1px dashed var(--line);
+    position: relative;
+  }
+  .ruler::after {
+    content: "心里价 ¥150"; position: absolute; right: 0; top: -8px;
+    font-size: 10px; color: var(--mute); background: var(--paper); padding-left: 4px;
+  }
+  .btn {
+    text-align: center; padding: 13px; border-radius: var(--r);
+    border: 1.5px solid var(--ink); font-weight: 600; margin-top: 12px;
+  }
+  .btn.ghost { border-style: dashed; border-color: var(--line); color: var(--mute); font-weight: 400; }
+  .row { display: flex; gap: 8px; }
+  .row > * { flex: 1; }
+  .miniact {
+    text-align: center; font-size: 12px; color: var(--mute); margin-top: 10px;
+  }
+  .miniact span { border-bottom: 1px dashed var(--line); padding-bottom: 1px; }
+  .field { margin-bottom: 12px; }
+  .field .lbl { display: block; margin-bottom: 4px; }
+  .field .inp {
+    height: 34px; border: 1px solid var(--line); border-radius: 6px;
+    display: flex; align-items: center; padding: 0 10px; color: var(--mute); font-size: 13px;
+  }
+  .seg { display: flex; gap: 0; border: 1px solid var(--line); border-radius: 6px; overflow: hidden; }
+  .seg div { flex: 1; text-align: center; padding: 8px 0; font-size: 12px; color: var(--mute); border-right: 1px solid var(--line); }
+  .seg div:last-child { border-right: 0; }
+  .seg div.on { background: var(--fill); color: var(--ink); font-weight: 600; }
+  .err { color: #c0392b; font-size: 11px; margin-top: 3px; }
+  /* 总览卡条 */
+  .cardrow {
+    display: flex; align-items: center; gap: 10px; padding: 10px 12px;
+    border: 1px solid var(--line2); border-radius: var(--r); margin-bottom: 8px;
+  }
+  .cardrow .dot { width: 8px; height: 8px; border-radius: 50%; flex: none; }
+  .dot.green { background: #2e7d32; } .dot.red { background: #c0392b; } .dot.gray { background: #aaa; }
+  .cardrow .grow { flex: 1; min-width: 0; }
+  .cardrow .price { font-weight: 700; }
+  .cardrow .meta { font-size: 11px; color: var(--mute); }
+  .summary {
+    border: 1px dashed var(--line); border-radius: var(--r); padding: 12px;
+    text-align: center; margin-bottom: 12px;
+  }
+  .summary .big { font-size: 24px; font-weight: 800; }
+  /* Toast / 弹层 */
+  .overlay {
+    position: absolute; inset: 0; background: rgba(0,0,0,.28);
+    display: grid; place-items: center; border-radius: 0;
+  }
+  .toast {
+    background: var(--paper); border: 1px solid var(--line); border-radius: 12px;
+    padding: 18px 22px; text-align: center; width: 80%;
+  }
+  .toast .big { font-size: 20px; font-weight: 800; }
+  .toast .small { color: var(--mute); font-size: 12px; margin-top: 4px; }
+  .dialog {
+    background: var(--paper); border: 1px solid var(--line); border-radius: 12px;
+    padding: 16px; width: 84%;
+  }
+  .dialog .dt { font-weight: 600; margin-bottom: 6px; }
+  .dialog .dm { color: var(--mute); font-size: 12px; margin-bottom: 14px; }
+  .negbar {
+    border: 1px solid #e3c08a; background: #fff8ec; border-radius: var(--r);
+    padding: 10px 12px; font-size: 12px; color: #8a5a00; margin-bottom: 10px;
+  }
+  .negbar b { display: block; font-size: 11px; opacity: .7; margin-bottom: 2px; }
+  .ticketcut { border-top: 1px dashed var(--line); margin: 12px -12px; }
+  ul.feat { margin: 8px 0 0; padding-left: 18px; color: var(--mute); font-size: 12px; }
+  ul.feat li { margin: 2px 0; }
+  /* 四种转折 toast：按「时刻的分量」差异化，不是一套居中浮层套四次。
+     差异轴 = 位置(居中/顶部/票面) × 停留(自隐时长/需手动) × 解剖(数字位移/CTA) */
+  .turnspec { display: grid; gap: 12px; margin-top: 12px; }
+  .turnspec .item { border: 1px dashed var(--line); border-radius: var(--r); overflow: hidden; background: var(--paper); }
+  .turnspec .demo { padding: 14px; }
+  .turnspec .spec {
+    border-top: 1px dashed var(--line2); padding: 7px 12px; font-size: 10px;
+    color: var(--mute); display: flex; flex-wrap: wrap; gap: 3px 12px;
+  }
+  .turnspec .spec b { color: var(--ink); font-weight: 600; }
+  .turnspec .spec .k { opacity: .65; }
+  /* 价格位移：旧价划掉 → 新价放大（核心动作「看它往下掉」，toast 得演出来） */
+  .pxmove { display: flex; align-items: baseline; justify-content: center; gap: 8px; margin: 6px 0 2px; }
+  .pxmove .from { color: var(--mute); text-decoration: line-through; font-size: 15px; }
+  .pxmove .arr { color: var(--mute); font-size: 13px; }
+  .pxmove .to { font-size: 32px; font-weight: 800; letter-spacing: -1px; }
+  .tref { text-align: center; font-size: 11px; color: var(--mute); }
+  /* welcomeBack：顶部横幅，左对齐 + 图标，温和不抢镜 */
+  .tbanner { display: flex; gap: 10px; align-items: flex-start; }
+  .tbanner .ico { width: 30px; height: 30px; border: 1px solid var(--line); border-radius: 50%; display: grid; place-items: center; flex: none; }
+  .tbanner .bt { font-weight: 700; }
+  .tbanner .bs { color: var(--mute); font-size: 12px; margin-top: 2px; }
+  /* fullPaid：带 CTA，不自动消失 */
+  .tfinale { text-align: center; }
+  .tfinale .fb { font-size: 20px; font-weight: 800; }
+  .tfinale .row2 { display: flex; gap: 8px; margin-top: 12px; }
+  .tfinale .row2 > * { flex: 1; text-align: center; padding: 10px; border-radius: 6px; font-size: 13px; font-weight: 600; }
+  .tfinale .row2 .primary { border: 1.5px solid var(--ink); }
+  .tfinale .row2 .ghost { border: 1px dashed var(--line); color: var(--mute); font-weight: 400; }
+  /* bigDrop：数字即主角，最轻，不挡操作 */
+  .tpunch { text-align: center; }
+  .tpunch .d { font-size: 40px; font-weight: 800; letter-spacing: -1px; line-height: 1; }
+  .tpunch .sub2 { color: var(--mute); font-size: 11px; margin-top: 3px; }
+  /* —— dark-style 首页线框专用 —— */
+  .brandhd { display: flex; align-items: center; justify-content: space-between; padding: 2px 2px 12px; }
+  .brandhd .brandL { display: flex; align-items: center; gap: 7px; }
+  .brandhd .logo { width: 32px; height: 32px; flex: none; object-fit: contain; }
+  .brandhd .bn { font-size: 18px; font-weight: 800; }
+  .metrics { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; margin-bottom: 14px; }
+  .metric2 { border: 1px solid var(--line2); border-radius: var(--r); padding: 10px; }
+  .metric2 .lbl { text-transform: uppercase; letter-spacing: .04em; }
+  .metric2 b { display: block; font-size: 20px; font-weight: 800; margin-top: 8px; }
+  .metric2 .meta { font-size: 11px; color: var(--mute); margin-top: 4px; }
+  /* 卡包堆叠：主卡撑开高度，后两张绝对定位露右边，暗示可左右滑 */
+  .stack { position: relative; margin-top: 4px; }
+  .stack .pass {
+    border: 1px solid var(--line);
+    border-radius: 14px; padding: 14px; background: var(--paper);
+  }
+  .stack .pass.p1 { position: relative; z-index: 3; }
+  /* 单卡（无堆叠）与弹层背景里的暗化卡 */
+  .pass.solo { border: 1px solid var(--line); border-radius: 14px; padding: 14px; background: var(--paper); }
+  .pass.dim { opacity: .45; }
+  .pass .big2 { font-size: 46px; font-weight: 800; letter-spacing: -1px; line-height: 1; margin-top: 6px; }
+  .pass .muteprice { color: var(--mute); }
+  .stack .pass.p2 { position: absolute; top: 0; bottom: 0; left: 0; right: 0; z-index: 2; transform: scale(.96) translateX(10px); opacity: .55; }
+  .stack .pass.p3 { position: absolute; top: 0; bottom: 0; left: 0; right: 0; z-index: 1; transform: scale(.92) translateX(20px); opacity: .3; }
+  .stack .ptop { display: flex; justify-content: space-between; align-items: flex-start; gap: 10px; }
+  .stack .chip { font-size: 10px; color: var(--mute); border: 1px solid var(--line2); border-radius: 999px; padding: 1px 7px; }
+  .stack h2 { margin: 8px 0 0; font-size: 16px; }
+  .costline { display: flex; justify-content: space-between; align-items: flex-end; margin-top: 22px; }
+  .costline .num { font-size: 46px; font-weight: 800; line-height: .9; letter-spacing: -1px; }
+  .drop { border: 1px solid var(--line2); border-radius: 10px; padding: 6px 10px; text-align: right; font-size: 10px; color: var(--mute); }
+  .drop b { display: block; font-size: 14px; color: var(--ink); margin-top: 2px; }
+  .prog { height: 7px; border-radius: 999px; background: var(--fill); margin-top: 14px; overflow: hidden; }
+  .prog i { display: block; height: 100%; width: 40%; background: var(--line); }
+  .acts { display: grid; grid-template-columns: 1fr 48px; gap: 8px; margin: 8px 0 16px; }
+  .acts .checkin { text-align: center; padding: 13px; border: 1.5px solid var(--ink); border-radius: var(--r); font-weight: 700; }
+  .acts .addsq { border: 1px dashed var(--line); border-radius: var(--r); display: grid; place-items: center; color: var(--mute); font-size: 20px; }
+  /* 本周打卡节奏：7 天点阵 */
+  .week { border: 1px solid var(--line2); border-radius: var(--r); padding: 12px 14px; margin-bottom: 16px; }
+  .week .whd { display: flex; justify-content: space-between; align-items: center; font-size: 12px; color: var(--mute); margin-bottom: 11px; }
+  .week .whd .wcnt b { color: var(--ink); }
+  .week .wdots { display: flex; justify-content: space-between; }
+  .week .wd { display: flex; flex-direction: column; align-items: center; gap: 6px; }
+  .week .wd i { width: 18px; height: 18px; border-radius: 50%; border: 1px solid var(--line); background: var(--paper); display: grid; place-items: center; font-size: 10px; font-style: normal; font-weight: 700; color: transparent; line-height: 1; }
+  .week .wd span { font-size: 10px; color: var(--mute); }
+  .week .wd.on i { background: var(--ink); border-color: var(--ink); color: var(--paper); }
+  .week .wd.on span { color: var(--ink); }
+  .week .wd.today i { box-shadow: 0 0 0 2px var(--paper), 0 0 0 3.5px var(--ink); }
+  .feedttl { display: flex; justify-content: space-between; align-items: center; margin: 14px 2px 8px; }
+  .feedttl b { font-size: 13px; }
+  .feedttl .more { font-size: 11px; color: var(--mute); border: 1px solid var(--line2); border-radius: 999px; padding: 2px 9px; }
+  /* 卡片下方居中圆点（横滑指示） */
+  .pgdots { display: flex; justify-content: center; gap: 6px; margin: 12px 0 0; }
+  .pgdots i { width: 6px; height: 6px; border-radius: 50%; background: var(--line); }
+  .pgdots i.on { width: 16px; border-radius: 999px; background: var(--ink); }
+  /* 单价趋势小图 */
+  .spark { margin-top: 14px; }
+  .spark .cap2 { display: flex; justify-content: space-between; font-size: 10px; color: var(--mute); margin-bottom: 4px; }
+  .spark svg { display: block; width: 100%; height: 34px; }
+  /* 心里价目标进度 */
+  .goal { margin-top: 14px; }
+  .goal .grow2 { display: flex; justify-content: space-between; font-size: 10px; color: var(--mute); margin-bottom: 5px; }
+  .goal .grow2 b { color: var(--ink); }
+  /* 当前卡打卡记录 */
+  .logs { margin-top: 0; }
+  .logs .lhd { display: flex; justify-content: space-between; align-items: center; margin: 0 2px 8px; }
+  .logs .lhd b { font-size: 13px; }
+  .logs .lhd .lhL { display: flex; align-items: baseline; gap: 7px; }
+  .logs .lhd .cnt { font-size: 11px; color: var(--mute); }
+  .logs .lhd .more { font-size: 11px; color: var(--mute); }
+  .logrow { display: flex; align-items: center; gap: 10px; padding: 9px 2px; border-bottom: 1px dashed var(--line2); }
+  .logrow:last-child { border-bottom: 0; }
+  .logrow .stamp { width: 26px; height: 26px; border: 1px solid var(--line); border-radius: 50%; display: grid; place-items: center; font-size: 11px; color: var(--mute); flex: none; }
+  .logrow .grow { flex: 1; min-width: 0; }
+  .logrow .d { font-size: 13px; }
+  .logrow .wd2 { font-size: 11px; color: var(--mute); }
+  .logrow .delta { font-size: 11px; color: var(--mute); font-variant-numeric: tabular-nums; }
+  /* —— 总览专用（沿用首页大数字 / 金色警告 / 状态点语汇）—— */
+  .iconbtn { width: 26px; height: 26px; border: 1px solid var(--line); border-radius: 6px; display: grid; place-items: center; color: var(--mute); font-size: 15px; flex: none; }
+  /* ① 总账：净值大字 + 诚实拆分，接首页 costline 的数字气质 */
+  .ovhero { border: 1px solid var(--line2); border-radius: 14px; padding: 16px; margin-bottom: 14px; text-align: center; }
+  .ovhero .net { font-size: 40px; font-weight: 800; letter-spacing: -1px; line-height: 1; margin: 7px 0; }
+  .ovhero .split { font-size: 12px; color: var(--mute); }
+  .ovhero .split .gain { color: #2e7d32; font-weight: 700; }
+  .ovhero .split .loss { color: #c0392b; font-weight: 700; }
+  /* ② 快过期预警条：金色，带 CTA，独立置顶（core 已能算到期浪费） */
+  .alert { border: 1px solid #e3c08a; background: #fff8ec; border-radius: var(--r); padding: 12px; margin-bottom: 16px; }
+  .alert .ahd { font-size: 11px; color: #8a5a00; opacity: .8; margin-bottom: 5px; }
+  .alert .amain { font-size: 13px; color: #8a5a00; font-weight: 700; }
+  .alert .asub { font-size: 11px; color: #8a5a00; opacity: .85; margin-top: 3px; }
+  .alert .ago { margin-top: 11px; text-align: center; padding: 9px; border: 1.5px solid #b26a00; color: #8a5a00; border-radius: 6px; font-weight: 600; font-size: 12px; }
+  /* ③ 分组小标题：按「该行动」分段 */
+  .grouphd { font-size: 11px; color: var(--mute); margin: 16px 2px 9px; letter-spacing: .04em; display: flex; align-items: center; gap: 8px; }
+  .grouphd::after { content: ""; flex: 1; border-top: 1px dashed var(--line2); }
+  /* ④ 总览卡条：单价是最高层级数字，配方向符 */
+  .ovrow { display: flex; align-items: center; gap: 11px; padding: 12px; border: 1px solid var(--line2); border-radius: 12px; margin-bottom: 8px; }
+  .ovrow .dot { width: 8px; height: 8px; border-radius: 50%; flex: none; }
+  .ovrow .grow { flex: 1; min-width: 0; }
+  .ovrow .cname { font-size: 14px; font-weight: 600; }
+  .ovrow .cmeta { font-size: 11px; color: var(--mute); margin-top: 3px; }
+  .ovrow .right { text-align: right; flex: none; }
+  .ovrow .cprice { font-size: 20px; font-weight: 800; letter-spacing: -.5px; line-height: 1; }
+  .ovrow .cdir { font-size: 10px; color: var(--mute); margin-top: 4px; }
+  .ovrow .cdir.down { color: #2e7d32; }
+  /* ⑤ 待复盘卡条：给结论，不只给冷箭头 */
+  .ovrow.review { border-style: dashed; }
+  .ovrow.review .cprice { color: var(--mute); font-size: 15px; font-weight: 600; }
+  /* —— 钱包摊开俯视：迷你卡面网格（与首页同源，卡片是主角）—— */
+  .mgrid { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-top: 4px; }
+  .mcard { border: 1px solid var(--line); border-radius: 14px; padding: 12px 12px 11px; background: var(--paper); display: flex; flex-direction: column; position: relative; overflow: hidden; }
+  .mcard .mchip { font-size: 10px; color: var(--mute); border: 1px solid var(--line2); border-radius: 999px; padding: 1px 7px; align-self: flex-start; }
+  .mcard h3 { margin: 8px 0 0; font-size: 13px; font-weight: 600; line-height: 1.25; }
+  .mcard .mprice { font-size: 30px; font-weight: 800; letter-spacing: -1px; line-height: 1; margin-top: 10px; }
+  .mcard .mprice.dash { color: var(--mute); font-size: 24px; }
+  .mcard .mgain { font-size: 11px; color: #2e7d32; font-weight: 700; margin-top: 6px; }
+  .mcard .mtrend { width: 100%; height: 18px; display: block; margin-top: 9px; }
+  .mcard .mtrend .ln { fill: none; stroke: #2e7d32; stroke-width: 1.6; }
+  .mcard .foot { font-size: 10px; color: var(--mute); margin-top: 8px; }
+  /* 在亏：卡面蒙尘、红副线 */
+  .mcard.loss { background: #fbfafa; }
+  .mcard.loss .mgain { color: #c0392b; }
+  .mcard.loss .mtrend .ln { stroke: #c0392b; }
+  /* 快过期：金边高亮（此刻最该做的一张） */
+  .mcard.warn { border-color: #e3c08a; background: #fff8ec; }
+  .mcard.warn .mchip { border-color: #e3c08a; color: #8a5a00; }
+  .mcard.warn .mgain { color: #b26a00; }
+  /* 待复盘：褪色虚线 + 盖章 */
+  .mcard.done { border-style: dashed; }
+  .mcard.done h3 { color: var(--mute); }
+  .mcard .stamp2 { position: absolute; top: 12px; right: -18px; transform: rotate(11deg); border: 1.5px solid var(--line); color: var(--mute); font-size: 9px; letter-spacing: .1em; padding: 2px 20px; border-radius: 3px; opacity: .75; }
+  /* 加卡卡 */
+  .mcard.add { border-style: dashed; color: var(--mute); align-items: center; justify-content: center; min-height: 104px; font-size: 12px; }
+  .mcard.add .plus { font-size: 22px; margin-bottom: 4px; }
+</style>
+</head>
+<body>
+<header class="top">
+  <h1><img src="assets/logo.svg" alt="" style="width:30px;height:30px;vertical-align:-6px;margin-right:8px" />值啦 · 「总览」板块低保真</h1>
+  <p>多卡总览：和首页同源的钱包隐喻——把钱包摊开俯视，每张卡仍是主角，卡面本身讲清哪张在赚、哪张快过期、哪张该止损。</p>
+  <p style="margin-top:8px"><a href="index.html" style="color:var(--mute);text-decoration:none;font-size:13px">‹ 返回导航</a></p>
+</header>
+<div class="legend">
+  灰度线框 · 不带视觉风格（三套设计稿待选定）。标签：
+  <span style="color:#2e7d32">已接通</span> = 当前代码已跑通 ·
+  <span style="color:#b26a00">待建</span> = MVP 内尚未落地。
+</div>
+<div class="wall">
+
+<section class="screen">
+  <p class="cap"><b>5 · 多卡总览（钱包摊开俯视）</b><span class="tag done">已接通</span></p>
+  <div class="phone">
+    <div class="body" style="padding-top:16px">
+      <div class="brandhd">
+        <div class="brandL"><img class="logo" src="assets/logo.svg" alt="值啦" /><div class="bn">总览</div></div>
+        <span class="iconbtn">＋</span>
+      </div>
+
+      <!-- 总账：净值口径，诚实拆分。大字接首页数字气质 -->
+      <div class="ovhero">
+        <div class="lbl">这些卡加起来，你净</div>
+        <div class="net">省了 ¥2,700</div>
+        <div class="split"><span class="gain">已省 ¥3,120</span> · <span class="loss">仍亏 ¥420（1 张）</span></div>
+      </div>
+
+      <!-- 钱包摊开：每张卡都是首页那张卡的缩略，卡面本身承载状态与正反馈 -->
+      <div class="mgrid">
+        <!-- 快过期：金边，此刻最该做的一张，排最前 -->
+        <div class="mcard warn">
+          <span class="mchip">28 天后到期</span>
+          <h3>瑜伽 20 次课包</h3>
+          <div class="mprice">¥168</div>
+          <div class="mgain">还剩 12 次 · 用不完亏 ¥1,260</div>
+          <div class="foot">这张去打卡 ›</div>
+        </div>
+        <!-- 在用·在赚：卡面挺括，绿副线 + 已省 -->
+        <div class="mcard">
+          <span class="mchip">健身年卡 · 活跃</span>
+          <h3>超级猩猩全年卡</h3>
+          <div class="mprice">¥250</div>
+          <div class="mgain">已省 ¥3,120 · 还在降</div>
+          <svg class="mtrend" viewBox="0 0 120 18" preserveAspectRatio="none"><polyline class="ln" points="0,3 30,6 60,9 90,13 120,15"/></svg>
+        </div>
+        <!-- 在亏：卡面蒙尘褪色，红走平线 -->
+        <div class="mcard loss">
+          <span class="mchip">断卡 18 天</span>
+          <h3>热汗瑜伽卡</h3>
+          <div class="mprice">¥420</div>
+          <div class="mgain">卡住降不下来 · 白烧 ¥80</div>
+          <svg class="mtrend" viewBox="0 0 120 18" preserveAspectRatio="none"><polyline class="ln" points="0,8 30,10 60,11 90,11 120,11"/></svg>
+        </div>
+        <!-- 待复盘：褪色虚线卡 + 盖「已结」章 -->
+        <div class="mcard done">
+          <span class="stamp2">已 结 算</span>
+          <span class="mchip">已到期</span>
+          <h3>私教 40 节</h3>
+          <div class="mprice dash">¥385</div>
+          <div class="foot">用 13 节就过期 · 看结算 ›</div>
+        </div>
+        <!-- 加卡卡 -->
+        <div class="mcard add">
+          <div class="plus">＋</div>
+          <div>添一张卡</div>
+        </div>
+      </div>
+    </div>
+    <div class="tabbar"><div>打卡</div><div class="on">总览</div><div>我的</div></div>
+  </div>
+  <ul class="feat">
+    <li>和首页<b>同源的钱包隐喻</b>：首页一张张滑，总览<b>摊开俯视</b>——每张仍是首页那张卡的缩略，大单价仍是主角，不是列表也不是图表</li>
+    <li>正反馈靠<b>卡面本身</b>：在用的卡挺括、绿副线「已省 ¥X」；不额外堆 dashboard，守住「绿只服务成本下降」</li>
+    <li>状态靠<b>卡面质感</b>分，不靠小圆点：快过期=金边、在亏=蒙尘褪色 + 红走平线、待复盘=虚线卡 + 盖「已结算」章</li>
+    <li>排序即优先级：<b>快过期</b>(最该行动) → 在用 → 在亏 → 待复盘</li>
+    <li>总账走净值口径，诚实拆「已省 / 仍亏」；点卡分流：在用→回打卡定位，过期→进结算复盘</li>
+  </ul>
+</section>
+
+<section class="screen">
+  <p class="cap"><b>5a · 仅 1 张卡（弱化总账，引导再添）</b><span class="tag todo">待建</span></p>
+  <div class="phone">
+    <div class="body" style="padding-top:16px">
+      <div class="brandhd">
+        <div class="brandL"><img class="logo" src="assets/logo.svg" alt="值啦" /><div class="bn">总览</div></div>
+        <span class="iconbtn">＋</span>
+      </div>
+      <div class="mgrid">
+        <div class="mcard">
+          <span class="mchip">健身年卡 · 活跃</span>
+          <h3>超级猩猩全年卡</h3>
+          <div class="mprice">¥250</div>
+          <div class="mgain">已省 ¥3,120 · 还在降</div>
+          <svg class="mtrend" viewBox="0 0 120 18" preserveAspectRatio="none"><polyline class="ln" points="0,3 30,6 60,9 90,13 120,15"/></svg>
+        </div>
+        <div class="mcard add">
+          <div class="plus">＋</div>
+          <div>再添一张<br/>才好比</div>
+        </div>
+      </div>
+      <div class="note" style="text-align:center;color:var(--mute);font-size:12px;margin-top:16px">只有一张卡，还比不出「哪张更值」<br/>多办过一张？加进来一起盯</div>
+    </div>
+    <div class="tabbar"><div>打卡</div><div class="on">总览</div><div>我的</div></div>
+  </div>
+  <ul class="feat">
+    <li>单卡时净账/横向对比都没意义 → 隐藏总账带，主推「再添一张才好比」</li>
+    <li>那张卡仍以卡面呈现，保持钱包隐喻一致；总账带在 ≥2 张卡时才出现</li>
+  </ul>
+</section>
+
+</div>
+</body>
+</html>

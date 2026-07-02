@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1" />
-<title>值啦 · 全功能低保真线框</title>
+<title>值啦 · 「打卡」板块低保真</title>
 <style>
   :root {
     --ink: #2b2b2b; --mute: #888; --line: #bbb; --line2: #ddd;
@@ -152,6 +152,39 @@
   .ticketcut { border-top: 1px dashed var(--line); margin: 12px -12px; }
   ul.feat { margin: 8px 0 0; padding-left: 18px; color: var(--mute); font-size: 12px; }
   ul.feat li { margin: 2px 0; }
+  /* 四种转折 toast：按「时刻的分量」差异化，不是一套居中浮层套四次。
+     差异轴 = 位置(居中/顶部/票面) × 停留(自隐时长/需手动) × 解剖(数字位移/CTA) */
+  .turnspec { display: grid; gap: 12px; margin-top: 12px; }
+  .turnspec .item { border: 1px dashed var(--line); border-radius: var(--r); overflow: hidden; background: var(--paper); }
+  .turnspec .demo { padding: 14px; }
+  .turnspec .spec {
+    border-top: 1px dashed var(--line2); padding: 7px 12px; font-size: 10px;
+    color: var(--mute); display: flex; flex-wrap: wrap; gap: 3px 12px;
+  }
+  .turnspec .spec b { color: var(--ink); font-weight: 600; }
+  .turnspec .spec .k { opacity: .65; }
+  /* 价格位移：旧价划掉 → 新价放大（核心动作「看它往下掉」，toast 得演出来） */
+  .pxmove { display: flex; align-items: baseline; justify-content: center; gap: 8px; margin: 6px 0 2px; }
+  .pxmove .from { color: var(--mute); text-decoration: line-through; font-size: 15px; }
+  .pxmove .arr { color: var(--mute); font-size: 13px; }
+  .pxmove .to { font-size: 32px; font-weight: 800; letter-spacing: -1px; }
+  .tref { text-align: center; font-size: 11px; color: var(--mute); }
+  /* welcomeBack：顶部横幅，左对齐 + 图标，温和不抢镜 */
+  .tbanner { display: flex; gap: 10px; align-items: flex-start; }
+  .tbanner .ico { width: 30px; height: 30px; border: 1px solid var(--line); border-radius: 50%; display: grid; place-items: center; flex: none; }
+  .tbanner .bt { font-weight: 700; }
+  .tbanner .bs { color: var(--mute); font-size: 12px; margin-top: 2px; }
+  /* fullPaid：带 CTA，不自动消失 */
+  .tfinale { text-align: center; }
+  .tfinale .fb { font-size: 20px; font-weight: 800; }
+  .tfinale .row2 { display: flex; gap: 8px; margin-top: 12px; }
+  .tfinale .row2 > * { flex: 1; text-align: center; padding: 10px; border-radius: 6px; font-size: 13px; font-weight: 600; }
+  .tfinale .row2 .primary { border: 1.5px solid var(--ink); }
+  .tfinale .row2 .ghost { border: 1px dashed var(--line); color: var(--mute); font-weight: 400; }
+  /* bigDrop：数字即主角，最轻，不挡操作 */
+  .tpunch { text-align: center; }
+  .tpunch .d { font-size: 40px; font-weight: 800; letter-spacing: -1px; line-height: 1; }
+  .tpunch .sub2 { color: var(--mute); font-size: 11px; margin-top: 3px; }
   /* —— dark-style 首页线框专用 —— */
   .brandhd { display: flex; align-items: center; justify-content: space-between; padding: 2px 2px 12px; }
   .brandhd .brandL { display: flex; align-items: center; gap: 7px; }
@@ -228,24 +261,39 @@
   .logrow .d { font-size: 13px; }
   .logrow .wd2 { font-size: 11px; color: var(--mute); }
   .logrow .delta { font-size: 11px; color: var(--mute); font-variant-numeric: tabular-nums; }
+  /* —— 板块分组：按「卡态 / 反馈 / 流程」聚类，块内各屏对齐比较 —— */
+  .blocks { padding: 8px 0 48px; }
+  .block { padding: 0 32px; }
+  .block + .block { margin-top: 12px; border-top: 1px dashed var(--line2); padding-top: 4px; }
+  .block > .bhd { margin: 22px 2px 6px; }
+  .block > .bhd h2 { margin: 0; font-size: 16px; }
+  .block > .bhd h2 .no { color: var(--mute); font-weight: 800; margin-right: 8px; }
+  .block > .bhd p { margin: 4px 0 0; color: var(--mute); font-size: 12px; }
+  .block > .wall { padding: 8px 0; }
 </style>
 </head>
 <body>
 <header class="top">
-  <h1><img src="assets/logo.svg" alt="" style="width:30px;height:30px;vertical-align:-6px;margin-right:8px" />值啦 · 全功能低保真线框</h1>
-  <p>办卡之后每次去用就打卡，看真实单次成本 = 总价 ÷ 实际次数一次次往下掉。下面把全部屏与功能点铺开。</p>
+  <h1><img src="assets/logo.svg" alt="" style="width:30px;height:30px;vertical-align:-6px;margin-right:8px" />值啦 · 「打卡」板块低保真</h1>
+  <p>打卡屏全流程：四种卡态 + 即时反馈 + 补打/撤销 + 断卡负反馈 + 添加卡 / 到期复盘 / 空状态。</p>
+  <p style="margin-top:8px"><a href="index.html" style="color:var(--mute);text-decoration:none;font-size:13px">‹ 返回导航</a></p>
 </header>
 <div class="legend">
   灰度线框 · 不带视觉风格（三套设计稿待选定）。标签：
   <span style="color:#2e7d32">已接通</span> = 当前代码已跑通 ·
   <span style="color:#b26a00">待建</span> = MVP 内尚未落地。
 </div>
+<div class="blocks">
 
-<div class="wall">
+<div class="block">
+  <div class="bhd">
+    <h2><span class="no">A</span>打卡主屏 · 同一骨架的四种卡态</h2>
+    <p>卡型各异（不限次·有期限 / 有限次·课包），但分区一致（ptop / costline / goal / week / logs）。横向对比同骨架在不同生命周期下的样子。</p>
+  </div>
+  <div class="wall">
 
-<!-- 1. 打卡灵魂屏 · 常规态（参考 dark-style 首页：卡包堆叠 + 概览 + 提醒列表） -->
 <section class="screen">
-  <p class="cap"><b>1 · 打卡灵魂屏（默认首页）</b><span class="tag done">已接通</span></p>
+  <p class="cap"><b>1 · 打卡灵魂屏（默认首页）</b><span class="tag">不限次 · 有期限</span><span class="tag done">已接通</span></p>
   <div class="phone">
     <div class="body" style="padding-top:16px">
       <div class="brandhd">
@@ -319,9 +367,8 @@
   </ul>
 </section>
 
-<!-- 1a. 超额倒赚态（已跌破心里价 → 目标变起点，转为“看已省钱涨”继续鼓励打卡） -->
 <section class="screen">
-  <p class="cap"><b>1a · 超额倒赚态（已跌破心里价）</b><span class="tag done">已接通</span></p>
+  <p class="cap"><b>1a · 超额倒赚态（已跌破心里价）</b><span class="tag">不限次 · 有期限</span><span class="tag done">已接通</span></p>
   <div class="phone">
     <div class="body" style="padding-top:16px">
       <div class="brandhd"><div class="brandL"><img class="logo" src="assets/logo.svg" alt="值啦" /><div class="bn">值啦</div></div></div>
@@ -387,9 +434,8 @@
   </ul>
 </section>
 
-<!-- 1b. 少样本期 -->
 <section class="screen">
-  <p class="cap"><b>1b · 少样本期（打卡不足 3 次）</b><span class="tag done">已接通</span></p>
+  <p class="cap"><b>1b · 少样本期（打卡不足 3 次）</b><span class="tag">有限次 · 课包</span><span class="tag done">已接通</span></p>
   <div class="phone">
     <div class="body" style="padding-top:16px">
       <div class="brandhd"><div class="brandL"><img class="logo" src="assets/logo.svg" alt="值啦" /><div class="bn">值啦</div></div></div>
@@ -441,9 +487,8 @@
   </ul>
 </section>
 
-<!-- 1c. 打满 / 过期冻结 -->
 <section class="screen">
-  <p class="cap"><b>1c · 打满 / 过期冻结</b><span class="tag done">已接通</span></p>
+  <p class="cap"><b>1c · 打满 / 过期冻结</b><span class="tag">有限次 · 已用满</span><span class="tag done">已接通</span></p>
   <div class="phone">
     <div class="body" style="padding-top:16px">
       <div class="brandhd"><div class="brandL"><img class="logo" src="assets/logo.svg" alt="值啦" /><div class="bn">值啦</div></div></div>
@@ -496,36 +541,118 @@
   </ul>
 </section>
 
-<!-- 2. 里程碑 Toast（即时反馈） -->
+  </div>
+</div>
+
+<div class="block">
+  <div class="bhd">
+    <h2><span class="no">B</span>即时反馈与操作弹层</h2>
+    <p>打卡瞬间的反馈层：转折 toast、撤销确认、补打选择。都是覆盖在打卡屏之上的临时态。</p>
+  </div>
+  <div class="wall">
+
 <section class="screen">
   <p class="cap"><b>2 · 里程碑 Toast（打卡即时反馈）</b><span class="tag done">已接通</span></p>
   <div class="phone">
     <div class="body" style="padding-top:16px">
-      <div class="brandhd" style="opacity:.45"><div class="brandL"><img class="logo" src="assets/logo.svg" alt="值啦" /><div class="bn">值啦</div></div></div>
-      <div class="stack" style="opacity:.45">
+      <div class="brandhd" style="opacity:.4"><div class="brandL"><img class="logo" src="assets/logo.svg" alt="值啦" /><div class="bn">值啦</div></div></div>
+      <div class="stack" style="opacity:.4">
         <div class="pass p1">
           <div class="ptop"><div><span class="chip">健身年卡 · 活跃</span><h2>超级猩猩全年卡</h2></div><span class="chip">已去 9 次</span></div>
           <div class="costline"><div><div class="lbl">现在每次</div><div class="num">¥222</div></div><div class="drop">再去一次<b>-¥22</b></div></div>
         </div>
       </div>
-      <div class="acts" style="opacity:.45"><div class="checkin">今天去了，打卡</div><div class="addsq">＋</div></div>
+      <div class="acts" style="opacity:.4"><div class="checkin">今天去了，打卡</div><div class="addsq">＋</div></div>
+      <!-- 主 phone 演最重的一刻 becameGoodDeal：价格从旧值划掉→新值放大跳出，兑现产品承诺 -->
       <div class="overlay">
         <div class="toast">
-          <div class="big">划算了！</div>
-          <div class="small">这次只花 ¥222，已低过心里价</div>
+          <div class="small" style="margin:0 0 2px">划算了！比你心里价还低</div>
+          <div class="pxmove"><span class="from">¥250</span><span class="arr">→</span><span class="to">¥222</span></div>
+          <div class="tref">心里价 ¥150 · 已进入「越去越赚」区间</div>
         </div>
       </div>
     </div>
     <div class="tabbar"><div class="on">打卡</div><div>总览</div><div>我的</div></div>
   </div>
+
+  <!-- 四种转折差异化：情绪分量 / 频率 / 后续动作都不同，逐个定形态。核心：数字要「演位移」而非只报终值 -->
+  <p class="note" style="margin-top:14px">四种转折 <b>不共用一套浮层</b>——按分量给不同位置、停留、解剖：</p>
+  <div class="turnspec">
+
+    <!-- welcomeBack：断卡回来可能带愧疚，温和顶部横幅接住，不敲锣打鼓、不挡卡片 -->
+    <div class="item">
+      <div class="demo">
+        <div class="tbanner">
+          <div class="ico">👊</div>
+          <div><div class="bt">欢迎回来</div><div class="bs">这 12 天单价卡在 ¥250，今天这一下让它重新往下走</div></div>
+        </div>
+      </div>
+      <div class="spec">
+        <span><span class="k">枚举</span> <b>welcomeBack</b></span><span><span class="k">优先级</span> <b>1（最高）</b></span>
+        <span><span class="k">位置</span> 顶部横幅下滑</span><span><span class="k">停留</span> 2.5s 自隐</span>
+        <span><span class="k">语气</span> 温和接住，不庆祝</span>
+      </div>
+    </div>
+
+    <!-- fullPaid：一张卡的谢幕 + 带后续动作，必须常驻带 CTA，绝不 1.8s 自隐把「看复盘」冲走 -->
+    <div class="item">
+      <div class="demo">
+        <div class="tfinale">
+          <div class="fb">🎉 这张卡打满了</div>
+          <div class="pxmove"><span class="from">¥51</span><span class="arr">→</span><span class="to">¥50</span></div>
+          <div class="tref">40 次用满 · 最终每次 ¥50，比心里价省 ¥40</div>
+          <div class="row2"><div class="primary">看结算复盘</div><div class="ghost">知道了</div></div>
+        </div>
+      </div>
+      <div class="spec">
+        <span><span class="k">枚举</span> <b>fullPaid</b></span><span><span class="k">优先级</span> <b>2</b></span>
+        <span><span class="k">位置</span> 居中，蒙层加深</span><span><span class="k">停留</span> <b>不自隐</b>·需手动</span>
+        <span><span class="k">解剖</span> 带 CTA 直通复盘</span>
+      </div>
+    </div>
+
+    <!-- becameGoodDeal：产品承诺兑现的高光时刻，居中最隆重，演价格位移 + 标出跨过心里价 -->
+    <div class="item">
+      <div class="demo">
+        <div class="tfinale">
+          <div class="fb">划算了！</div>
+          <div class="pxmove"><span class="from">¥250</span><span class="arr">→</span><span class="to">¥222</span></div>
+          <div class="tref">已低于心里价 ¥150 关口 · 从这次起每去一次都在赚</div>
+        </div>
+      </div>
+      <div class="spec">
+        <span><span class="k">枚举</span> <b>becameGoodDeal</b></span><span><span class="k">优先级</span> <b>3</b></span>
+        <span><span class="k">位置</span> 居中（主 phone 同款）</span><span><span class="k">停留</span> 2s 自隐</span>
+        <span><span class="k">解剖</span> 价格位移 + 关口标注</span>
+      </div>
+    </div>
+
+    <!-- bigDrop：频率最高（开头几次几乎每次触发），做最轻——不挡操作、就地贴票面、快闪 -->
+    <div class="item">
+      <div class="demo">
+        <div class="tpunch">
+          <div class="d">↓ ¥68</div>
+          <div class="sub2">这一下掉了一大截 · ¥290 → ¥222</div>
+        </div>
+      </div>
+      <div class="spec">
+        <span><span class="k">枚举</span> <b>bigDrop</b></span><span><span class="k">优先级</span> <b>4（最低）</b></span>
+        <span><span class="k">位置</span> 贴票面上方，不蒙层</span><span><span class="k">停留</span> 1.2s 快闪</span>
+        <span><span class="k">解剖</span> 降幅即主角，最轻量</span>
+      </div>
+    </div>
+
+  </div>
+
   <ul class="feat">
-    <li>转折才弹：回归 / 划算了 / 单价大跌 / 打满</li>
-    <li>常规小幅下降只在票面显 delta，不弹</li>
-    <li>1.8s 自隐 · 仅打卡屏弹</li>
+    <li>四刻不等重：<b>回归温和接住</b>、<b>打满隆重带 CTA 不自隐</b>、<b>划算居中庆祝</b>、<b>大跌快闪不挡手</b>——一套居中浮层套四次是偷懒</li>
+    <li>数字要「<b>演位移</b>」：旧价划掉 → 新价放大跳出，呼应产品灵魂「看单价往下掉」，不只报一个终值</li>
+    <li>频率决定侵入度：bigDrop 开头几乎每次触发 → 做最轻不挡操作；fullPaid 一生一次 → 可最重且常驻</li>
+    <li>同次打卡按优先级只弹最高一种（回归 &gt; 打满 &gt; 划算 &gt; 大跌，对齐 core detectTurningPoint）</li>
+    <li>常规小幅下降只在票面显 delta，不弹；补打过去不触发（补历史非即时爽感）；均仅打卡屏弹</li>
   </ul>
 </section>
 
-<!-- 2b. 撤销确认 -->
 <section class="screen">
   <p class="cap"><b>2b · 撤销上一次（误触保护）</b><span class="tag done">已接通</span></p>
   <div class="phone">
@@ -550,7 +677,6 @@
   <ul class="feat"><li>单条打卡可删，删前二次确认防误触</li></ul>
 </section>
 
-<!-- 2c. 补打 Picker -->
 <section class="screen">
   <p class="cap"><b>2c · 补打过去（限购买日~今天）</b><span class="tag done">已接通</span></p>
   <div class="phone">
@@ -579,7 +705,16 @@
   <ul class="feat"><li>范围锁定购买日~今天，core 再兜一层越界过滤</li><li>补过去不触发"这次便宜"即时反馈</li></ul>
 </section>
 
-<!-- 3. 断卡负反馈四档 -->
+  </div>
+</div>
+
+<div class="block">
+  <div class="bhd">
+    <h2><span class="no">C</span>断卡负反馈</h2>
+    <p>不去用时的反向叙事：单价卡住降不下来，语气随断卡天数递进。</p>
+  </div>
+  <div class="wall">
+
 <section class="screen">
   <p class="cap"><b>3 · 断卡负反馈（随天数递进，打开时被动叠加）</b><span class="tag done">已接通</span></p>
   <div class="phone">
@@ -599,7 +734,16 @@
   </ul>
 </section>
 
-<!-- 4. 添加卡表单 -->
+  </div>
+</div>
+
+<div class="block">
+  <div class="bhd">
+    <h2><span class="no">D</span>其他流程屏</h2>
+    <p>打卡主循环之外的独立页面：录入、结算、首次进入。</p>
+  </div>
+  <div class="wall">
+
 <section class="screen">
   <p class="cap"><b>4 · 添加我的卡（像填一张待开小票）</b><span class="tag done">已接通</span></p>
   <div class="phone">
@@ -623,31 +767,6 @@
   </ul>
 </section>
 
-<!-- 5. 多卡总览 -->
-<section class="screen">
-  <p class="cap"><b>5 · 多卡总览（哪张值、哪张在亏）</b><span class="tag done">已接通</span></p>
-  <div class="phone">
-    <div class="bar"><span class="ttl">总览</span><span class="ic">＋</span></div>
-    <div class="body">
-      <div class="summary">
-        <div class="lbl">这些卡上你总共</div>
-        <div class="big">省了 ¥3,120</div>
-        <div class="lbl">较单次购买</div>
-      </div>
-      <div class="cardrow"><span class="dot green"></span><div class="grow"><div>健身年卡</div><div class="meta">去 8 次 · 在用</div></div><div class="price">¥250</div></div>
-      <div class="cardrow"><span class="dot red"></span><div class="grow"><div>瑜伽课包</div><div class="meta">断卡 18 天 · 在亏</div></div><div class="price">¥420</div></div>
-      <div class="cardrow"><span class="dot gray"></span><div class="grow"><div>私教 40 节</div><div class="meta">已到期 · 待复盘</div></div><div class="price">›</div></div>
-    </div>
-    <div class="tabbar"><div>打卡</div><div class="on">总览</div><div>我的</div></div>
-  </div>
-  <ul class="feat">
-    <li>在用(绿) / 在亏(红) / 待复盘(灰) 一眼分</li>
-    <li>汇总：总共省了还是亏了</li>
-    <li>点卡：在用回打卡屏定位，已过期进复盘</li>
-  </ul>
-</section>
-
-<!-- 6. 到期复盘 -->
 <section class="screen">
   <p class="cap"><b>6 · 到期复盘（结算总票 · 指导下次决策）</b><span class="tag done">已接通</span></p>
   <div class="phone">
@@ -676,7 +795,6 @@
   </ul>
 </section>
 
-<!-- 7. 空状态 -->
 <section class="screen">
   <p class="cap"><b>7 · 首次空状态（先尝甜头）</b><span class="tag done">已接通</span></p>
   <div class="phone">
@@ -697,45 +815,8 @@
   <ul class="feat"><li>种一张可直接玩的示例卡，先尝"单价掉"甜头</li><li>玩过再引导添加自己的卡</li></ul>
 </section>
 
-<!-- 8. 我的页（待建） -->
-<section class="screen">
-  <p class="cap"><b>8 · 我的</b><span class="tag todo">待建</span></p>
-  <div class="phone">
-    <div class="bar"><span class="ttl">我的</span><span style="width:26px"></span></div>
-    <div class="body">
-      <div class="cardrow"><div class="grow">数据导出（备份）</div><div>›</div></div>
-      <div class="cardrow"><div class="grow">数据导入（恢复）</div><div>›</div></div>
-      <div class="cardrow"><div class="grow">已归档的卡</div><div>›</div></div>
-      <div class="cardrow" style="opacity:.5"><div class="grow">跨端同步（云）</div><div class="meta">后续</div></div>
-      <div class="cardrow" style="opacity:.5"><div class="grow">语言 / 关于</div><div>›</div></div>
-    </div>
-    <div class="tabbar"><div>打卡</div><div>总览</div><div class="on">我的</div></div>
   </div>
-  <ul class="feat"><li>当前底部"我的" tab 走 comingSoon 占位</li><li>主放：导出/导入（云同步前的安全网）</li></ul>
-</section>
-
-<!-- 9. 导出 / 导入（待建） -->
-<section class="screen">
-  <p class="cap"><b>9 · 数据导出 / 导入</b><span class="tag todo">待建</span></p>
-  <div class="phone">
-    <div class="bar"><span class="ic">‹</span><span class="ttl">导出 / 导入</span><span style="width:26px"></span></div>
-    <div class="body">
-      <div class="box" style="border-style:solid">
-        <div class="lbl">导出全部卡 + 打卡记录</div>
-        <div class="inp" style="height:auto;padding:10px;margin-top:8px;font-family:monospace;font-size:11px">{"cards":[…],"checkins":[…]}</div>
-        <div class="row"><div class="btn" style="margin-top:10px">复制</div><div class="btn ghost" style="margin-top:10px">下载文件</div></div>
-      </div>
-      <div class="box">
-        <div class="lbl">从备份恢复（粘贴 / 选文件）</div>
-        <div class="inp" style="height:54px;margin-top:8px">粘贴备份内容…</div>
-        <div class="btn" style="margin-top:10px">导入并合并</div>
-      </div>
-    </div>
-    <div class="tabbar"><div>打卡</div><div>总览</div><div class="on">我的</div></div>
-  </div>
-  <ul class="feat"><li>云同步前的安全网，成本低价值高</li><li>导入按 id 合并去重（对齐同步元信息）</li></ul>
-</section>
-
+</div>
 
 </div>
 </body>

@@ -1,0 +1,315 @@
+<!doctype html>
+<html lang="zh">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>值啦 · 全功能低保真线框</title>
+<style>
+  :root {
+    --ink: #2b2b2b; --mute: #888; --line: #bbb; --line2: #ddd;
+    --bg: #f4f4f4; --paper: #fff; --fill: #ececec; --r: 8px;
+  }
+  * { box-sizing: border-box; }
+  body {
+    margin: 0; background: var(--bg); color: var(--ink);
+    font: 14px/1.5 -apple-system, "Segoe UI", "PingFang SC", sans-serif;
+  }
+  header.top { padding: 28px 32px 8px; }
+  header.top h1 { margin: 0 0 4px; font-size: 22px; }
+  header.top p { margin: 0; color: var(--mute); }
+  .legend { padding: 0 32px 16px; color: var(--mute); font-size: 12px; }
+  .legend code { background: var(--fill); padding: 1px 5px; border-radius: 4px; }
+  /* 功能墙：手机屏自动排版 */
+  .wall {
+    display: grid; gap: 28px 24px; padding: 8px 32px 64px;
+    grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+    align-items: start;
+  }
+  .screen { min-width: 0; }
+  .screen > .cap { margin: 0 0 8px; }
+  .screen .cap b { font-size: 14px; }
+  .screen .cap .tag {
+    font-size: 11px; color: var(--mute); border: 1px solid var(--line2);
+    border-radius: 999px; padding: 1px 8px; margin-left: 6px; white-space: nowrap;
+  }
+  .screen .cap .tag.done { color: #2e7d32; border-color: #aed5b0; }
+  .screen .cap .tag.todo { color: #b26a00; border-color: #e3c08a; }
+  .screen .note { color: var(--mute); font-size: 12px; margin: 6px 2px 0; }
+  /* 手机外框：统一 iPhone 12 Pro 比例 390:844 */
+  .phone {
+    width: 300px; max-width: 100%; aspect-ratio: 390 / 844;
+    display: flex; flex-direction: column;
+    background: var(--paper);
+    border: 1px solid var(--line); border-radius: 28px; overflow: hidden;
+    box-shadow: 0 1px 0 rgba(0,0,0,.04);
+  }
+  /* 手机内部 */
+  .bar {
+    flex: none;
+    display: flex; align-items: center; justify-content: space-between;
+    padding: 10px 14px; border-bottom: 1px solid var(--line2); font-size: 13px;
+  }
+  .bar .ttl { font-weight: 600; }
+  .bar .ic {
+    width: 26px; height: 26px; border: 1px solid var(--line); border-radius: 6px;
+    display: grid; place-items: center; color: var(--mute);
+  }
+  .body {
+    flex: 1; min-height: 0; overflow-y: auto;
+    padding: 14px; position: relative;
+  }
+  .body::-webkit-scrollbar { display: none; }
+  .body { scrollbar-width: none; }
+  .tabbar {
+    flex: none;
+    display: flex; border-top: 1px solid var(--line2);
+  }
+  .tabbar div {
+    flex: 1; text-align: center; padding: 9px 0; font-size: 12px; color: var(--mute);
+    border-right: 1px dashed var(--line2);
+  }
+  .tabbar div:last-child { border-right: 0; }
+  .tabbar div.on { color: var(--ink); font-weight: 600; }
+  /* 通用低保真块 */
+  .box { border: 1px dashed var(--line); border-radius: var(--r); padding: 12px; }
+  .box + .box { margin-top: 10px; }
+  .ph { background: var(--fill); border-radius: 4px; }
+  .lbl { font-size: 11px; color: var(--mute); }
+  .hugeprice {
+    font-size: 46px; font-weight: 800; letter-spacing: -1px; line-height: 1;
+    text-align: center; margin: 6px 0;
+  }
+  .sub { text-align: center; color: var(--mute); font-size: 12px; }
+  .dots { text-align: center; letter-spacing: 4px; color: var(--line); font-size: 10px; }
+  .dots b { color: var(--ink); }
+  .ruler {
+    margin: 14px 2px; height: 1px; border-top: 1px dashed var(--line);
+    position: relative;
+  }
+  .ruler::after {
+    content: "心里价 ¥150"; position: absolute; right: 0; top: -8px;
+    font-size: 10px; color: var(--mute); background: var(--paper); padding-left: 4px;
+  }
+  .btn {
+    text-align: center; padding: 13px; border-radius: var(--r);
+    border: 1.5px solid var(--ink); font-weight: 600; margin-top: 12px;
+  }
+  .btn.ghost { border-style: dashed; border-color: var(--line); color: var(--mute); font-weight: 400; }
+  .row { display: flex; gap: 8px; }
+  .row > * { flex: 1; }
+  .miniact {
+    text-align: center; font-size: 12px; color: var(--mute); margin-top: 10px;
+  }
+  .miniact span { border-bottom: 1px dashed var(--line); padding-bottom: 1px; }
+  .field { margin-bottom: 12px; }
+  .field .lbl { display: block; margin-bottom: 4px; }
+  .field .inp {
+    height: 34px; border: 1px solid var(--line); border-radius: 6px;
+    display: flex; align-items: center; padding: 0 10px; color: var(--mute); font-size: 13px;
+  }
+  .seg { display: flex; gap: 0; border: 1px solid var(--line); border-radius: 6px; overflow: hidden; }
+  .seg div { flex: 1; text-align: center; padding: 8px 0; font-size: 12px; color: var(--mute); border-right: 1px solid var(--line); }
+  .seg div:last-child { border-right: 0; }
+  .seg div.on { background: var(--fill); color: var(--ink); font-weight: 600; }
+  .err { color: #c0392b; font-size: 11px; margin-top: 3px; }
+  /* 总览卡条 */
+  .cardrow {
+    display: flex; align-items: center; gap: 10px; padding: 10px 12px;
+    border: 1px solid var(--line2); border-radius: var(--r); margin-bottom: 8px;
+  }
+  .cardrow .dot { width: 8px; height: 8px; border-radius: 50%; flex: none; }
+  .dot.green { background: #2e7d32; } .dot.red { background: #c0392b; } .dot.gray { background: #aaa; }
+  .cardrow .grow { flex: 1; min-width: 0; }
+  .cardrow .price { font-weight: 700; }
+  .cardrow .meta { font-size: 11px; color: var(--mute); }
+  .summary {
+    border: 1px dashed var(--line); border-radius: var(--r); padding: 12px;
+    text-align: center; margin-bottom: 12px;
+  }
+  .summary .big { font-size: 24px; font-weight: 800; }
+  /* Toast / 弹层 */
+  .overlay {
+    position: absolute; inset: 0; background: rgba(0,0,0,.28);
+    display: grid; place-items: center; border-radius: 0;
+  }
+  .toast {
+    background: var(--paper); border: 1px solid var(--line); border-radius: 12px;
+    padding: 18px 22px; text-align: center; width: 80%;
+  }
+  .toast .big { font-size: 20px; font-weight: 800; }
+  .toast .small { color: var(--mute); font-size: 12px; margin-top: 4px; }
+  .dialog {
+    background: var(--paper); border: 1px solid var(--line); border-radius: 12px;
+    padding: 16px; width: 84%;
+  }
+  .dialog .dt { font-weight: 600; margin-bottom: 6px; }
+  .dialog .dm { color: var(--mute); font-size: 12px; margin-bottom: 14px; }
+  .negbar {
+    border: 1px solid #e3c08a; background: #fff8ec; border-radius: var(--r);
+    padding: 10px 12px; font-size: 12px; color: #8a5a00; margin-bottom: 10px;
+  }
+  .negbar b { display: block; font-size: 11px; opacity: .7; margin-bottom: 2px; }
+  .ticketcut { border-top: 1px dashed var(--line); margin: 12px -12px; }
+  ul.feat { margin: 8px 0 0; padding-left: 18px; color: var(--mute); font-size: 12px; }
+  ul.feat li { margin: 2px 0; }
+  /* 四种转折 toast：按「时刻的分量」差异化，不是一套居中浮层套四次。
+     差异轴 = 位置(居中/顶部/票面) × 停留(自隐时长/需手动) × 解剖(数字位移/CTA) */
+  .turnspec { display: grid; gap: 12px; margin-top: 12px; }
+  .turnspec .item { border: 1px dashed var(--line); border-radius: var(--r); overflow: hidden; background: var(--paper); }
+  .turnspec .demo { padding: 14px; }
+  .turnspec .spec {
+    border-top: 1px dashed var(--line2); padding: 7px 12px; font-size: 10px;
+    color: var(--mute); display: flex; flex-wrap: wrap; gap: 3px 12px;
+  }
+  .turnspec .spec b { color: var(--ink); font-weight: 600; }
+  .turnspec .spec .k { opacity: .65; }
+  /* 价格位移：旧价划掉 → 新价放大（核心动作「看它往下掉」，toast 得演出来） */
+  .pxmove { display: flex; align-items: baseline; justify-content: center; gap: 8px; margin: 6px 0 2px; }
+  .pxmove .from { color: var(--mute); text-decoration: line-through; font-size: 15px; }
+  .pxmove .arr { color: var(--mute); font-size: 13px; }
+  .pxmove .to { font-size: 32px; font-weight: 800; letter-spacing: -1px; }
+  .tref { text-align: center; font-size: 11px; color: var(--mute); }
+  /* welcomeBack：顶部横幅，左对齐 + 图标，温和不抢镜 */
+  .tbanner { display: flex; gap: 10px; align-items: flex-start; }
+  .tbanner .ico { width: 30px; height: 30px; border: 1px solid var(--line); border-radius: 50%; display: grid; place-items: center; flex: none; }
+  .tbanner .bt { font-weight: 700; }
+  .tbanner .bs { color: var(--mute); font-size: 12px; margin-top: 2px; }
+  /* fullPaid：带 CTA，不自动消失 */
+  .tfinale { text-align: center; }
+  .tfinale .fb { font-size: 20px; font-weight: 800; }
+  .tfinale .row2 { display: flex; gap: 8px; margin-top: 12px; }
+  .tfinale .row2 > * { flex: 1; text-align: center; padding: 10px; border-radius: 6px; font-size: 13px; font-weight: 600; }
+  .tfinale .row2 .primary { border: 1.5px solid var(--ink); }
+  .tfinale .row2 .ghost { border: 1px dashed var(--line); color: var(--mute); font-weight: 400; }
+  /* bigDrop：数字即主角，最轻，不挡操作 */
+  .tpunch { text-align: center; }
+  .tpunch .d { font-size: 40px; font-weight: 800; letter-spacing: -1px; line-height: 1; }
+  .tpunch .sub2 { color: var(--mute); font-size: 11px; margin-top: 3px; }
+  /* —— dark-style 首页线框专用 —— */
+  .brandhd { display: flex; align-items: center; justify-content: space-between; padding: 2px 2px 12px; }
+  .brandhd .brandL { display: flex; align-items: center; gap: 7px; }
+  .brandhd .logo { width: 32px; height: 32px; flex: none; object-fit: contain; }
+  .brandhd .bn { font-size: 18px; font-weight: 800; }
+  .metrics { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; margin-bottom: 14px; }
+  .metric2 { border: 1px solid var(--line2); border-radius: var(--r); padding: 10px; }
+  .metric2 .lbl { text-transform: uppercase; letter-spacing: .04em; }
+  .metric2 b { display: block; font-size: 20px; font-weight: 800; margin-top: 8px; }
+  .metric2 .meta { font-size: 11px; color: var(--mute); margin-top: 4px; }
+  /* 卡包堆叠：主卡撑开高度，后两张绝对定位露右边，暗示可左右滑 */
+  .stack { position: relative; margin-top: 4px; }
+  .stack .pass {
+    border: 1px solid var(--line);
+    border-radius: 14px; padding: 14px; background: var(--paper);
+  }
+  .stack .pass.p1 { position: relative; z-index: 3; }
+  /* 单卡（无堆叠）与弹层背景里的暗化卡 */
+  .pass.solo { border: 1px solid var(--line); border-radius: 14px; padding: 14px; background: var(--paper); }
+  .pass.dim { opacity: .45; }
+  .pass .big2 { font-size: 46px; font-weight: 800; letter-spacing: -1px; line-height: 1; margin-top: 6px; }
+  .pass .muteprice { color: var(--mute); }
+  .stack .pass.p2 { position: absolute; top: 0; bottom: 0; left: 0; right: 0; z-index: 2; transform: scale(.96) translateX(10px); opacity: .55; }
+  .stack .pass.p3 { position: absolute; top: 0; bottom: 0; left: 0; right: 0; z-index: 1; transform: scale(.92) translateX(20px); opacity: .3; }
+  .stack .ptop { display: flex; justify-content: space-between; align-items: flex-start; gap: 10px; }
+  .stack .chip { font-size: 10px; color: var(--mute); border: 1px solid var(--line2); border-radius: 999px; padding: 1px 7px; }
+  .stack h2 { margin: 8px 0 0; font-size: 16px; }
+  .costline { display: flex; justify-content: space-between; align-items: flex-end; margin-top: 22px; }
+  .costline .num { font-size: 46px; font-weight: 800; line-height: .9; letter-spacing: -1px; }
+  .drop { border: 1px solid var(--line2); border-radius: 10px; padding: 6px 10px; text-align: right; font-size: 10px; color: var(--mute); }
+  .drop b { display: block; font-size: 14px; color: var(--ink); margin-top: 2px; }
+  .prog { height: 7px; border-radius: 999px; background: var(--fill); margin-top: 14px; overflow: hidden; }
+  .prog i { display: block; height: 100%; width: 40%; background: var(--line); }
+  .acts { display: grid; grid-template-columns: 1fr 48px; gap: 8px; margin: 8px 0 16px; }
+  .acts .checkin { text-align: center; padding: 13px; border: 1.5px solid var(--ink); border-radius: var(--r); font-weight: 700; }
+  .acts .addsq { border: 1px dashed var(--line); border-radius: var(--r); display: grid; place-items: center; color: var(--mute); font-size: 20px; }
+  /* 本周打卡节奏：7 天点阵 */
+  .week { border: 1px solid var(--line2); border-radius: var(--r); padding: 12px 14px; margin-bottom: 16px; }
+  .week .whd { display: flex; justify-content: space-between; align-items: center; font-size: 12px; color: var(--mute); margin-bottom: 11px; }
+  .week .whd .wcnt b { color: var(--ink); }
+  .week .wdots { display: flex; justify-content: space-between; }
+  .week .wd { display: flex; flex-direction: column; align-items: center; gap: 6px; }
+  .week .wd i { width: 18px; height: 18px; border-radius: 50%; border: 1px solid var(--line); background: var(--paper); display: grid; place-items: center; font-size: 10px; font-style: normal; font-weight: 700; color: transparent; line-height: 1; }
+  .week .wd span { font-size: 10px; color: var(--mute); }
+  .week .wd.on i { background: var(--ink); border-color: var(--ink); color: var(--paper); }
+  .week .wd.on span { color: var(--ink); }
+  .week .wd.today i { box-shadow: 0 0 0 2px var(--paper), 0 0 0 3.5px var(--ink); }
+  .feedttl { display: flex; justify-content: space-between; align-items: center; margin: 14px 2px 8px; }
+  .feedttl b { font-size: 13px; }
+  .feedttl .more { font-size: 11px; color: var(--mute); border: 1px solid var(--line2); border-radius: 999px; padding: 2px 9px; }
+  /* 卡片下方居中圆点（横滑指示） */
+  .pgdots { display: flex; justify-content: center; gap: 6px; margin: 12px 0 0; }
+  .pgdots i { width: 6px; height: 6px; border-radius: 50%; background: var(--line); }
+  .pgdots i.on { width: 16px; border-radius: 999px; background: var(--ink); }
+  /* 单价趋势小图 */
+  .spark { margin-top: 14px; }
+  .spark .cap2 { display: flex; justify-content: space-between; font-size: 10px; color: var(--mute); margin-bottom: 4px; }
+  .spark svg { display: block; width: 100%; height: 34px; }
+  /* 心里价目标进度 */
+  .goal { margin-top: 14px; }
+  .goal .grow2 { display: flex; justify-content: space-between; font-size: 10px; color: var(--mute); margin-bottom: 5px; }
+  .goal .grow2 b { color: var(--ink); }
+  /* 当前卡打卡记录 */
+  .logs { margin-top: 0; }
+  .logs .lhd { display: flex; justify-content: space-between; align-items: center; margin: 0 2px 8px; }
+  .logs .lhd b { font-size: 13px; }
+  .logs .lhd .lhL { display: flex; align-items: baseline; gap: 7px; }
+  .logs .lhd .cnt { font-size: 11px; color: var(--mute); }
+  .logs .lhd .more { font-size: 11px; color: var(--mute); }
+  .logrow { display: flex; align-items: center; gap: 10px; padding: 9px 2px; border-bottom: 1px dashed var(--line2); }
+  .logrow:last-child { border-bottom: 0; }
+  .logrow .stamp { width: 26px; height: 26px; border: 1px solid var(--line); border-radius: 50%; display: grid; place-items: center; font-size: 11px; color: var(--mute); flex: none; }
+  .logrow .grow { flex: 1; min-width: 0; }
+  .logrow .d { font-size: 13px; }
+  .logrow .wd2 { font-size: 11px; color: var(--mute); }
+  .logrow .delta { font-size: 11px; color: var(--mute); font-variant-numeric: tabular-nums; }
+  /* —— 引导页：三大板块导航卡 —— */
+  .nav {
+    display: grid; gap: 16px; padding: 8px 32px 8px;
+    grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+  }
+  .navcard {
+    display: block; text-decoration: none; color: inherit;
+    border: 1px solid var(--line); border-radius: 14px; padding: 18px 20px;
+    background: var(--paper); transition: box-shadow .15s, transform .15s;
+  }
+  .navcard:hover { box-shadow: 0 4px 16px rgba(0,0,0,.08); transform: translateY(-2px); }
+  .navcard .nc-top { display: flex; align-items: center; justify-content: space-between; }
+  .navcard .nc-ttl { font-size: 17px; font-weight: 800; }
+  .navcard .nc-cnt { font-size: 11px; color: var(--mute); border: 1px solid var(--line2); border-radius: 999px; padding: 2px 9px; }
+  .navcard .nc-desc { color: var(--mute); font-size: 12px; margin-top: 8px; line-height: 1.6; }
+  .navcard .nc-go { margin-top: 12px; font-size: 12px; font-weight: 600; }
+  .navcard .nc-go::after { content: " ›"; color: var(--mute); }
+  .navttl { padding: 12px 32px 4px; font-size: 13px; font-weight: 700; color: var(--mute); }
+</style>
+</head>
+<body>
+<header class="top">
+  <h1><img src="assets/logo.svg" alt="" style="width:30px;height:30px;vertical-align:-6px;margin-right:8px" />值啦 · 低保真导航</h1>
+  <p>办卡之后每次去用就打卡，看真实单次成本 = 总价 ÷ 实际次数一次次往下掉。按底部 tab 分成三大板块，点卡进入对应低保真。</p>
+</header>
+<div class="legend">
+  灰度线框 · 不带视觉风格（三套设计稿待选定）。标签：
+  <span style="color:#2e7d32">已接通</span> = 当前代码已跑通 ·
+  <span style="color:#b26a00">待建</span> = MVP 内尚未落地。
+</div>
+
+<div class="navttl">三大板块（对应底部 tab，各自独立页）</div>
+<div class="nav">
+  <a class="navcard" href="checkin.html">
+    <div class="nc-top"><span class="nc-ttl">打卡</span><span class="nc-cnt">11 屏</span></div>
+    <div class="nc-desc">产品灵魂屏。四种卡态 + 打卡即时反馈 + 补打 / 撤销 + 断卡负反馈，含添加卡 / 到期复盘 / 空状态。</div>
+    <div class="nc-go">进入打卡板块</div>
+  </a>
+  <a class="navcard" href="overview.html">
+    <div class="nc-top"><span class="nc-ttl">总览</span><span class="nc-cnt">1 屏</span></div>
+    <div class="nc-desc">多卡总览：哪张在用、哪张在亏、哪张待复盘，一屏看清；顶部汇总总共省了多少。</div>
+    <div class="nc-go">进入总览板块</div>
+  </a>
+  <a class="navcard" href="mine.html">
+    <div class="nc-top"><span class="nc-ttl">我的</span><span class="nc-cnt">2 屏</span></div>
+    <div class="nc-desc">数据导出 / 导入（云同步前的安全网），归档、语言、关于等设置项（MVP 内多为待建）。</div>
+    <div class="nc-go">进入我的板块</div>
+  </a>
+</div>
+
+</body>
+</html>
