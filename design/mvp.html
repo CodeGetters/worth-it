@@ -1,0 +1,317 @@
+<!doctype html>
+<html lang="zh">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>值啦 · MVP 功能总览（用户旅程）</title>
+<style>
+  :root {
+    --ink: #2b2b2b; --mute: #888; --line: #bbb; --line2: #ddd;
+    --bg: #f4f4f4; --paper: #fff; --fill: #ececec; --r: 8px;
+    --done: #2e7d32; --done-bd: #aed5b0; --done-bg: #f1f7f1;
+    --todo: #b26a00; --todo-bd: #e3c08a; --todo-bg: #fff8ec;
+    --part: #2b6699; --part-bd: #aecbe3; --part-bg: #eff5fb;
+  }
+  * { box-sizing: border-box; }
+  body {
+    margin: 0; background: var(--bg); color: var(--ink);
+    font: 14px/1.6 -apple-system, "Segoe UI", "PingFang SC", sans-serif;
+  }
+  a { color: inherit; }
+  header.top { padding: 32px 32px 8px; max-width: 980px; margin: 0 auto; }
+  header.top h1 { margin: 0 0 6px; font-size: 24px; }
+  header.top h1 .logo { width: 30px; height: 30px; vertical-align: -6px; margin-right: 8px; }
+  header.top p { margin: 0; color: var(--mute); }
+  header.top .back { margin-top: 8px; }
+  header.top .back a { color: var(--mute); text-decoration: none; font-size: 13px; }
+  .wrap { max-width: 980px; margin: 0 auto; padding: 0 32px 64px; }
+  /* KPI 汇总条 */
+  .kpi { margin: 18px 0 8px; }
+  .kpi .k { border: 1px solid var(--line2); border-radius: 12px; padding: 14px 16px; background: var(--paper); }
+  .kpi .k .kt { font-size: 12px; color: var(--mute); }
+  .kpi .k .kn { font-size: 26px; font-weight: 800; letter-spacing: -.5px; margin: 6px 0 2px; }
+  .kpi .k .kn small { font-size: 13px; font-weight: 600; color: var(--mute); }
+  .kpi .k .kbar { height: 6px; border-radius: 999px; background: var(--fill); overflow: hidden; margin-top: 8px; }
+  .kpi .k .kbar i { display: block; height: 100%; background: var(--done); }
+  .kpi .k .kmeta { font-size: 11px; color: var(--mute); margin-top: 7px; }
+  /* 图例 */
+  .legend { color: var(--mute); font-size: 12px; margin: 14px 2px 4px; display: flex; flex-wrap: wrap; gap: 6px 16px; align-items: center; }
+  .lyr { font-size: 11px; border-radius: 999px; padding: 1px 9px; border: 1px solid var(--line2); white-space: nowrap; font-weight: 600; }
+  .lyr.done { color: var(--done); border-color: var(--done-bd); background: var(--done-bg); }
+  .lyr.todo { color: var(--todo); border-color: var(--todo-bd); background: var(--todo-bg); }
+
+  /* —— 用户旅程时间线 —— */
+  .journey { margin-top: 22px; position: relative; padding-left: 30px; }
+  .journey::before { content: ""; position: absolute; left: 10px; top: 8px; bottom: 8px; border-left: 2px dashed var(--line2); }
+  .stage { position: relative; margin-bottom: 26px; }
+  .stage::before {
+    content: attr(data-no); position: absolute; left: -30px; top: 0;
+    width: 22px; height: 22px; border-radius: 50%; background: var(--ink); color: #fff;
+    font-size: 11px; font-weight: 800; display: flex; align-items: center; justify-content: center;
+  }
+  .stage .shd { display: flex; align-items: baseline; gap: 10px; flex-wrap: wrap; margin-bottom: 2px; }
+  .stage .sttl { font-size: 16px; font-weight: 800; }
+  .stage .swho { font-size: 12px; color: var(--mute); }
+  .stage .sbox { border: 1px solid var(--line2); border-radius: 14px; background: var(--paper); padding: 4px 18px; margin-top: 8px; }
+  /* 功能行 */
+  .frow { display: flex; gap: 12px; align-items: flex-start; padding: 12px 0; border-top: 1px dashed var(--line2); }
+  .frow:first-child { border-top: 0; }
+  .frow .fmain { flex: 1; min-width: 0; }
+  .frow .fttl { font-weight: 700; font-size: 13.5px; }
+  .frow .fttl .soul { font-size: 10px; color: var(--todo); border: 1px solid var(--todo-bd); background: var(--todo-bg); border-radius: 999px; padding: 0 6px; margin-left: 6px; vertical-align: 1px; }
+  .frow .fdesc { color: var(--mute); font-size: 12px; margin-top: 2px; line-height: 1.55; }
+  .frow .fdesc b { color: var(--ink); }
+  .frow .fside { flex: none; text-align: right; display: flex; flex-direction: column; gap: 5px; align-items: flex-end; }
+  .frow .st { font-size: 11px; border-radius: 999px; padding: 2px 10px; border: 1px solid var(--line2); white-space: nowrap; font-weight: 600; }
+  .frow .st.done { color: var(--done); border-color: var(--done-bd); background: var(--done-bg); }
+  .frow .st.todo { color: var(--todo); border-color: var(--todo-bd); background: var(--todo-bg); }
+  .frow .st.na { color: var(--line); border-style: dashed; background: none; }
+  .frow .go { font-size: 11.5px; }
+  .frow .go a { color: var(--part); text-decoration: none; font-weight: 600; }
+  .frow .go a::after { content: " ›"; }
+  /* 缺口区 */
+  .gaps { border: 1px solid var(--todo-bd); background: var(--todo-bg); border-radius: 14px; padding: 16px 20px; margin-top: 28px; }
+  .gaps h3 { margin: 0 0 4px; font-size: 15px; color: var(--todo); }
+  .gaps p.gsub { margin: 0 0 12px; font-size: 12px; color: var(--todo); opacity: .85; }
+  .gaps ul { margin: 0; padding-left: 0; list-style: none; }
+  .gaps li { padding: 9px 0; border-top: 1px dashed var(--todo-bd); font-size: 13px; display: flex; gap: 11px; align-items: flex-start; }
+  .gaps li:first-child { border-top: 0; }
+  .gaps li .gwhat { font-weight: 700; color: var(--ink); flex: none; min-width: 96px; }
+  .gaps li .gwhy { color: var(--mute); }
+  .gaps li .gwhy b { color: var(--todo); }
+</style>
+</head>
+<body>
+<header class="top">
+  <h1><img class="logo" src="assets/logo.svg" alt="" />值啦 · MVP 功能总览</h1>
+  <p>按「用户从进来到用熟」的旅程组织 MVP 功能：每个阶段用户碰到什么、产品给什么。每个功能标「设计稿是否已展示」并链到对应低保真屏。</p>
+  <div class="back"><a href="index.html">‹ 返回导航</a> · <a href="checkin.html">打卡板块</a> · <a href="overview.html">总览板块</a> · <a href="mine.html">我的板块</a></div>
+</header>
+<div class="wrap">
+
+  <div class="kpi">
+    <div class="k">
+      <div class="kt">设计稿 · 低保真屏展示进度</div>
+      <div class="kn">19 <small>/ 22 屏</small></div>
+      <div class="kbar"><i style="width:86%"></i></div>
+      <div class="kmeta">待画 3 屏：票面「···」菜单 · 打卡历史页 · 临期提醒态（另空状态屏需补示例卡退场备注）</div>
+    </div>
+  </div>
+
+  <div class="legend" style="margin-top:10px">
+    <b style="color:var(--ink)">信息架构已定：</b>
+    底部三 tab（打卡 / 总览 / 我的）
+    <span style="color:var(--line)">·</span> 编辑 / 归档走打卡屏票面「···」菜单
+    <span style="color:var(--line)">·</span> 全部打卡记录跳独立历史页（新视图态，带返回，不引路由）
+    <span style="color:var(--line)">·</span> 总览点卡片回打卡屏定位，不做单卡详情屏
+  </div>
+
+  <div class="legend">
+    每个功能只标一个状态：
+    <span class="lyr done">已展示 = 低保真屏已画</span>
+    <span class="lyr todo">待画 = 设计稿中尚未展示</span>
+    <span style="color:var(--mute)">· 灰度线框不带视觉风格（三套设计稿待选定）</span>
+  </div>
+
+  <div class="journey">
+
+    <div class="stage" data-no="1">
+      <div class="shd"><span class="sttl">首次进入 · 先尝甜头</span><span class="swho">用户还没建立信任，60 秒内要看到「单价掉」的爽感</span></div>
+      <div class="sbox">
+        <div class="frow">
+          <div class="fmain">
+            <div class="fttl">空状态示例卡试玩</div>
+            <div class="fdesc">种一张可直接玩的「健身年卡」示例卡，点一下打卡看 ¥2000 怎么往下掉，先尝甜头再引导添加自己的卡。</div>
+          </div>
+          <div class="fside"><span class="st done">已展示 · 屏 7</span><span class="go"><a href="checkin.html">空状态</a></span></div>
+        </div>
+        <div class="frow">
+          <div class="fmain">
+            <div class="fttl">示例卡退场</div>
+            <div class="fdesc">添加第一张真卡时示例卡<b>自动归档</b>，toast 告知去向（可在已归档恢复）。否则示例卡永久污染总账净值和多卡左右滑。</div>
+          </div>
+          <div class="fside"><span class="st todo">待补备注</span><span class="go"><a href="checkin.html">空状态</a></span></div>
+        </div>
+      </div>
+    </div>
+
+    <div class="stage" data-no="2">
+      <div class="shd"><span class="sttl">添加卡 · 把自己的卡搬进来</span><span class="swho">填错是第一天最常见的事故，必须能改</span></div>
+      <div class="sbox">
+        <div class="frow">
+          <div class="fmain">
+            <div class="fttl">像填一张待开小票</div>
+            <div class="fdesc">尽量少填：卡名、总价、卡型（不限次 / 有限次）、有效期（年卡默认购买日 +1 年）、总次数（仅有限次）、心里价（可先不填）。行内校验，续卡预填上期信息。</div>
+          </div>
+          <div class="fside"><span class="st done">已展示 · 屏 4</span><span class="go"><a href="checkin.html">添加卡</a></span></div>
+        </div>
+        <div class="frow">
+          <div class="fmain">
+            <div class="fttl">编辑卡片（填错能改）</div>
+            <div class="fdesc">总价 / 有效期 / 心里价 / 卡名 / 总次数可改，复用添加表单预填；<b>卡型创建后不可改</b>（历史打卡语义会乱）。入口：打卡屏票面右上角「···」菜单。</div>
+          </div>
+          <div class="fside"><span class="st todo">待画 ···菜单</span><span class="go"><a href="checkin.html">添加卡（复用）</a></span></div>
+        </div>
+      </div>
+    </div>
+
+    <div class="stage" data-no="3">
+      <div class="shd"><span class="sttl">日常打卡 · 看单价往下掉</span><span class="swho">产品灵魂，用户 90% 的时间在这一屏</span></div>
+      <div class="sbox">
+        <div class="frow">
+          <div class="fmain">
+            <div class="fttl">超大单价怼脸，每打一次往下掉<span class="soul">灵魂</span></div>
+            <div class="fdesc">真实单次成本 = 总价 ÷ 实际打卡次数。点「今天去了」大数字向下滚动一截；心里价是横向参照线（贵 / 省）。<b>¥2000 去了 8 次 → 这次 ¥250，再去掉到 ¥222</b>。</div>
+          </div>
+          <div class="fside"><span class="st done">已展示 · 屏 1</span><span class="go"><a href="checkin.html">打卡灵魂屏</a></span></div>
+        </div>
+        <div class="frow">
+          <div class="fmain">
+            <div class="fttl">超额倒赚态（跌破心里价）</div>
+            <div class="fdesc">跨过心里价后降幅递减，但每去一次「已省」恒定 +一个心里价。大数字翻成<b>「已倒赚」额</b>做主激励，给下一个整数关口接力。</div>
+          </div>
+          <div class="fside"><span class="st done">已展示 · 屏 1a</span><span class="go"><a href="checkin.html">倒赚态</a></span></div>
+        </div>
+        <div class="frow">
+          <div class="fmain">
+            <div class="fttl">少样本 / 打满 / 过期冻结</div>
+            <div class="fdesc">打卡 &lt; 3 次显「—」不显天价（配「再打 N 次出单价」）；有限次打满冻结禁止第 N+1 次；过期停止预测、引导复盘。</div>
+          </div>
+          <div class="fside"><span class="st done">已展示 · 屏 1b/1c</span><span class="go"><a href="checkin.html">边界态</a></span></div>
+        </div>
+        <div class="frow">
+          <div class="fmain">
+            <div class="fttl">里程碑即时反馈（四种转折）</div>
+            <div class="fdesc">按分量差异化：回归温和横幅、打满隆重带 CTA、划算居中庆祝、大跌快闪不挡手；同次只弹最高优先级一种。</div>
+          </div>
+          <div class="fside"><span class="st done">已展示 · 屏 2</span><span class="go"><a href="checkin.html">里程碑 Toast</a></span></div>
+        </div>
+        <div class="frow">
+          <div class="fmain">
+            <div class="fttl">撤销上一次 / 补打过去</div>
+            <div class="fdesc">误触可撤销（二次确认）；补打范围锁「购买日 ~ 今天」，补过去不触发即时爽感。</div>
+          </div>
+          <div class="fside"><span class="st done">已展示 · 屏 2b/2c</span><span class="go"><a href="checkin.html">撤销 / 补打</a></span></div>
+        </div>
+        <div class="frow">
+          <div class="fmain">
+            <div class="fttl">打卡历史页（回看 + 纠错）</div>
+            <div class="fdesc">票面「查看全部」<b>跳独立历史页</b>（新视图态，带返回）：全部记录倒序，每条带日期 + 当次单价；可删单条，二次确认「单价回到 ¥X」。</div>
+          </div>
+          <div class="fside"><span class="st todo">待画 历史页</span><span class="go"><a href="checkin.html">入口已画</a></span></div>
+        </div>
+      </div>
+    </div>
+
+    <div class="stage" data-no="4">
+      <div class="shd"><span class="sttl">断卡回访 · 把人拉回来</span><span class="swho">不去用，单价就卡住降不下来；打开时被动显示，不推送</span></div>
+      <div class="sbox">
+        <div class="frow">
+          <div class="fmain">
+            <div class="fttl">负反馈随断卡天数递进四档</div>
+            <div class="fdesc">温和（3-6 天）→ 给数字（7-14 天）→ 扎心算日烧钱（15 天+）→ <b>止损接受沉没成本（21 天+）</b>，止损档自然衔接「归档这张卡」。</div>
+          </div>
+          <div class="fside"><span class="st done">已展示 · 屏 3</span><span class="go"><a href="checkin.html">负反馈四档</a></span></div>
+        </div>
+      </div>
+    </div>
+
+    <div class="stage" data-no="5">
+      <div class="shd"><span class="sttl">临期 / 到期 · 冲刺与复盘</span><span class="swho">到期复盘是马后炮，临期才是还能改变行为的窗口</span></div>
+      <div class="sbox">
+        <div class="frow">
+          <div class="fmain">
+            <div class="fttl">临期被动提醒（复盘前移）</div>
+            <div class="fdesc">距到期 ≤30 天票面加一行状态；有限次卡加「还剩 N 次没用，来得及冲刺」。与断卡负反馈<b>共用横幅位，按优先级二选一</b>（临期 &gt; 断卡温和档，断卡扎心档 &gt; 临期）。</div>
+          </div>
+          <div class="fside"><span class="st todo">待画 临期态</span><span class="go"><a href="checkin.html">同一横幅位</a></span></div>
+        </div>
+        <div class="frow">
+          <div class="fmain">
+            <div class="fttl">到期复盘（结算总票）</div>
+            <div class="fdesc">用真实数据给下次结论：<b>一年去 96 次，最终每次 ¥21，放心续</b>。有限次额外显示未用次数 = 浪费金额；续卡预填上期信息。</div>
+          </div>
+          <div class="fside"><span class="st done">已展示 · 屏 6</span><span class="go"><a href="checkin.html">到期复盘</a></span></div>
+        </div>
+      </div>
+    </div>
+
+    <div class="stage" data-no="6">
+      <div class="shd"><span class="sttl">多卡管理 · 哪张值、哪张在亏</span><span class="swho">卡一多，总览最有说服力；不想盯的卡要有出口</span></div>
+      <div class="sbox">
+        <div class="frow">
+          <div class="fmain">
+            <div class="fttl">多卡总览（钱包摊开俯视）</div>
+            <div class="fdesc">快过期金边、在用绿副线、在亏红走平、待复盘盖「已结算」章；总账净值口径诚实拆<b>「已省 / 仍亏」</b>。点卡片回打卡屏定位。</div>
+          </div>
+          <div class="fside"><span class="st done">已展示 · 屏 5</span><span class="go"><a href="overview.html">多卡总览</a></span></div>
+        </div>
+        <div class="frow">
+          <div class="fmain">
+            <div class="fttl">单卡态（弱化总账）</div>
+            <div class="fdesc">仅 1 张卡时净账 / 对比无意义，隐藏总账带，主推「再添一张才好比」。</div>
+          </div>
+          <div class="fside"><span class="st done">已展示 · 屏 5a</span><span class="go"><a href="overview.html">单卡态</a></span></div>
+        </div>
+        <div class="frow">
+          <div class="fmain">
+            <div class="fttl">归档卡片（止损的出口）</div>
+            <div class="fdesc">不想盯的卡移出视线：不进总账、不进打卡滑动列表，可在「我的 · 已归档」查看 / 恢复。入口：票面「···」菜单，归档前二次确认。</div>
+          </div>
+          <div class="fside"><span class="st done">已展示 · 屏 12</span><span class="go"><a href="mine.html">已归档的卡</a></span></div>
+        </div>
+      </div>
+    </div>
+
+    <div class="stage" data-no="7">
+      <div class="shd"><span class="sttl">数据安全 · 换机不丢</span><span class="swho">云同步前唯一的安全网，放「我的」tab</span></div>
+      <div class="sbox">
+        <div class="frow">
+          <div class="fmain">
+            <div class="fttl">我的（主入口）</div>
+            <div class="fdesc">顶部先给「N 张卡 · M 条打卡 · 只在本机」的现状与安全感，按「数据安全网 / 卡片管理 / 关于」分组。</div>
+          </div>
+          <div class="fside"><span class="st done">已展示 · 屏 8</span><span class="go"><a href="mine.html">我的</a></span></div>
+        </div>
+        <div class="frow">
+          <div class="fmain">
+            <div class="fttl">导出备份 / 从备份恢复</div>
+            <div class="fdesc">导出全部卡 + 打卡记录（复制 / 存文件，存文件仅 H5）；恢复粘贴 / 选文件，<b>按 id 合并去重</b>，含导入结果反馈。</div>
+          </div>
+          <div class="fside"><span class="st done">已展示 · 屏 9-11</span><span class="go"><a href="mine.html">导出 / 导入</a></span></div>
+        </div>
+        <div class="frow">
+          <div class="fmain">
+            <div class="fttl">最简验证指标（不写代码）</div>
+            <div class="fdesc">小程序用微信自带分析看：次日/7 日留存、人均打卡次数、断卡拉回比例；H5 暂不埋点。核心验证问题：<b>「单价掉」能否让人第 2 周还回来打卡？</b></div>
+          </div>
+          <div class="fside"><span class="st na">无需设计</span></div>
+        </div>
+      </div>
+    </div>
+
+  </div>
+
+  <div class="gaps">
+    <h3>设计稿待补清单</h3>
+    <p class="gsub">功能已定但低保真尚未展示的屏，按对用户第一天体验的影响排序：</p>
+    <ul>
+      <li><span class="gwhat">「···」菜单</span><span class="gwhy">打卡屏票面右上角操作菜单（<b>编辑卡片 / 归档此卡</b>）。用户第一天填错总价就是断头路，优先画。</span></li>
+      <li><span class="gwhat">打卡历史页</span><span class="gwhy">独立历史页（新视图态，带返回）：全部记录倒序 + <b>删单条</b>二次确认。各屏「查看全部」入口已画，目标页缺。</span></li>
+      <li><span class="gwhat">临期提醒态</span><span class="gwhy">票面临期状态行（≤30 天，有限次卡加「还剩 N 次」冲刺文案），与断卡负反馈<b>共用横幅位、按优先级二选一</b>。</span></li>
+      <li><span class="gwhat">空状态备注</span><span class="gwhy">屏 7 需补一条<b>示例卡退场</b>交互备注：添加第一张真卡时示例卡自动归档 + toast 告知。</span></li>
+    </ul>
+  </div>
+
+  <div class="legend" style="margin-top:18px">
+    <b style="color:var(--ink)">明确不进 MVP（对齐 TODO）：</b>
+    分享卡 · 主动推送 · 云同步 · 多买法对比工作台 · 炫特效 —— 验证出留存后再做。
+  </div>
+
+  <p style="color:var(--mute);font-size:12px;margin-top:24px;text-align:center">
+    本页只看「功能是否已在设计稿中展示」；core / 应用层落地进度不在此页跟踪。
+  </p>
+
+</div>
+</body>
+</html>

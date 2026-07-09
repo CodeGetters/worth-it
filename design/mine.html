@@ -261,56 +261,179 @@
   .logrow .d { font-size: 13px; }
   .logrow .wd2 { font-size: 11px; color: var(--mute); }
   .logrow .delta { font-size: 11px; color: var(--mute); font-variant-numeric: tabular-nums; }
+  /* —— 「我的」分区列表 —— */
+  .mgroup { font-size: 11px; color: var(--mute); font-weight: 700; margin: 16px 2px 8px; letter-spacing: .04em; }
+  .mgroup:first-child { margin-top: 2px; }
+  .cardrow .ci { width: 20px; text-align: center; color: var(--mute); flex: none; font-style: normal; }
+  .cardrow .sub2 { font-size: 11px; color: var(--mute); margin-top: 2px; }
+  .pill { font-size: 10px; border-radius: 999px; padding: 1px 7px; border: 1px solid var(--line2); color: var(--mute); white-space: nowrap; flex: none; }
+  .pill.h5 { border-color: #aecbe3; color: #2b6699; }
+  /* 导入结果反馈 */
+  .reslist { margin-top: 10px; }
+  .resrow { display: flex; gap: 9px; align-items: flex-start; padding: 8px 0; border-bottom: 1px dashed var(--line2); font-size: 12px; }
+  .resrow:last-child { border-bottom: 0; }
+  .resrow .rk { width: 16px; flex: none; text-align: center; font-weight: 700; }
+  .resrow .rk.ok { color: #2e7d32; } .resrow .rk.skip { color: var(--mute); }
+  .resrow .rt { color: var(--mute); font-size: 11px; margin-top: 2px; }
 </style>
 </head>
 <body>
 <header class="top">
   <h1><img src="assets/logo.svg" alt="" style="width:30px;height:30px;vertical-align:-6px;margin-right:8px" />值啦 · 「我的」板块低保真</h1>
-  <p>我的：数据导出 / 导入等设置项（MVP 内多为待建）。</p>
+  <p>我的：数据安全网（导出/导入）+ 归档 + 关于/反馈。MVP 只做导出/导入，其余标「待建」。</p>
   <p style="margin-top:8px"><a href="index.html" style="color:var(--mute);text-decoration:none;font-size:13px">‹ 返回导航</a></p>
 </header>
 <div class="legend">
   灰度线框 · 不带视觉风格（三套设计稿待选定）。标签：
   <span style="color:#2e7d32">已接通</span> = 当前代码已跑通 ·
   <span style="color:#b26a00">待建</span> = MVP 内尚未落地。
+  <br /><span style="color:#2b6699">H5</span> 角标 = 仅 H5 可用，小程序无自由文件系统需降级（见各屏备注）。
 </div>
 <div class="wall">
 
 <section class="screen">
-  <p class="cap"><b>8 · 我的</b><span class="tag todo">待建</span></p>
+  <p class="cap"><b>8 · 我的（主入口）</b><span class="tag todo">待建</span></p>
   <div class="phone">
     <div class="bar"><span class="ttl">我的</span><span style="width:26px"></span></div>
     <div class="body">
-      <div class="cardrow"><div class="grow">数据导出（备份）</div><div>›</div></div>
-      <div class="cardrow"><div class="grow">数据导入（恢复）</div><div>›</div></div>
-      <div class="cardrow"><div class="grow">已归档的卡</div><div>›</div></div>
-      <div class="cardrow" style="opacity:.5"><div class="grow">跨端同步（云）</div><div class="meta">后续</div></div>
-      <div class="cardrow" style="opacity:.5"><div class="grow">语言 / 关于</div><div>›</div></div>
+      <div class="summary" style="text-align:left">
+        <div class="lbl">本地共存</div>
+        <div class="big" style="font-size:20px">4 张卡 · 118 条打卡</div>
+        <div class="meta" style="font-size:11px;color:var(--mute);margin-top:4px">数据只在本机 · 建议定期导出备份</div>
+      </div>
+
+      <div class="mgroup">数据安全网</div>
+      <div class="cardrow"><i class="ci">⬆</i><div class="grow">导出备份<div class="sub2">复制或存文件，换机不丢</div></div><div>›</div></div>
+      <div class="cardrow"><i class="ci">⬇</i><div class="grow">从备份恢复<div class="sub2">粘贴 / 选文件，按较新合并</div></div><div>›</div></div>
+
+      <div class="mgroup">卡片管理</div>
+      <div class="cardrow" style="opacity:.55"><i class="ci">▤</i><div class="grow">已归档的卡</div><span class="pill">待建</span></div>
+
+      <div class="mgroup">关于</div>
+      <div class="cardrow"><i class="ci">✉</i><div class="grow">反馈 / 提建议</div><div>›</div></div>
+      <div class="cardrow"><i class="ci">ⓘ</i><div class="grow">关于值啦</div><div class="meta">v0.1.0</div></div>
+      <div class="cardrow" style="opacity:.55"><i class="ci">☁</i><div class="grow">登录 / 跨端同步</div><span class="pill">后续</span></div>
+      <div class="cardrow" style="opacity:.55"><i class="ci">🌐</i><div class="grow">语言 Language</div><span class="pill">后续</span></div>
     </div>
     <div class="tabbar"><div>打卡</div><div>总览</div><div class="on">我的</div></div>
   </div>
-  <ul class="feat"><li>当前底部"我的" tab 走 comingSoon 占位</li><li>主放：导出/导入（云同步前的安全网）</li></ul>
+  <ul class="feat">
+    <li><b>产品</b>：MVP 真能点的只有「导出/导入 + 反馈 + 关于」，其余灰置标待建。<b>tab 是否该独立见下方备注。</b></li>
+    <li><b>用户</b>：顶部先给「你的数据现状 + 只在本机」的安全感，导出的动机自然浮现。</li>
+    <li><b>UI</b>：按「安全网 / 卡片 / 关于」分组，避免一列平铺分不清主次。</li>
+  </ul>
+  <p class="note">⚠️ tab 抉择：MVP 阶段「我的」内容单薄，可考虑先不立底部第三 tab，把导出/导入收进总览页角落，等归档/登录落地再扶正（对齐 TODO「tab 验证后再补」）。此屏按「若保留 tab」画。</p>
 </section>
 
 <section class="screen">
-  <p class="cap"><b>9 · 数据导出 / 导入</b><span class="tag todo">待建</span></p>
+  <p class="cap"><b>9 · 数据导出</b><span class="tag todo">待建</span></p>
   <div class="phone">
-    <div class="bar"><span class="ic">‹</span><span class="ttl">导出 / 导入</span><span style="width:26px"></span></div>
+    <div class="bar"><span class="ic">‹</span><span class="ttl">导出备份</span><span style="width:26px"></span></div>
     <div class="body">
       <div class="box" style="border-style:solid">
-        <div class="lbl">导出全部卡 + 打卡记录</div>
-        <div class="inp" style="height:auto;padding:10px;margin-top:8px;font-family:monospace;font-size:11px">{"cards":[…],"checkins":[…]}</div>
-        <div class="row"><div class="btn" style="margin-top:10px">复制</div><div class="btn ghost" style="margin-top:10px">下载文件</div></div>
+        <div class="lbl">全部数据快照 · 4 张卡 / 118 条打卡</div>
+        <div class="inp" style="height:auto;padding:10px;margin-top:8px;font-family:monospace;font-size:11px;line-height:1.5">{"v":1,"cards":[…],<br/>"checkins":[…],<br/>"exportedAt":"2026-07-02"}</div>
+        <div class="btn" style="margin-top:12px">复制到剪贴板</div>
+        <div class="btn ghost" style="margin-top:8px">保存为文件 <span class="pill h5">H5</span></div>
       </div>
-      <div class="box">
-        <div class="lbl">从备份恢复（粘贴 / 选文件）</div>
-        <div class="inp" style="height:54px;margin-top:8px">粘贴备份内容…</div>
-        <div class="btn" style="margin-top:10px">导入并合并</div>
-      </div>
+      <div class="miniact"><span>导出内容含软删除墓碑，恢复后同步不冲突</span></div>
     </div>
     <div class="tabbar"><div>打卡</div><div>总览</div><div class="on">我的</div></div>
   </div>
-  <ul class="feat"><li>云同步前的安全网，成本低价值高</li><li>导入按 id 合并去重（对齐同步元信息）</li></ul>
+  <ul class="feat">
+    <li><b>产品</b>：云同步前的安全网，成本低价值高（对齐 TODO 已决策）。</li>
+    <li><b>UI/跨端</b>：「复制到剪贴板」两端都行，作主操作；「保存文件」仅 H5，小程序降级（无自由文件系统），标 <span style="color:#2b6699">H5</span> 角标。</li>
+    <li>快照带 <code>v</code> 版本号 + <code>exportedAt</code>，为将来格式演进与冲突判断留锚点。</li>
+  </ul>
+</section>
+
+<section class="screen">
+  <p class="cap"><b>10 · 数据导入</b><span class="tag todo">待建</span></p>
+  <div class="phone">
+    <div class="bar"><span class="ic">‹</span><span class="ttl">从备份恢复</span><span style="width:26px"></span></div>
+    <div class="body">
+      <div class="seg" style="margin-bottom:12px"><div class="on">粘贴文本</div><div>选文件 <span class="pill h5" style="margin-left:2px">H5</span></div></div>
+      <div class="box">
+        <div class="lbl">粘贴备份内容</div>
+        <div class="inp" style="height:64px;margin-top:8px;align-items:flex-start;padding-top:8px">粘贴导出的 JSON…</div>
+        <div class="err">✕ 格式无法识别，请粘贴由「导出备份」生成的内容</div>
+      </div>
+      <div class="miniact" style="text-align:left;color:var(--mute)">合并规则：按记录 id 比对，<b style="color:var(--ink)">同一张卡取「更新时间较新」的一份</b>，本地已删的不会被旧备份复活。</div>
+      <div class="btn">预览将导入的改动</div>
+    </div>
+    <div class="tabbar"><div>打卡</div><div>总览</div><div class="on">我的</div></div>
+  </div>
+  <ul class="feat">
+    <li><b>用户</b>：导入是最容易「怕覆盖掉现有数据」的时刻，先「预览改动」再确认，而非一键盖掉。</li>
+    <li><b>产品/正确性</b>：合并走 <code>updatedAt</code> last-write-wins 且尊重 <code>deleted</code> 墓碑（CLAUDE.md 同步硬约束）。</li>
+    <li><b>UI</b>：含格式校验错误态；「选文件」仅 H5 标角标。</li>
+  </ul>
+</section>
+
+<section class="screen">
+  <p class="cap"><b>11 · 导入结果反馈</b><span class="tag todo">待建</span></p>
+  <div class="phone">
+    <div class="bar"><span class="ic">‹</span><span class="ttl">导入完成</span><span style="width:26px"></span></div>
+    <div class="body">
+      <div class="summary">
+        <div class="big">✓ 已合并</div>
+        <div class="meta" style="font-size:12px;color:var(--mute);margin-top:4px">来自备份 2026-06-28 的快照</div>
+      </div>
+      <div class="box" style="border-style:solid">
+        <div class="reslist">
+          <div class="resrow"><span class="rk ok">＋</span><div class="grow"><div>新增 2 张卡 · 41 条打卡<div class="rt">本地原先没有的记录</div></div></div></div>
+          <div class="resrow"><span class="rk ok">↻</span><div class="grow"><div>更新 1 张卡<div class="rt">备份里更新，覆盖了本地旧版</div></div></div></div>
+          <div class="resrow"><span class="rk skip">＝</span><div class="grow"><div>跳过 1 张卡 · 12 条打卡<div class="rt">本地已是较新，保留不动</div></div></div></div>
+        </div>
+      </div>
+      <div class="btn">查看总览</div>
+    </div>
+    <div class="tabbar"><div>打卡</div><div>总览</div><div class="on">我的</div></div>
+  </div>
+  <ul class="feat">
+    <li><b>用户</b>：补上原设计缺失的一环——导入完到底发生了什么。不给反馈，用户会反复怀疑数据是否丢/重。</li>
+    <li>三态说清：新增 / 更新（谁覆盖谁）/ 跳过（为何不动），一眼可核对。</li>
+    <li>CTA 直达总览，让用户立刻验证结果。</li>
+  </ul>
+</section>
+
+<section class="screen">
+  <p class="cap"><b>12 · 已归档的卡</b><span class="tag todo">待建</span></p>
+  <div class="phone">
+    <div class="bar"><span class="ic">‹</span><span class="ttl">已归档</span><span style="width:26px"></span></div>
+    <div class="body">
+      <div class="cardrow"><span class="dot gray"></span><div class="grow"><div>健身年卡 2025<div class="sub2">已到期 · 最终真实单价 ¥18.6</div></div></div><span class="pill">恢复</span></div>
+      <div class="cardrow"><span class="dot gray"></span><div class="grow"><div>私教 20 次<div class="sub2">已打满 · 最终 ¥210/次</div></div></div><span class="pill">恢复</span></div>
+      <div class="miniact"><span>归档 = 从总览收起，数据与复盘结论保留</span></div>
+    </div>
+    <div class="tabbar"><div>打卡</div><div>总览</div><div class="on">我的</div></div>
+  </div>
+  <ul class="feat">
+    <li><b>产品</b>：README 列为后续，此处占位定形——到期/打满的卡从总览收起但不删，保留复盘结论。</li>
+    <li>与软删除区分：归档是「用完收好」，删除是「置墓碑」，两者语义不同。</li>
+  </ul>
+</section>
+
+<section class="screen">
+  <p class="cap"><b>13 · 关于 / 反馈</b><span class="tag todo">待建</span></p>
+  <div class="phone">
+    <div class="bar"><span class="ic">‹</span><span class="ttl">关于值啦</span><span style="width:26px"></span></div>
+    <div class="body">
+      <div class="summary">
+        <img src="assets/logo.svg" alt="" style="width:40px;height:40px" />
+        <div class="big" style="font-size:18px;margin-top:6px">值啦 Worthit</div>
+        <div class="meta" style="font-size:11px;color:var(--mute)">v0.1.0 · 打卡看真实单价往下掉</div>
+      </div>
+      <div class="cardrow"><div class="grow">给个建议 / 报个 bug</div><div>›</div></div>
+      <div class="cardrow"><div class="grow">这工具怎么算的（算法说明）</div><div>›</div></div>
+      <div class="cardrow" style="opacity:.55"><div class="grow">隐私说明（数据只在本机）</div><span class="pill">待建</span></div>
+    </div>
+    <div class="tabbar"><div>打卡</div><div>总览</div><div class="on">我的</div></div>
+  </div>
+  <ul class="feat">
+    <li><b>产品/获客</b>：纯本地早期，一个能直达你的反馈入口比归档更值钱，收集真实用户声音。</li>
+    <li>「怎么算的」呼应产品灵魂（真实单价透明），也是信任来源。</li>
+  </ul>
 </section>
 
 </div>
