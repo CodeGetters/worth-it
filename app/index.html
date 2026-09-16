@@ -1,0 +1,1048 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>Worth It · 值不值 — 买之前，先算这一笔</title>
+<meta name="description" content="输入价格与使用预期，算出单次使用成本与回本周期，给出可解释的值不值结论。" />
+<!-- 实现：V1 Worth It-设计稿.html 的按稿实现 · Takram 柔和科技 · 自包含零依赖 · localStorage 持久化 -->
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Noto+Serif+SC:wght@600;700&family=Noto+Sans+SC:wght@400;500;700&display=swap" rel="stylesheet">
+<style>
+:root{
+  --canvas:#F3F1EA; --surface:#FBFAF6; --surface-2:#EFECE2;
+  --ink:#25231D; --muted:#6F6A5E; --hairline:rgba(37,35,29,.12); --hairline-strong:rgba(37,35,29,.2);
+  --accent:#3E5C47; --accent-ink:#2C4433; --accent-soft:#E4EAE2; --accent-mist:rgba(62,92,71,.08);
+  --warn:#8A6A22; --warn-soft:#F2E8CE; --danger:#A44F2A; --danger-soft:#F3E2D6;
+  --serif:'Noto Serif SC','Songti SC','SimSun',serif;
+  --sans:'Noto Sans SC','PingFang SC','Hiragino Sans GB','Microsoft YaHei',sans-serif;
+  --mono:ui-monospace,'SF Mono','JetBrains Mono','Cascadia Mono',monospace;
+  --r-card:22px; --r-input:12px; --r-sm:10px;
+  --shadow:0 1px 2px rgba(37,35,29,.05),0 18px 40px -28px rgba(37,35,29,.28);
+  --ease:cubic-bezier(.32,.72,0,1);
+}
+*{box-sizing:border-box;margin:0;padding:0}
+html{scroll-behavior:smooth}
+body{background:var(--canvas);color:var(--ink);font-family:var(--sans);font-size:15px;line-height:1.6;-webkit-font-smoothing:antialiased;min-height:100vh}
+body::before{content:'';position:fixed;inset:0;z-index:0;pointer-events:none;
+  background:radial-gradient(720px 480px at 8% -4%,rgba(62,92,71,.09),transparent 62%),
+             radial-gradient(560px 420px at 96% 14%,rgba(169,129,47,.07),transparent 60%)}
+.app{position:relative;z-index:1;max-width:1160px;margin:0 auto;padding:0 24px 96px}
+.app-nav{display:flex;align-items:center;justify-content:space-between;padding:20px 0 18px;border-bottom:1px solid var(--hairline);position:sticky;top:0;background:rgba(243,241,234,.86);backdrop-filter:blur(14px);z-index:40}
+.brand{display:flex;align-items:center;gap:10px;font-weight:700;font-size:16px}
+.brand-mark{width:26px;height:26px;border-radius:9px;background:linear-gradient(135deg,var(--accent) 0%,#5A7F63 100%);box-shadow:inset 0 1px 0 rgba(255,255,255,.35)}
+.brand small{font-weight:500;color:var(--muted);font-size:12px;margin-left:2px}
+.app-links{display:flex;gap:4px;list-style:none}
+.app-links a{padding:8px 14px;border-radius:999px;font-size:13px;font-weight:500;color:var(--ink);text-decoration:none;cursor:pointer}
+.app-links a.on{background:var(--ink);color:var(--surface)}
+.app-links a:not(.on):hover{background:var(--accent-mist)}
+.view{display:none;animation:vin 320ms var(--ease)}
+.view.on{display:block}
+@keyframes vin{from{opacity:0;transform:translateY(6px)}to{opacity:1;transform:none}}
+.page-title{font-family:var(--serif);font-size:30px;font-weight:700;letter-spacing:-.005em;margin:30px 0 4px}
+.page-sub{color:var(--muted);font-size:14px;margin-bottom:24px}
+/* ---------- 表单 ---------- */
+.layout{display:grid;grid-template-columns:1.55fr 1fr;gap:22px;align-items:start}
+.form-card,.panel{background:var(--surface);border:1px solid var(--hairline);border-radius:var(--r-card);box-shadow:var(--shadow)}
+.form-card{padding:26px 28px}
+.panel{padding:20px 22px}
+.panel h3{font-size:13px;font-weight:700;letter-spacing:.06em;color:var(--muted);margin-bottom:12px}
+.frow{display:grid;grid-template-columns:1.4fr 1fr 1fr;gap:14px}
+.frow + .frow{margin-top:14px}
+.field label{display:flex;justify-content:space-between;align-items:baseline;font-size:13px;font-weight:500;margin-bottom:6px}
+.field label em{font-style:normal;font-family:var(--mono);font-size:11px;color:var(--muted)}
+.control{position:relative}
+.control .unit{position:absolute;right:12px;top:50%;transform:translateY(-50%);font-family:var(--mono);font-size:12px;color:var(--muted);pointer-events:none}
+.input{width:100%;height:44px;border:1px solid var(--hairline-strong);border-radius:var(--r-input);background:var(--surface);padding:0 44px 0 14px;font:inherit;font-size:15px;color:var(--ink);transition:border-color 180ms var(--ease),box-shadow 180ms var(--ease)}
+.input::placeholder{color:#A39D8F}
+.input:hover{border-color:var(--muted)}
+.input:focus{outline:none;border-color:var(--accent);box-shadow:0 0 0 3px rgba(62,92,71,.18)}
+.input.is-error{border-color:var(--danger);box-shadow:0 0 0 3px rgba(164,79,42,.14)}
+.hint{font-size:12px;color:var(--muted);margin-top:6px}
+.err{font-size:12px;color:var(--danger);margin-top:6px;display:none;gap:5px;align-items:center}
+.field.invalid .err{display:flex}
+.field.invalid .hint{display:none}
+.preview{display:flex;align-items:center;gap:10px;margin-top:18px;padding:12px 16px;border-radius:var(--r-sm);background:var(--accent-mist);border:1px dashed rgba(62,92,71,.3);font-size:13px;color:var(--accent-ink)}
+.preview b{font-family:var(--mono);font-variant-numeric:tabular-nums}
+.actions{display:flex;gap:12px;margin-top:18px;flex-wrap:wrap}
+.btn{display:inline-flex;align-items:center;justify-content:center;gap:8px;height:46px;padding:0 22px;border-radius:999px;font:inherit;font-size:14px;font-weight:700;cursor:pointer;border:1px solid transparent;transition:transform 160ms var(--ease),background 160ms var(--ease),box-shadow 160ms var(--ease)}
+.btn:focus-visible{outline:2px solid var(--accent);outline-offset:2px}
+.btn-primary{background:var(--accent);color:#F6F5EF;box-shadow:inset 0 1px 0 rgba(255,255,255,.18),0 10px 22px -14px rgba(46,68,51,.6)}
+.btn-primary:hover{background:var(--accent-ink)}
+.btn-primary:active{transform:translateY(1px)}
+.btn-ghost{background:transparent;color:var(--ink);border-color:var(--hairline-strong);font-weight:500}
+.btn-ghost:hover{background:var(--accent-mist)}
+.btn-danger-ghost{background:transparent;color:var(--danger);border-color:rgba(164,79,42,.35);font-weight:500}
+.btn-danger-ghost:hover{background:var(--danger-soft)}
+.btn[disabled]{opacity:.45;cursor:not-allowed;transform:none}
+.btn-sm{height:38px;padding:0 16px;font-size:13px}
+.example{display:flex;align-items:center;justify-content:space-between;gap:10px;padding:12px 14px;border:1px solid var(--hairline);border-radius:14px;background:var(--surface)}
+.example + .example{margin-top:10px}
+.example b{font-size:14px}
+.example small{display:block;color:var(--muted);font-size:12px}
+.badge{display:inline-flex;align-items:center;gap:6px;height:24px;padding:0 10px;border-radius:999px;font-size:12px;font-weight:700;white-space:nowrap}
+.badge i{width:6px;height:6px;border-radius:99px;background:currentColor}
+.badge-worth{background:var(--accent-soft);color:var(--accent-ink)}
+.badge-marginal{background:var(--warn-soft);color:var(--warn)}
+.badge-skip{background:var(--danger-soft);color:var(--danger)}
+.badge-neutral{background:var(--surface-2);color:var(--muted)}
+.use-btn{flex:none;font-size:12px;font-weight:700;color:var(--accent);background:transparent;border:1px solid rgba(62,92,71,.35);border-radius:999px;padding:6px 12px;cursor:pointer}
+.use-btn:hover{background:var(--accent-mist)}
+.side{display:grid;gap:14px}
+.recent{border-top:1px solid var(--hairline);padding-top:14px;margin-top:4px}
+.recent dl{display:grid;grid-template-columns:auto 1fr;gap:4px 14px;font-size:13px}
+.recent dt{color:var(--muted)}
+.recent dd{font-weight:500;text-align:right;font-variant-numeric:tabular-nums}
+/* ---------- 结果 ---------- */
+.result-wrap{background:var(--surface);border:1px solid var(--hairline);border-radius:26px;box-shadow:var(--shadow);padding:34px 38px 38px}
+.verdict-row{display:flex;align-items:center;gap:26px;flex-wrap:wrap}
+.ring{position:relative;width:132px;height:132px;flex:none}
+.ring svg{transform:rotate(-90deg)}
+.ring .score{position:absolute;inset:0;display:flex;flex-direction:column;align-items:center;justify-content:center}
+.ring .score b{font-family:var(--serif);font-size:34px;font-weight:700;line-height:1}
+.ring .score span{font-size:11px;color:var(--muted);letter-spacing:.06em}
+.ring .ring-track{stroke:rgba(37,35,29,.1);fill:none;stroke-width:10}
+.ring .ring-val{fill:none;stroke-width:10;stroke-linecap:round;transition:stroke-dasharray 700ms var(--ease),stroke 300ms}
+.verdict-title{flex:1;min-width:260px}
+.verdict-title .badge{height:30px;font-size:14px;padding:0 14px}
+.verdict-title h2{font-family:var(--serif);font-size:38px;line-height:1.15;font-weight:700;margin-top:10px;letter-spacing:-.01em}
+.verdict-title p{color:var(--muted);margin-top:6px}
+.big-cost{text-align:right;margin-left:auto}
+.big-cost label{font-size:12px;letter-spacing:.06em;color:var(--muted)}
+.big-cost b{display:block;font-family:var(--mono);font-size:52px;font-weight:600;line-height:1.05;letter-spacing:-.02em;font-variant-numeric:tabular-nums;color:var(--accent-ink)}
+.big-cost small{color:var(--muted);font-size:12px}
+.metrics{display:grid;grid-template-columns:repeat(4,1fr);gap:14px;margin-top:26px}
+.metric{border:1px solid var(--hairline);border-radius:16px;background:var(--surface);padding:16px 18px}
+.metric label{font-size:12px;color:var(--muted);letter-spacing:.04em}
+.metric b{display:block;font-family:var(--mono);font-size:22px;font-weight:600;margin-top:4px;font-variant-numeric:tabular-nums}
+.metric span{font-size:12px;color:var(--muted)}
+.split{display:grid;grid-template-columns:1.15fr .85fr;gap:22px;margin-top:26px}
+.panel-line{border:1px solid var(--hairline);border-radius:var(--r-card);background:var(--surface);box-shadow:var(--shadow);padding:22px 24px}
+.panel-line h3{font-size:13px;font-weight:700;letter-spacing:.06em;color:var(--muted);margin-bottom:14px}
+.reason{display:flex;gap:12px;padding:10px 0;border-top:1px solid var(--hairline);font-size:14px}
+.reason:first-of-type{border-top:none}
+.reason .tag{flex:none;font-family:var(--mono);font-size:11px;color:var(--accent-ink);background:var(--accent-mist);border-radius:6px;padding:3px 8px;height:fit-content;margin-top:2px}
+.reason.warn .tag{color:var(--warn);background:var(--warn-soft)}
+.reason p{color:var(--ink)}
+.reason p small{color:var(--muted)}
+.stackbar{display:flex;height:30px;border-radius:10px;overflow:hidden;border:1px solid var(--hairline);margin:12px 0 10px}
+.stackbar i{display:block;height:100%}
+.legend{display:flex;gap:16px;flex-wrap:wrap;font-size:12px;color:var(--muted)}
+.legend i{display:inline-block;width:10px;height:10px;border-radius:3px;margin-right:6px;vertical-align:-1px}
+.note{margin-top:14px;padding:12px 16px;border-radius:var(--r-sm);background:var(--warn-soft);color:#5E4A18;font-size:13px;display:flex;gap:8px}
+.result-actions{display:flex;gap:12px;margin-top:26px;flex-wrap:wrap}
+/* ---------- 台账 ---------- */
+.ledger-bar{display:flex;align-items:center;justify-content:space-between;gap:14px;margin-bottom:16px;flex-wrap:wrap}
+.ledger-bar p{font-size:13px;color:var(--muted)}
+.ledger-bar .ops{display:flex;gap:10px}
+.sel-bar{display:none;align-items:center;gap:12px;padding:8px 8px 8px 16px;border-radius:999px;background:var(--ink);color:var(--surface);font-size:13px;margin-bottom:14px;width:fit-content}
+.sel-bar.on{display:flex}
+.sel-bar b{font-family:var(--mono)}
+.sel-bar .btn{height:32px;padding:0 14px;font-size:12px;background:var(--surface);color:var(--ink)}
+.table-wrap{background:var(--surface);border:1px solid var(--hairline);border-radius:var(--r-card);box-shadow:var(--shadow);overflow-x:auto}
+table.table{width:100%;border-collapse:collapse;font-size:14px;min-width:720px}
+.table th{text-align:left;font-size:12px;color:var(--muted);font-weight:500;letter-spacing:.04em;padding:12px; border-bottom:1px solid var(--hairline-strong);white-space:nowrap}
+.table td{padding:14px 12px;border-bottom:1px solid var(--hairline);font-variant-numeric:tabular-nums;vertical-align:middle}
+.table tr:last-child td{border-bottom:none}
+.table td.num{font-family:var(--mono);font-size:13px}
+.table tbody tr:hover td{background:var(--accent-mist)}
+.table .name b{font-weight:700}
+.table .name small{display:block;color:var(--muted);font-size:12px}
+.row-ops{display:flex;gap:6px;justify-content:flex-end}
+.icon-btn{width:34px;height:34px;border-radius:10px;border:1px solid var(--hairline);background:var(--surface);color:var(--muted);display:inline-flex;align-items:center;justify-content:center;cursor:pointer}
+.icon-btn:hover{color:var(--ink);background:var(--surface-2)}
+.icon-btn.danger:hover{color:var(--danger);border-color:rgba(164,79,42,.4);background:var(--danger-soft)}
+input[type=checkbox].cb{appearance:none;-webkit-appearance:none;width:20px;height:20px;border:1.5px solid var(--hairline-strong);border-radius:6px;cursor:pointer;position:relative;vertical-align:middle;background:var(--surface)}
+input[type=checkbox].cb:checked{background:var(--accent);border-color:var(--accent)}
+input[type=checkbox].cb:checked::after{content:'';position:absolute;left:5.5px;top:2px;width:5px;height:9px;border:solid #F6F5EF;border-width:0 2px 2px 0;transform:rotate(45deg)}
+.empty{border:1.5px dashed var(--hairline-strong);border-radius:var(--r-card);padding:44px;text-align:center;background:var(--surface)}
+.empty h3{font-family:var(--serif);font-size:20px;margin-bottom:6px}
+.empty p{color:var(--muted);font-size:13px;margin-bottom:16px}
+/* ---------- 对比 ---------- */
+.compare-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(240px,1fr));gap:16px}
+.cmp-col{border:1px solid var(--hairline);border-radius:var(--r-card);background:var(--surface);box-shadow:var(--shadow);overflow:hidden}
+.cmp-col.best{border-color:rgba(62,92,71,.5);box-shadow:0 0 0 3px rgba(62,92,71,.12),var(--shadow)}
+.cmp-head{padding:18px 20px 14px;border-bottom:1px solid var(--hairline);position:relative}
+.cmp-head b{font-size:16px;word-break:break-all}
+.cmp-head small{display:block;color:var(--muted);font-size:12px;margin-top:2px}
+.cmp-head .win{position:absolute;top:14px;right:14px}
+.cmp-row{display:flex;justify-content:space-between;gap:10px;padding:11px 20px;border-bottom:1px solid var(--hairline);font-size:13px}
+.cmp-row label{color:var(--muted)}
+.cmp-row b{font-family:var(--mono);font-weight:600;font-variant-numeric:tabular-nums;text-align:right}
+.cmp-row.best-cell b{color:var(--accent-ink)}
+.cmp-row.best-cell label::after{content:'最划算';margin-left:6px;font-size:10px;color:var(--accent-ink);background:var(--accent-soft);border-radius:6px;padding:1px 6px;vertical-align:1px}
+.cmp-total{padding:16px 20px;background:var(--accent-mist)}
+.cmp-total label{font-size:12px;color:var(--muted)}
+.cmp-total b{display:block;font-family:var(--serif);font-size:19px;margin-top:2px}
+/* ---------- 口径 ---------- */
+.method-grid{display:grid;grid-template-columns:1.05fr .95fr;gap:20px;align-items:start}
+.formula{font-family:var(--mono);font-size:15px;background:var(--surface-2);border:1px solid var(--hairline);border-radius:14px;padding:18px 20px;line-height:1.9;font-variant-numeric:tabular-nums;overflow-x:auto}
+.formula em{font-style:normal;color:var(--accent-ink);font-weight:600}
+.vars{display:grid;gap:8px;margin-top:14px;font-size:13px}
+.vars div{display:flex;gap:10px;flex-wrap:wrap}
+.vars code{font-family:var(--mono);color:var(--accent-ink)}
+.vars span{color:var(--muted)}
+.weightbar{display:flex;height:26px;border-radius:8px;overflow:hidden;margin:12px 0 8px;border:1px solid var(--hairline)}
+.weightbar i{display:flex;align-items:center;justify-content:center;font-family:var(--mono);font-size:11px;color:#F6F5EF}
+.rule-list{list-style:none;display:grid;gap:10px;font-size:13.5px}
+.rule-list li{display:flex;gap:10px}
+.rule-list .n{flex:none;width:22px;height:22px;border-radius:99px;background:var(--ink);color:var(--surface);font-family:var(--mono);font-size:11px;display:flex;align-items:center;justify-content:center;margin-top:1px}
+.rule-list b{font-weight:700}
+.rule-list span{color:var(--muted)}
+table.mini{width:100%;border-collapse:collapse;font-size:13px;margin-top:6px}
+.mini th{text-align:left;font-size:12px;color:var(--muted);font-weight:500;padding:8px 10px;border-bottom:1px solid var(--hairline-strong)}
+.mini td{padding:9px 10px;border-bottom:1px solid var(--hairline)}
+.mini td.mono{font-family:var(--mono);font-size:12px}
+/* ---------- Toast / Dialog ---------- */
+.toast-zone{position:fixed;bottom:28px;left:0;right:0;display:flex;flex-direction:column;align-items:center;gap:10px;z-index:90;pointer-events:none}
+.toast{display:flex;align-items:center;gap:10px;background:var(--ink);color:var(--surface);border-radius:999px;padding:11px 20px;font-size:13px;box-shadow:var(--shadow);animation:toastin 260ms var(--ease)}
+@keyframes toastin{from{opacity:0;transform:translateY(10px)}to{opacity:1;transform:none}}
+.toast.out{opacity:0;transform:translateY(6px);transition:all 240ms var(--ease)}
+.toast svg.ic{stroke:#A9C4AF}
+.dialog-mask{position:fixed;inset:0;background:rgba(37,35,29,.38);backdrop-filter:blur(3px);display:none;align-items:center;justify-content:center;z-index:80;padding:20px}
+.dialog-mask.on{display:flex}
+.dialog{border:1px solid var(--hairline);border-radius:18px;background:var(--surface);box-shadow:var(--shadow);padding:22px 24px;max-width:400px;width:100%}
+.dialog h4{font-family:var(--serif);font-size:17px;margin-bottom:6px}
+.dialog p{font-size:13px;color:var(--muted);margin-bottom:16px}
+.dialog .d-ops{display:flex;gap:10px;justify-content:flex-end}
+svg.ic{width:16px;height:16px;stroke:currentColor;fill:none;stroke-width:1.7;stroke-linecap:round;stroke-linejoin:round;flex:none}
+.foot-note{margin-top:22px;font-size:12px;color:var(--muted);display:flex;gap:8px;align-items:flex-start}
+.visually-hidden{position:absolute;width:1px;height:1px;overflow:hidden;clip:rect(0 0 0 0);white-space:nowrap}
+/* ---------- 响应式 ---------- */
+@media (max-width:900px){
+  .layout,.split,.method-grid{grid-template-columns:1fr}
+  .metrics{grid-template-columns:repeat(2,1fr)}
+  .page-title{font-size:26px}
+  .result-wrap,.form-card{padding:22px 18px}
+  .app-nav{padding:16px 0 14px}
+  .big-cost{margin-left:0;text-align:left}
+  .big-cost b{font-size:44px}
+  .frow{grid-template-columns:1fr}
+  .app{padding:0 16px 88px}
+}
+@media (max-width:520px){
+  .metrics{grid-template-columns:1fr}
+  .verdict-title h2{font-size:30px}
+  .app-links a{padding:7px 10px;font-size:12px}
+}
+@media (prefers-reduced-motion:reduce){*{animation:none!important;transition:none!important}}
+</style>
+</head>
+<body>
+<svg width="0" height="0" style="position:absolute" aria-hidden="true">
+  <symbol id="i-check" viewBox="0 0 24 24"><path d="M4.5 12.5l5 5 10-11"/></symbol>
+  <symbol id="i-alert" viewBox="0 0 24 24"><path d="M12 3.5 2.5 20h19L12 3.5z"/><path d="M12 10v4.5 M12 17.4v.1"/></symbol>
+  <symbol id="i-eye" viewBox="0 0 24 24"><path d="M2 12s3.5-6.5 10-6.5S22 12 22 12s-3.5 6.5-10 6.5S2 12 2 12z"/><circle cx="12" cy="12" r="2.6"/></symbol>
+  <symbol id="i-trash" viewBox="0 0 24 24"><path d="M4 7h16 M9.5 7V4.5h5V7 M6.5 7l1 13h9l1-13 M10 11v5 M14 11v5"/></symbol>
+  <symbol id="i-scale" viewBox="0 0 24 24"><path d="M12 4v16 M7 8h10 M7 8l-3 6h6l-3-6z M17 8l-3 6h6l-3-6z"/></symbol>
+  <symbol id="i-arrow" viewBox="0 0 24 24"><path d="M4 12h15 M13 6l6 6-6 6"/></symbol>
+  <symbol id="i-info" viewBox="0 0 24 24"><circle cx="12" cy="12" r="8.5"/><path d="M12 11v5 M12 7.8v.2"/></symbol>
+  <symbol id="i-back" viewBox="0 0 24 24"><path d="M20 12H5 M11 6l-6 6 6 6"/></symbol>
+</svg>
+
+<div class="app">
+  <nav class="app-nav" aria-label="主导航">
+    <div class="brand"><span class="brand-mark" aria-hidden="true"></span>Worth It<small>值不值</small></div>
+    <ul class="app-links">
+      <li><a id="nav-home" class="on" data-nav="home" role="link" tabindex="0">记一笔</a></li>
+      <li><a id="nav-ledger" data-nav="ledger" role="link" tabindex="0">台账</a></li>
+      <li><a id="nav-method" data-nav="method" role="link" tabindex="0">口径说明</a></li>
+    </ul>
+  </nav>
+
+  <!-- ================= 记一笔 ================= -->
+  <section id="view-home" class="view on" aria-label="决策录入">
+    <h1 class="page-title">买它之前，先算这一笔。</h1>
+    <p class="page-sub">填 4 个数，算出每用一次花多少钱、多久回本。判断标准全程透明，见「口径说明」。</p>
+    <div class="layout">
+      <form class="form-card" id="calc-form" novalidate>
+        <div class="frow">
+          <div class="field">
+            <label for="f-name">商品 / 服务名称 <em>选填</em></label>
+            <div class="control"><input class="input" id="f-name" placeholder="例如：半自动咖啡机" maxlength="40" /></div>
+          </div>
+          <div class="field" id="fw-price">
+            <label for="f-price">价格 <em>必填</em></label>
+            <div class="control"><input class="input" id="f-price" inputmode="decimal" placeholder="例如 1200" /><span class="unit">¥</span></div>
+            <div class="hint">大于 0 的金额</div>
+            <div class="err" id="e-price" role="alert"></div>
+          </div>
+          <div class="field" id="fw-freq">
+            <label for="f-freq">使用频率 <em>必填</em></label>
+            <div class="control"><input class="input" id="f-freq" inputmode="decimal" placeholder="例如 5" /><span class="unit">次/周</span></div>
+            <div class="hint">0.1 – 21，可填小数</div>
+            <div class="err" id="e-freq" role="alert"></div>
+          </div>
+        </div>
+        <div class="frow">
+          <div class="field" id="fw-years">
+            <label for="f-years">预计使用年限 <em>必填</em></label>
+            <div class="control"><input class="input" id="f-years" inputmode="decimal" placeholder="例如 3" /><span class="unit">年</span></div>
+            <div class="hint">0.25 – 10 年</div>
+            <div class="err" id="e-years" role="alert"></div>
+          </div>
+          <div class="field" id="fw-mental">
+            <label for="f-mental">单次心理价位 <em>默认 ¥30</em></label>
+            <div class="control"><input class="input" id="f-mental" inputmode="decimal" placeholder="30" /><span class="unit">¥/次</span></div>
+            <div class="hint">用一次花多少算「还行」</div>
+            <div class="err" id="e-mental" role="alert"></div>
+          </div>
+          <div class="field" id="fw-maint">
+            <label for="f-maint">年维护成本 <em>选填</em></label>
+            <div class="control"><input class="input" id="f-maint" inputmode="decimal" placeholder="0" /><span class="unit">¥/年</span></div>
+            <div class="hint">耗材、保养等年均花费</div>
+            <div class="err" id="e-maint" role="alert"></div>
+          </div>
+        </div>
+        <div class="frow">
+          <div class="field" id="fw-resale">
+            <label for="f-resale">残值抵扣 <em>选填</em></label>
+            <div class="control"><input class="input" id="f-resale" inputmode="decimal" placeholder="0" /><span class="unit">¥</span></div>
+            <div class="hint">将来转卖能收回的钱，不超过价格</div>
+            <div class="err" id="e-resale" role="alert"></div>
+          </div>
+        </div>
+        <div class="preview" id="live-preview" role="status" aria-live="polite"></div>
+        <div class="actions">
+          <button type="submit" class="btn btn-primary" id="btn-calc">帮我算算值不值<svg class="ic"><use href="#i-arrow"/></svg></button>
+          <button type="button" class="btn btn-ghost" data-nav="method">先看计算口径</button>
+        </div>
+      </form>
+      <aside class="side">
+        <div class="panel">
+          <h3>内置示例 · 点一下就填入</h3>
+          <div id="examples"></div>
+        </div>
+        <div class="panel">
+          <h3>最近一笔</h3>
+          <div id="recent-box"></div>
+        </div>
+      </aside>
+    </div>
+  </section>
+
+  <!-- ================= 结果分析 ================= -->
+  <section id="view-result" class="view" aria-label="结果分析">
+    <div class="result-wrap">
+      <div class="verdict-row">
+        <div class="ring" aria-hidden="true">
+          <svg width="132" height="132" viewBox="0 0 132 132">
+            <circle class="ring-track" cx="66" cy="66" r="56"/>
+            <circle class="ring-val" id="ring-val" cx="66" cy="66" r="56" stroke="#3E5C47" stroke-dasharray="0 351.9"/>
+          </svg>
+          <div class="score"><b id="score-num">–</b><span>综合评分</span></div>
+        </div>
+        <div class="verdict-title">
+          <span class="badge" id="verdict-badge"><i></i><span id="verdict-label">待计算</span></span>
+          <h2 id="verdict-headline">算一笔看看。</h2>
+          <p id="verdict-sub">填写左侧表单即可得到结论。</p>
+        </div>
+        <div class="big-cost">
+          <label>单次使用成本</label>
+          <b id="r-cost">–</b>
+          <small id="r-cost-note">净投入 ÷ 预计总使用次数</small>
+        </div>
+      </div>
+      <div class="metrics" id="r-metrics"></div>
+      <div class="split">
+        <div class="panel-line">
+          <h3>结论依据</h3>
+          <div id="r-reasons"></div>
+        </div>
+        <div class="panel-line">
+          <h3>净投入构成</h3>
+          <div class="stackbar" id="r-stack"></div>
+          <div class="legend" id="r-legend"></div>
+          <div class="note" id="r-note" hidden></div>
+        </div>
+      </div>
+      <div class="result-actions">
+        <button class="btn btn-primary" id="btn-save">存入台账</button>
+        <button class="btn btn-ghost" id="btn-again"><svg class="ic"><use href="#i-back"/></svg>再算一笔</button>
+        <button class="btn btn-ghost" data-nav="ledger">去台账对比</button>
+      </div>
+    </div>
+  </section>
+
+  <!-- ================= 台账 ================= -->
+  <section id="view-ledger" class="view" aria-label="历史台账">
+    <h1 class="page-title">历史台账</h1>
+    <p class="page-sub">每次评估自动留档在本机浏览器，刷新不丢。勾选 2 条以上可并排对比。</p>
+    <div class="ledger-bar">
+      <p id="ledger-count"></p>
+      <div class="ops">
+        <button class="btn btn-ghost btn-sm" id="btn-export">导出 JSON</button>
+        <button class="btn btn-danger-ghost btn-sm" id="btn-clear">清空台账</button>
+      </div>
+    </div>
+    <div class="sel-bar" id="sel-bar">已选 <b id="sel-count">0</b> 条<span id="sel-diff"></span><button class="btn" id="btn-compare">并排对比<svg class="ic"><use href="#i-scale"/></svg></button></div>
+    <div id="ledger-content"></div>
+  </section>
+
+  <!-- ================= 对比 ================= -->
+  <section id="view-compare" class="view" aria-label="并排对比">
+    <div style="display:flex;align-items:center;gap:14px;margin:30px 0 4px">
+      <button class="icon-btn" data-nav="ledger" aria-label="返回台账"><svg class="ic"><use href="#i-back"/></svg></button>
+      <h1 class="page-title" style="margin:0">并排对比</h1>
+    </div>
+    <p class="page-sub">每列取最低单次成本标「最划算」；评分与结论口径见「口径说明」。</p>
+    <div class="compare-grid" id="compare-grid"></div>
+  </section>
+
+  <!-- ================= 口径说明 ================= -->
+  <section id="view-method" class="view" aria-label="计算口径">
+    <h1 class="page-title">计算口径</h1>
+    <p class="page-sub">结论怎么来的，这里全部摊开。改口径 = 改代码并更新本页。</p>
+    <div class="method-grid">
+      <div class="panel-line">
+        <h3>核心公式</h3>
+        <div class="formula">
+          预计总次数 <em>N</em> = F × 52 × Y<br>
+          净投入 <em>C0</em> = P + M×Y − R<br>
+          单次成本 <em>C</em> = C0 ÷ N<br>
+          回本次数 <em>K</em> = P ÷ T<br>
+          年化成本 = C0 ÷ Y · 月均 = 年化 ÷ 12
+        </div>
+        <div class="vars">
+          <div><code>P</code><span>价格（必填，&gt; 0）</span><code>F</code><span>每周使用次数（0.1–21）</span></div>
+          <div><code>Y</code><span>使用年限（0.25–10）</span><code>T</code><span>单次心理价位（默认 ¥30）</span></div>
+          <div><code>M</code><span>年维护成本（选填，默认 0）</span><code>R</code><span>残值抵扣（选填，默认 0，≤ P）</span></div>
+        </div>
+        <h3 style="margin-top:20px">评分权重（0–100）</h3>
+        <div class="weightbar">
+          <i style="width:60%;background:#3E5C47">成本 60%</i>
+          <i style="width:25%;background:#5A7F63">频率 25%</i>
+          <i style="width:15%;background:#8AA391">规模 15%</i>
+        </div>
+        <p class="hint">成本分：C ≤ 0.5T 记 100 分，C ≥ 1.5T 记 0 分，中间线性。频率分：F ≥ 3 记 100，0.1 记 0，中间线性。规模分：N ≥ 150 记 100，N ≤ 10 记 0，中间线性。总分 = 0.6×成本 + 0.25×频率 + 0.15×规模，四舍五入取整。展示值四舍五入（金额 2 位小数），计算始终用精确值。</p>
+      </div>
+      <div class="panel-line">
+        <h3>结论级联（按顺序判定）</h3>
+        <ol class="rule-list">
+          <li><span class="n">1</span><div><b>输入不合法</b> <span>— 阻止计算，逐字段提示，不写入台账。</span></div></li>
+          <li><span class="n">2</span><div><b>K &gt; N</b> <span>— 预期使用次数内回不了本 → 不建议。</span></div></li>
+          <li><span class="n">3</span><div><b>评分 &lt; 40 或 C &gt; 1.1T</b> <span>— 成本明显超出心理价 → 不建议。</span></div></li>
+          <li><span class="n">4</span><div><b>（C ≤ 0.7T 且评分 ≥ 60）或（评分 ≥ 75 且 C ≤ T）</b> <span>— 值得买。</span></div></li>
+          <li><span class="n">5</span><div><b>其余</b> <span>— 边际情况：贴着心理价，成败看使用坚持度。</span></div></li>
+        </ol>
+        <table class="mini">
+          <thead><tr><th>三档结论</th><th>判据（摘要）</th><th>配色</th></tr></thead>
+          <tbody>
+            <tr><td><span class="badge badge-worth"><i></i>值得买</span></td><td class="mono">C ≤ 0.7T 且 ≥60 分，或 ≥75 分且 C ≤ T</td><td class="mono">#3E5C47</td></tr>
+            <tr><td><span class="badge badge-marginal"><i></i>边际情况</span></td><td class="mono">0.7T &lt; C ≤ 1.1T，评分 40–74</td><td class="mono">#A9812F</td></tr>
+            <tr><td><span class="badge badge-skip"><i></i>不建议</span></td><td class="mono">K &gt; N，或 C &gt; 1.1T，或评分 &lt; 40</td><td class="mono">#A44F2A</td></tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+    <p class="foot-note"><svg class="ic"><use href="#i-info"/></svg>本工具只做算术与透明判断，不构成消费建议；数据仅保存在你的浏览器本地，不上传任何服务器。</p>
+  </section>
+</div>
+
+<div class="toast-zone" id="toast-zone" aria-live="polite"></div>
+<div class="dialog-mask" id="dialog-mask" role="alertdialog" aria-modal="true" aria-labelledby="dlg-title" aria-describedby="dlg-body">
+  <div class="dialog">
+    <h4 id="dlg-title"></h4>
+    <p id="dlg-body"></p>
+    <div class="d-ops">
+      <button class="btn btn-ghost btn-sm" id="dlg-cancel">取消</button>
+      <button class="btn btn-danger-ghost btn-sm" id="dlg-ok">确认</button>
+    </div>
+  </div>
+</div>
+
+<script>
+'use strict';
+/* ============================================================
+   Worth It · 计算引擎（纯函数，与 UI 分离，可独立单测）
+   口径（与「口径说明」页一致）：
+   N  = F × 52 × Y                  预计总使用次数
+   C0 = P + M×Y − R                 净投入
+   C  = C0 / N                      单次使用成本
+   K  = P / T                       回本所需次数
+   年化 = C0 / Y；月均 = 年化 / 12
+   评分 = round(0.6×成本分 + 0.25×频率分 + 0.15×规模分)
+   结论级联：非法→skip / K>N→skip / score<40‖C>1.1T→skip /
+             (C≤0.7T 且 score≥60)‖(score≥75 且 C≤T)→worth / 其余→marginal
+   ============================================================ */
+function round2(x){ return Math.round(x * 100) / 100; }
+function clamp(x, a, b){ return Math.min(b, Math.max(a, x)); }
+
+function parseNumber(raw){
+  if (raw === null || raw === undefined) return null;
+  var s = String(raw).trim().replace(/[,\s￥¥]/g, '');
+  if (s === '') return null;
+  if (!/^[+-]?(\d+(\.\d+)?|\.\d+)$/.test(s)) return NaN; // 非数字
+  var v = Number(s);
+  if (!isFinite(v)) return NaN;
+  return v;
+}
+
+function validate(input){
+  var errs = {};
+  var p = parseNumber(input.price);
+  if (p === null) errs.price = '价格需要大于 0，先填上吧';
+  else if (isNaN(p)) errs.price = '价格要填数字，例如 1200';
+  else if (p <= 0) errs.price = '价格不能是 0 或负数';
+  else if (p > 100000000) errs.price = '价格超出可计算范围（≤ 1 亿）';
+
+  var f = parseNumber(input.freq);
+  if (f === null) errs.freq = '使用频率需要填写，例如每周 5 次';
+  else if (isNaN(f)) errs.freq = '使用频率要填数字，例如 5';
+  else if (f <= 0) errs.freq = '使用频率不能是 0 或负数';
+  else if (f < 0.1 || f > 21) errs.freq = '使用频率请在 0.1 – 21 次/周之间';
+
+  var y = parseNumber(input.years);
+  if (y === null) errs.years = '使用年限需要填写，例如 3 年';
+  else if (isNaN(y)) errs.years = '使用年限要填数字，例如 3';
+  else if (y <= 0) errs.years = '使用年限不能是 0 或负数';
+  else if (y < 0.25 || y > 10) errs.years = '使用年限请在 0.25 – 10 年之间';
+
+  var t = parseNumber(input.mental);
+  if (t === null) t = 30;                       // 默认心理价
+  else if (isNaN(t)) errs.mental = '心理价位要填数字，例如 30';
+  else if (t <= 0) errs.mental = '心理价位不能是 0 或负数';
+  else if (t > 1000000) errs.mental = '心理价位超出合理范围';
+
+  var m = parseNumber(input.maint);
+  if (m === null) m = 0;
+  else if (isNaN(m)) errs.maint = '年维护要填数字，例如 200';
+  else if (m < 0) errs.maint = '年维护不能是负数';
+  else if (m > 10000000) errs.maint = '年维护超出合理范围';
+
+  var r = parseNumber(input.resale);
+  if (r === null) r = 0;
+  else if (isNaN(r)) errs.resale = '残值要填数字，例如 100';
+  else if (r < 0) errs.resale = '残值不能是负数';
+  else if (!errs.price && p !== null && !isNaN(p) && p > 0 && r >= p) errs.resale = '残值不能高于商品价格';
+  else if (r > 100000000) errs.resale = '残值超出合理范围';
+
+  return { errs: errs, norm: { price: p, freq: f, years: y, mental: t, maint: m, resale: r } };
+}
+
+function calc(input){
+  var v = validate(input);
+  if (Object.keys(v.errs).length > 0) return { ok:false, errs: v.errs };
+  var n = v.norm;
+  var N = n.freq * 52 * n.years;              // 预计总次数
+  var C0 = n.price + n.maint * n.years - n.resale; // 净投入
+  var C = C0 / N;                              // 单次成本
+  var K = n.price / n.mental;                  // 回本次数
+  var annual = C0 / n.years;
+  var monthly = annual / 12;
+  // 三档分数
+  var sCost = clamp((1.5 - C / n.mental) / (1.5 - 0.5), 0, 1) * 100;
+  var sFreq = clamp((n.freq - 0.1) / (3 - 0.1), 0, 1) * 100;
+  var sScale = clamp((N - 10) / (150 - 10), 0, 1) * 100;
+  var score = Math.round(0.6 * sCost + 0.25 * sFreq + 0.15 * sScale);
+  // 结论级联
+  var verdict, why = [];
+  if (K > N) { verdict = 'skip'; why.push('K>N'); }
+  else if (score < 40 || C > n.mental * 1.1) { verdict = 'skip'; why.push(score < 40 ? 'score<40' : 'C>1.1T'); }
+  else if ((C <= n.mental * 0.7 && score >= 60) || (score >= 75 && C <= n.mental)) { verdict = 'worth'; }
+  else { verdict = 'marginal'; }
+  return { ok:true, norm:n, N:N, C0:C0, C:C, K:K, annual:annual, monthly:monthly,
+           scores:{cost:Math.round(sCost), freq:Math.round(sFreq), scale:Math.round(sScale)},
+           score:score, verdict:verdict, verdictWhy:why };
+}
+
+/* ---------------- 状态与存储 ---------------- */
+var STORE_KEY = 'worthit.records.v1';
+var store = {
+  load: function(){
+    try {
+      var raw = localStorage.getItem(STORE_KEY);
+      if (!raw) return [];
+      var arr = JSON.parse(raw);
+      if (!Array.isArray(arr)) return [];
+      return arr.filter(function(x){ return x && typeof x === 'object' && x.id && x.result; });
+    } catch(e){ return []; }
+  },
+  save: function(list){
+    try { localStorage.setItem(STORE_KEY, JSON.stringify(list)); return true; }
+    catch(e){ return false; }
+  }
+};
+var records = store.load();
+var currentResult = null;   // 当前未保存的评估
+var currentInput = null;
+var selected = new Set();
+
+/* ---------------- 工具 ---------------- */
+var $ = function(id){ return document.getElementById(id); };
+function esc(s){
+  return String(s).replace(/[&<>"']/g, function(c){
+    return {'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c];
+  });
+}
+function fmtMoney(v){
+  if (!isFinite(v)) return '–';
+  var abs = Math.abs(v);
+  var s;
+  if (abs >= 10000) s = (v / 10000).toFixed(2) + ' 万';
+  else if (abs >= 100) s = Math.round(v).toLocaleString('zh-CN');
+  else s = round2(v).toFixed(2).replace(/\.00$/, '').replace(/(\.\d)0$/, '$1');
+  return '¥' + s;
+}
+function fmtMoney2(v){ return '¥' + (isFinite(v) ? round2(v).toFixed(2) : '–'); }
+function fmtTimes(v){ return (isFinite(v) ? Math.round(v).toLocaleString('zh-CN') : '–') + ' 次'; }
+function fmtDate(ts){
+  var d = new Date(ts);
+  var p = function(x){ return (x < 10 ? '0' : '') + x; };
+  return d.getFullYear() + '-' + p(d.getMonth()+1) + '-' + p(d.getDate()) + ' ' + p(d.getHours()) + ':' + p(d.getMinutes());
+}
+var VERDICT = {
+  worth:    { label:'值得买',   cls:'badge-worth',    headline:'这钱花得踏实。', color:'#3E5C47' },
+  marginal: { label:'边际情况', cls:'badge-marginal', headline:'贴着心理价，看坚持度。', color:'#A9812F' },
+  skip:     { label:'不建议',   cls:'badge-skip',     headline:'按这个用法，先别买。', color:'#A44F2A' }
+};
+
+function toast(msg){
+  var zone = $('toast-zone');
+  var el = document.createElement('div');
+  el.className = 'toast';
+  el.innerHTML = '<svg class="ic"><use href="#i-check"/></svg>' + esc(msg);
+  zone.appendChild(el);
+  setTimeout(function(){ el.classList.add('out'); }, 2600);
+  setTimeout(function(){ el.remove(); }, 3000);
+}
+var dialogCb = null;
+function confirmDialog(title, body, okText, cb){
+  $('dlg-title').textContent = title;
+  $('dlg-body').textContent = body;
+  $('dlg-ok').textContent = okText || '确认';
+  dialogCb = cb;
+  $('dialog-mask').classList.add('on');
+  $('dlg-ok').focus();
+}
+$('dlg-cancel').addEventListener('click', function(){ $('dialog-mask').classList.remove('on'); dialogCb = null; });
+$('dialog-mask').addEventListener('click', function(e){ if (e.target === this){ this.classList.remove('on'); dialogCb = null; } });
+document.addEventListener('keydown', function(e){
+  if (e.key === 'Escape' && $('dialog-mask').classList.contains('on')){ $('dialog-mask').classList.remove('on'); dialogCb = null; }
+});
+$('dlg-ok').addEventListener('click', function(){
+  $('dialog-mask').classList.remove('on');
+  if (dialogCb){ var cb = dialogCb; dialogCb = null; cb(); }
+});
+
+/* ---------------- 导航 ---------------- */
+var VIEWS = ['home','result','ledger','compare','method'];
+function nav(name){
+  VIEWS.forEach(function(v){ $('view-' + v).classList.toggle('on', v === name); });
+  var navMap = { home:'home', result:'home', ledger:'ledger', compare:'ledger', method:'method' };
+  ['home','ledger','method'].forEach(function(v){
+    $('nav-' + v).classList.toggle('on', navMap[name] === v);
+  });
+  window.scrollTo({ top:0, behavior:'smooth' });
+}
+document.querySelectorAll('[data-nav]').forEach(function(a){
+  a.addEventListener('click', function(){ nav(a.getAttribute('data-nav')); });
+  a.addEventListener('keydown', function(e){ if (e.key === 'Enter' || e.key === ' '){ e.preventDefault(); nav(a.getAttribute('data-nav')); } });
+});
+
+/* ---------------- 示例 ---------------- */
+var EXAMPLES = [
+  { name:'咖啡机',   price:'1200',   freq:'5',   years:'3', mental:'', maint:'', resale:'', tag:'worth' },
+  { name:'健身年卡', price:'3000',   freq:'2',   years:'1', mental:'', maint:'', resale:'', tag:'marginal' },
+  { name:'单反相机', price:'15000',  freq:'0.5', years:'5', mental:'', maint:'', resale:'', tag:'skip' }
+];
+function renderExamples(){
+  $('examples').innerHTML = EXAMPLES.map(function(ex, i){
+    var r = calc(ex);
+    var meta = '¥' + Number(ex.price).toLocaleString('zh-CN') + ' · 每周 ' + ex.freq + ' 次 · ' + ex.years + ' 年';
+    return '<div class="example"><div><b>' + esc(ex.name) + '</b><small>' + meta + '</small></div>' +
+      '<span class="badge badge-' + ex.tag + '"><i></i>' + VERDICT[ex.tag].label + '</span>' +
+      '<button type="button" class="use-btn" data-ex="' + i + '">填入</button></div>';
+  }).join('');
+  $('examples').querySelectorAll('[data-ex]').forEach(function(b){
+    b.addEventListener('click', function(){
+      var ex = EXAMPLES[+b.getAttribute('data-ex')];
+      $('f-name').value = ex.name; $('f-price').value = ex.price; $('f-freq').value = ex.freq;
+      $('f-years').value = ex.years; $('f-mental').value = ex.mental; $('f-maint').value = ex.maint; $('f-resale').value = ex.resale;
+      ['price','freq','years','mental','maint','resale'].forEach(function(k){ clearErr(k); });
+      updatePreview();
+      toast('已填入示例「' + ex.name + '」，点「帮我算算值不值」');
+    });
+  });
+}
+
+/* ---------------- 表单校验 UI ---------------- */
+var ERR_EL = { price:'e-price', freq:'e-freq', years:'e-years', mental:'e-mental', maint:'e-maint', resale:'e-resale' };
+var FW_EL = { price:'fw-price', freq:'fw-freq', years:'fw-years', mental:'fw-mental', maint:'fw-maint', resale:'fw-resale' };
+function showErr(key, msg){
+  $(FW_EL[key]).classList.add('invalid');
+  $(ERR_EL[key]).innerHTML = '<svg class="ic"><use href="#i-alert"/></svg>' + esc(msg);
+  var input = $(FW_EL[key]).querySelector('input');
+  if (input){ input.classList.add('is-error'); input.setAttribute('aria-invalid','true'); }
+}
+function clearErr(key){
+  $(FW_EL[key]).classList.remove('invalid');
+  var input = $(FW_EL[key]).querySelector('input');
+  if (input){ input.classList.remove('is-error'); input.removeAttribute('aria-invalid'); }
+}
+function readForm(){
+  return {
+    name: $('f-name').value.trim(),
+    price: $('f-price').value,
+    freq: $('f-freq').value,
+    years: $('f-years').value,
+    mental: $('f-mental').value,
+    maint: $('f-maint').value,
+    resale: $('f-resale').value
+  };
+}
+var touched = { price:false, freq:false, years:false, mental:false, maint:false, resale:false };
+['price','freq','years','mental','maint','resale'].forEach(function(key){
+  var el = $(FW_EL[key]).querySelector('input');
+  el.addEventListener('blur', function(){ touched[key] = true; runFieldCheck(key); });
+  el.addEventListener('input', function(){
+    if (touched[key]) runFieldCheck(key); else clearErr(key);
+    updatePreview();
+  });
+});
+function runFieldCheck(key){
+  var v = validate(readForm());
+  if (v.errs[key]) showErr(key, v.errs[key]); else clearErr(key);
+}
+function updatePreview(){
+  var v = calc(readForm());
+  var box = $('live-preview');
+  if (v.ok){
+    box.innerHTML = '<svg class="ic"><use href="#i-info"/></svg>当前输入预计总使用 <b>' + Math.round(v.N).toLocaleString('zh-CN') + '</b> 次 · 单次成本约 <b>' + fmtMoney2(v.C) + '</b>';
+  } else {
+    var first = Object.keys(v.errs)[0];
+    box.innerHTML = '<svg class="ic"><use href="#i-info"/></svg>' + esc(v.errs[first]) + '（补全后实时预览）';
+  }
+}
+
+/* ---------------- 提交与结果渲染 ---------------- */
+$('calc-form').addEventListener('submit', function(e){
+  e.preventDefault();
+  var input = readForm();
+  var v = calc(input);
+  ['price','freq','years','mental','maint','resale'].forEach(function(k){
+    if (v.errs && v.errs[k]) showErr(k, v.errs[k]); else clearErr(k);
+  });
+  if (!v.ok){
+    var firstKey = ['price','freq','years','mental','maint','resale'].find(function(k){ return v.errs[k]; });
+    var inp = $(FW_EL[firstKey]).querySelector('input');
+    if (inp) inp.focus();
+    toast('先修正标红的输入项');
+    return;
+  }
+  currentResult = v; currentInput = input;
+  touched = { price:false, freq:false, years:false, mental:false, maint:false, resale:false };
+  renderResult(v, input);
+  nav('result');
+});
+
+function reasonsOf(v, input){
+  var name = input.name || '这件商品';
+  var T = v.norm.mental;
+  var out = [];
+  if (v.verdict === 'worth'){
+    out.push(['成本', '单次 ' + fmtMoney2(v.C) + '，只有心理价 ' + fmtMoney2(T) + ' 的 ' + Math.round(v.C / T * 100) + '%，每用一次相当于省下 ' + fmtMoney2(T - v.C) + '。']);
+    out.push(['回本', '用满 ' + fmtTimes(v.K) + '（约第 ' + Math.max(1, Math.ceil(v.K / (v.norm.freq * 4.33))) + ' 周）即收回全部净投入，此后每次都是净赚体验。']);
+    out.push(['频率', '每周 ' + v.norm.freq + ' 次' + (v.norm.freq >= 3 ? '属于高频使用，习惯一旦建立，成本只会继续往下走。' : '的节奏足够把成本摊薄。')]);
+  } else if (v.verdict === 'marginal'){
+    out.push(['成本', '单次 ' + fmtMoney2(v.C) + '，落在心理价 ' + fmtMoney2(T) + ' 的七成到一倍一之间，谈不上亏，也谈不上省。']);
+    out.push(['回本', '需要 ' + fmtTimes(v.K) + ' 才回本，占预期 ' + fmtTimes(v.N) + ' 的 ' + Math.round(v.K / v.N * 100) + '%。']);
+    out.push(['建议', '如果你确定能坚持计划频率，可以买；对坚持度没把握，先降低预算或提高频率再考虑。']);
+  } else {
+    if (v.verdictWhy.indexOf('K>N') >= 0){
+      out.push(['回本', '按计划要用 ' + fmtTimes(v.N) + '，但回本需要 ' + fmtTimes(v.K) + '，预期之内回不了本。']);
+    }
+    if (v.verdictWhy.indexOf('C>1.1T') >= 0){
+      out.push(['成本', '单次 ' + fmtMoney2(v.C) + '，已超过心理价 ' + fmtMoney2(T) + ' 的 1.1 倍，每次都在为情怀付费。']);
+    }
+    if (v.verdictWhy.indexOf('score<40') >= 0){
+      out.push(['评分', '综合评分 ' + v.score + '（低于 40）：成本、频率、规模三项里至少两项明显偏弱。']);
+    }
+    out.push(['建议', '先降低预算、提高使用频率，或考虑租借 / 二手方案，再回来看这笔值不值。']);
+  }
+  return out;
+}
+
+function renderResult(v, input){
+  var V = VERDICT[v.verdict];
+  // 评分环
+  var CIRC = 2 * Math.PI * 56;
+  var ring = $('ring-val');
+  ring.setAttribute('stroke-dasharray', '0 ' + CIRC.toFixed(1));
+  ring.setAttribute('stroke', V.color);
+  requestAnimationFrame(function(){
+    ring.setAttribute('stroke-dasharray', (CIRC * v.score / 100).toFixed(1) + ' ' + CIRC.toFixed(1));
+  });
+  $('score-num').textContent = v.score;
+  $('verdict-badge').className = 'badge ' + V.cls;
+  $('verdict-label').textContent = V.label;
+  $('verdict-headline').textContent = V.headline;
+  $('verdict-sub').textContent = (input.name ? '「' + input.name + '」' : '这笔消费') + '：¥' + Number(v.norm.price).toLocaleString('zh-CN') + '，每周 ' + v.norm.freq + ' 次，用 ' + v.norm.years + ' 年。';
+  $('r-cost').textContent = fmtMoney2(v.C);
+  $('r-cost-note').textContent = '净投入 ' + fmtMoney2(v.C0) + ' ÷ ' + Math.round(v.N).toLocaleString('zh-CN') + ' 次（口径可查）';
+  // 指标
+  $('r-metrics').innerHTML =
+    '<div class="metric"><label>预计总使用</label><b>' + Math.round(v.N).toLocaleString('zh-CN') + ' 次</b><span>每周 ' + v.norm.freq + ' 次 × ' + v.norm.years + ' 年</span></div>' +
+    '<div class="metric"><label>年化成本</label><b>' + fmtMoney(v.annual) + '</b><span>净投入 ÷ 年限</span></div>' +
+    '<div class="metric"><label>回本节点</label><b>' + Math.round(v.K).toLocaleString('zh-CN') + ' 次</b><span>按心理价 ' + fmtMoney2(v.norm.mental) + '/次 折算</span></div>' +
+    '<div class="metric"><label>月均成本</label><b>' + fmtMoney2(v.monthly) + '</b><span>年化 ÷ 12</span></div>';
+  // 依据
+  $('r-reasons').innerHTML = reasonsOf(v, input).map(function(r){
+    return '<div class="reason' + (v.verdict === 'skip' ? ' warn' : '') + '"><span class="tag">' + r[0] + '</span><p>' + esc(r[1]) + '</p></div>';
+  }).join('');
+  // 净投入构成
+  var parts = [];
+  var P = v.norm.price, M = v.norm.maint * v.norm.years, R = v.norm.resale;
+  var total = P + M; // 为比例展示，残值不占正宽度
+  if (P > 0) parts.push({ label:'本体 ¥' + Math.round(P).toLocaleString('zh-CN'), v:P, color:'#3E5C47' });
+  if (M > 0) parts.push({ label:'年维护 × ' + v.norm.years + ' 年 ¥' + Math.round(M).toLocaleString('zh-CN'), v:M, color:'#8AA391' });
+  var stack = $('r-stack'), legend = $('r-legend');
+  if (parts.length === 0){ parts.push({ label:'本体 ¥0', v:1, color:'#3E5C47' }); }
+  stack.innerHTML = parts.map(function(p){ return '<i style="width:' + (p.v / total * 100).toFixed(2) + '%;background:' + p.color + '" title="' + esc(p.label) + '"></i>'; }).join('');
+  var legendHtml = parts.map(function(p){ return '<span><i style="background:' + p.color + '"></i>' + esc(p.label) + '</span>'; }).join('');
+  if (R > 0) legendHtml += '<span><i style="background:rgba(37,35,29,.25)"></i>残值抵扣 −¥' + Math.round(R).toLocaleString('zh-CN') + '</span>';
+  legend.innerHTML = legendHtml;
+  // 稳健提示
+  var note = $('r-note');
+  var halfC = v.C0 / (v.N / 2);
+  if (halfC <= v.norm.mental * 1.1 && v.verdict !== 'skip'){
+    note.hidden = false;
+    note.innerHTML = '<svg class="ic"><use href="#i-alert"/></svg>稳健提示：若实际使用只有预期的一半，单次成本会升到 ' + fmtMoney2(halfC) + '，' + (halfC <= v.norm.mental ? '仍然低于心理价。' : '会超过心理价，请留意坚持度。');
+  } else if (v.verdict === 'skip' && v.C <= v.norm.mental * 1.1){
+    note.hidden = false;
+    note.innerHTML = '<svg class="ic"><use href="#i-alert"/></svg>稳健提示：单次成本虽不高，但回本所需次数超出预期使用总量，建议先提高频率或降低预算。';
+  } else {
+    note.hidden = true;
+  }
+}
+
+$('btn-again').addEventListener('click', function(){ nav('home'); });
+$('btn-save').addEventListener('click', function(){
+  if (!currentResult || !currentInput) return;
+  var rec = {
+    id: 'r' + Date.now() + Math.random().toString(36).slice(2, 6),
+    ts: Date.now(),
+    input: JSON.parse(JSON.stringify(currentInput)),
+    result: {
+      N: currentResult.N, C0: currentResult.C0, C: currentResult.C, K: currentResult.K,
+      annual: currentResult.annual, monthly: currentResult.monthly,
+      score: currentResult.score, verdict: currentResult.verdict,
+      scores: currentResult.scores, verdictWhy: currentResult.verdictWhy
+    }
+  };
+  records.unshift(rec);
+  if (!store.save(records)){ toast('保存失败：浏览器存储不可用'); records.shift(); return; }
+  toast('已存入台账 · 可在台账页勾选对比');
+  renderRecent(); renderLedger();
+  currentResult = null; currentInput = null;
+  $('calc-form').reset();
+  ['price','freq','years','mental','maint','resale'].forEach(clearErr);
+  updatePreview();
+  nav('ledger');
+});
+
+/* ---------------- 最近一笔 ---------------- */
+function renderRecent(){
+  var box = $('recent-box');
+  if (records.length === 0){
+    box.innerHTML = '<div class="recent"><p class="hint">还没有记录。算完第一笔后，这里会显示最近一次的结论。</p></div>';
+    return;
+  }
+  var r = records[0];
+  var V = VERDICT[r.result.verdict] || VERDICT.marginal;
+  box.innerHTML = '<div class="recent"><dl>' +
+    '<dt>' + esc(r.input.name || '未命名') + '</dt><dd>' + fmtMoney2(r.result.C) + ' / 次</dd>' +
+    '<dt>结论</dt><dd><span class="badge ' + V.cls + '"><i></i>' + V.label + '</span></dd>' +
+    '<dt>评分</dt><dd>' + r.result.score + ' / 100</dd>' +
+    '<dt>时间</dt><dd>' + fmtDate(r.ts) + '</dd></dl></div>';
+}
+
+/* ---------------- 台账 ---------------- */
+function renderLedger(){
+  var countEl = $('ledger-count');
+  countEl.textContent = records.length === 0 ? '' : '共 ' + records.length + ' 条记录 · 存在本机浏览器，刷新不丢';
+  var box = $('ledger-content');
+  if (records.length === 0){
+    box.innerHTML = '<div class="empty"><h3>台账还是空的</h3><p>记下第一笔，之后每次评估都会自动留档，随时回看与对比。</p><button class="btn btn-primary btn-sm" id="empty-go">去记第一笔</button></div>';
+    var go = $('empty-go');
+    if (go) go.addEventListener('click', function(){ nav('home'); });
+    $('btn-clear').disabled = true; $('btn-export').disabled = true;
+    updateSelBar();
+    return;
+  }
+  $('btn-clear').disabled = false; $('btn-export').disabled = false;
+  var rows = records.map(function(r){
+    var V = VERDICT[r.result.verdict] || VERDICT.marginal;
+    var checked = selected.has(r.id) ? ' checked' : '';
+    return '<tr data-id="' + r.id + '">' +
+      '<td><input type="checkbox" class="cb" data-sel="' + r.id + '" aria-label="选择 ' + esc(r.input.name || '记录') + '"' + checked + ' /></td>' +
+      '<td class="name"><b>' + esc(r.input.name || '未命名') + '</b><small>' + fmtDate(r.ts) + '</small></td>' +
+      '<td class="num">¥' + Number(r.result.norm ? r.result.norm.price : r.input.price).toLocaleString('zh-CN') + '</td>' +
+      '<td class="num"><b>' + fmtMoney2(r.result.C) + '</b></td>' +
+      '<td class="num">' + r.result.score + '</td>' +
+      '<td><span class="badge ' + V.cls + '"><i></i>' + V.label + '</span></td>' +
+      '<td><div class="row-ops">' +
+        '<button class="icon-btn" data-view="' + r.id + '" aria-label="查看"><svg class="ic"><use href="#i-eye"/></svg></button>' +
+        '<button class="icon-btn danger" data-del="' + r.id + '" aria-label="删除"><svg class="ic"><use href="#i-trash"/></svg></button>' +
+      '</div></td></tr>';
+  }).join('');
+  box.innerHTML = '<div class="table-wrap"><table class="table"><thead><tr>' +
+    '<th style="width:44px"><span class="visually-hidden">选择</span></th><th>名称 / 时间</th><th>价格</th><th>单次成本</th><th>评分</th><th>结论</th><th style="text-align:right">操作</th>' +
+    '</tr></thead><tbody>' + rows + '</tbody></table></div>';
+  box.querySelectorAll('[data-sel]').forEach(function(cb){
+    cb.addEventListener('change', function(){
+      var id = cb.getAttribute('data-sel');
+      if (cb.checked) selected.add(id); else selected.delete(id);
+      updateSelBar();
+    });
+  });
+  box.querySelectorAll('[data-del]').forEach(function(b){
+    b.addEventListener('click', function(){
+      var id = b.getAttribute('data-del');
+      var rec = records.find(function(x){ return x.id === id; });
+      confirmDialog('删除这条记录？', '「' + (rec && rec.input.name || '未命名') + '」将从台账移除，此操作不可撤销。', '确认删除', function(){
+        records = records.filter(function(x){ return x.id !== id; });
+        selected.delete(id);
+        store.save(records);
+        renderLedger(); renderRecent();
+        toast('已删除 1 条记录');
+      });
+    });
+  });
+  box.querySelectorAll('[data-view]').forEach(function(b){
+    b.addEventListener('click', function(){
+      var id = b.getAttribute('data-view');
+      var rec = records.find(function(x){ return x.id === id; });
+      if (!rec) return;
+      currentResult = null; currentInput = null;
+      renderResultFromRecord(rec);
+      nav('result');
+    });
+  });
+  updateSelBar();
+}
+function renderResultFromRecord(rec){
+  var v = rec.result;
+  var V = VERDICT[v.verdict] || VERDICT.marginal;
+  var CIRC = 2 * Math.PI * 56;
+  $('ring-val').setAttribute('stroke-dasharray', (CIRC * v.score / 100).toFixed(1) + ' ' + CIRC.toFixed(1));
+  $('ring-val').setAttribute('stroke', V.color);
+  $('score-num').textContent = v.score;
+  $('verdict-badge').className = 'badge ' + V.cls;
+  $('verdict-label').textContent = V.label;
+  $('verdict-headline').textContent = V.headline;
+  $('verdict-sub').textContent = '台账记录 · ' + fmtDate(rec.ts) + '（回看）';
+  $('r-cost').textContent = fmtMoney2(v.C);
+  $('r-cost-note').textContent = '净投入 ' + fmtMoney2(v.C0) + ' ÷ ' + Math.round(v.N).toLocaleString('zh-CN') + ' 次（口径可查）';
+  $('r-metrics').innerHTML =
+    '<div class="metric"><label>预计总使用</label><b>' + Math.round(v.N).toLocaleString('zh-CN') + ' 次</b><span>每周 ' + rec.input.freq + ' 次 × ' + rec.input.years + ' 年</span></div>' +
+    '<div class="metric"><label>年化成本</label><b>' + fmtMoney(v.annual) + '</b><span>净投入 ÷ 年限</span></div>' +
+    '<div class="metric"><label>回本节点</label><b>' + Math.round(v.K).toLocaleString('zh-CN') + ' 次</b><span>按心理价 ' + fmtMoney2(rec.result.norm ? rec.result.norm.mental : 30) + '/次 折算</span></div>' +
+    '<div class="metric"><label>月均成本</label><b>' + fmtMoney2(v.monthly) + '</b><span>年化 ÷ 12</span></div>';
+  var fakeV = { verdict:v.verdict, verdictWhy:v.verdictWhy || [], C:v.C, K:v.K, N:v.N, score:v.score, norm:{ mental: rec.result.norm ? rec.result.norm.mental : 30, freq: Number(rec.input.freq) } };
+  $('r-reasons').innerHTML = reasonsOf(fakeV, rec.input).map(function(r){
+    return '<div class="reason' + (v.verdict === 'skip' ? ' warn' : '') + '"><span class="tag">' + r[0] + '</span><p>' + esc(r[1]) + '</p></div>';
+  }).join('');
+  var P = Number(rec.input.price), M = (parseFloat(rec.input.maint) || 0) * Number(rec.input.years), R = parseFloat(rec.input.resale) || 0;
+  var parts = [];
+  var total = P + M;
+  if (P > 0) parts.push({ label:'本体 ¥' + Math.round(P).toLocaleString('zh-CN'), v:P, color:'#3E5C47' });
+  if (M > 0) parts.push({ label:'年维护 × ' + rec.input.years + ' 年 ¥' + Math.round(M).toLocaleString('zh-CN'), v:M, color:'#8AA391' });
+  if (parts.length === 0){ parts.push({ label:'本体 ¥0', v:1, color:'#3E5C47' }); }
+  $('r-stack').innerHTML = parts.map(function(p){ return '<i style="width:' + (p.v / total * 100).toFixed(2) + '%;background:' + p.color + '"></i>'; }).join('');
+  var legendHtml = parts.map(function(p){ return '<span><i style="background:' + p.color + '"></i>' + esc(p.label) + '</span>'; }).join('');
+  if (R > 0) legendHtml += '<span><i style="background:rgba(37,35,29,.25)"></i>残值抵扣 −¥' + Math.round(R).toLocaleString('zh-CN') + '</span>';
+  $('r-legend').innerHTML = legendHtml;
+  $('btn-save').disabled = true;
+  $('r-note').hidden = true;
+  // 回看时隐藏「存入台账」（已在库中）
+  $('btn-save').style.display = 'none';
+}
+// 从台账回看时禁用保存按钮的恢复逻辑：进入 result 前恢复默认
+var _origNav = nav;
+nav = function(name){
+  if (name === 'result' && !currentResult){ /* 回看态保持 */ }
+  if (name !== 'result'){ $('btn-save').style.display = ''; $('btn-save').disabled = false; }
+  _origNav(name);
+};
+
+function updateSelBar(){
+  var bar = $('sel-bar');
+  var n = selected.size;
+  $('sel-count').textContent = n;
+  if (n >= 2){
+    var selRecs = records.filter(function(r){ return selected.has(r.id); });
+    var costs = selRecs.map(function(r){ return r.result.C; });
+    var diff = Math.max.apply(null, costs) - Math.min.apply(null, costs);
+    $('sel-diff').textContent = ' · 单次成本差 ' + fmtMoney2(diff);
+    bar.classList.add('on');
+  } else {
+    $('sel-diff').textContent = n === 1 ? '（再勾 1 条即可对比）' : '';
+    bar.classList.toggle('on', false);
+  }
+}
+$('btn-compare').addEventListener('click', function(){
+  var selRecs = records.filter(function(r){ return selected.has(r.id); });
+  if (selRecs.length < 2){ toast('至少勾选 2 条记录才能对比'); return; }
+  renderCompare(selRecs);
+  nav('compare');
+});
+function renderCompare(recs){
+  var minC = Math.min.apply(null, recs.map(function(r){ return r.result.C; }));
+  $('compare-grid').innerHTML = recs.map(function(r){
+    var V = VERDICT[r.result.verdict] || VERDICT.marginal;
+    var isBest = r.result.C === minC;
+    var freqTxt = Number(r.input.freq) + ' 次/周';
+    var yrsTxt = r.input.years + ' 年';
+    var cell = function(label, val, best){
+      return '<div class="cmp-row' + (best ? ' best-cell' : '') + '"><label>' + label + '</label><b>' + val + '</b></div>';
+    };
+    var summary;
+    if (r.result.verdict === 'worth') summary = '每用一次省 ' + fmtMoney2(Math.max(0, (rec.result.norm ? rec.result.norm.mental : 30) - r.result.C));
+    else if (r.result.verdict === 'marginal') summary = '贴着心理价，看坚持度';
+    else summary = '按这个用法先别买';
+    return '<div class="cmp-col' + (isBest ? ' best' : '') + '">' +
+      '<div class="cmp-head"><span class="badge ' + V.cls + ' win"><i></i>' + V.label + '</span>' +
+      '<b>' + esc(r.input.name || '未命名') + '</b>' +
+      '<small>¥' + Number(r.result.norm ? r.result.norm.price : r.input.price).toLocaleString('zh-CN') + ' · 每周 ' + freqTxt + ' · ' + yrsTxt + '</small></div>' +
+      cell('单次成本', fmtMoney2(r.result.C), isBest) +
+      cell('年化成本', fmtMoney(r.result.annual), r.result.annual === Math.min.apply(null, recs.map(function(x){ return x.result.annual; }))) +
+      cell('回本次数', Math.round(r.result.K).toLocaleString('zh-CN') + ' 次', false) +
+      '<div class="cmp-row"><label>评分</label><b>' + r.result.score + '</b></div>' +
+      '<div class="cmp-total"><label>综合判断</label><b>' + esc(summary) + '</b></div>' +
+      '</div>';
+  }).join('');
+}
+
+/* ---------------- 导出 / 清空 ---------------- */
+$('btn-export').addEventListener('click', function(){
+  try {
+    var blob = new Blob([JSON.stringify({ app:'worth-it', version:1, exportedAt:new Date().toISOString(), records:records }, null, 2)], { type:'application/json' });
+    var url = URL.createObjectURL(blob);
+    var a = document.createElement('a');
+    a.href = url;
+    a.download = 'worth-it-台账-' + new Date().toISOString().slice(0, 10) + '.json';
+    document.body.appendChild(a); a.click(); a.remove();
+    setTimeout(function(){ URL.revokeObjectURL(url); }, 800);
+    toast('已导出 ' + records.length + ' 条记录');
+  } catch(e){ toast('导出失败：' + e.message); }
+});
+$('btn-clear').addEventListener('click', function(){
+  if (records.length === 0) return;
+  confirmDialog('清空全部台账？', '将删除 ' + records.length + ' 条记录，此操作不可撤销。建议先「导出 JSON」留底。', '确认清空', function(){
+    records = []; selected.clear();
+    store.save(records);
+    renderLedger(); renderRecent();
+    toast('台账已清空');
+  });
+});
+
+/* ---------------- 启动 ---------------- */
+renderExamples();
+renderRecent();
+renderLedger();
+updatePreview();
+</script>
+</body>
+</html>

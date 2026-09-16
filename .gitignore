@@ -4,3 +4,9 @@ __pycache__/
 
 # 系统文件
 .DS_Store
+
+# Worth It 交付：本地测试与依赖不入库
+node_modules/
+.openclaw-tmp*
+package.json
+package-lock.json
