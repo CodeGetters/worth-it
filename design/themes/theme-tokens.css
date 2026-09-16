@@ -1,0 +1,73 @@
+/* ============================================================
+   值啦 · 应用主题 Tokens(2026-09-16 定稿)
+   已应用:深潜 dive / 冶炼 forge(quiet-luxury 语言)
+   弃用:竞速 circuit(未收录)
+   封存回退:旧「清醒小票」(worth-it/design/tokens.css,原样未动)
+   ============================================================ */
+
+/* ---------- 共用语言 ---------- */
+:root{
+  --qt-sans:-apple-system,BlinkMacSystemFont,"SF Pro Display","PingFang SC","HarmonyOS Sans SC","Microsoft YaHei",sans-serif;
+  --qt-mono:ui-monospace,"SF Mono",Menlo,monospace;
+  --qt-radius:20px;
+  --qt-cta-h:54px;
+}
+
+/* ============================================================
+   主题 1 · 深潜 dive(灵魂屏 + 设备票)
+   墨蓝底 + 单一青强调(#74D9E3,≤3 处:深度箭头/信标线/进度条)
+   ============================================================ */
+[data-theme="dive"]{
+  --d-ink:#EEF4F3;           /* 前景暖白 */
+  --d-acc:#74D9E3;           /* 唯一强调:冷青 */
+  --d-bg:#050E16;            /* 兜底底色(插画加载前) */
+  --d-surface:rgba(255,255,255,.045);  /* 卡片表面 */
+  --d-hairline:rgba(255,255,255,.07);  /* 发丝分隔 */
+  --d-glow:#74D9E3;
+
+  --d-price-weight:100;      /* 单价巨数字重 */
+  --d-price-size:104px;      /* 移动端基准,按端缩放 */
+  --d-price-tracking:-.05em;
+
+  --d-bg-image:url("assets/bg-dive.jpg");
+  --d-bg-pos:center 20%;
+  /* 插画压暗罩:顶部 .46 → 中部 .62 → 底部 .82 */
+  --d-veil:linear-gradient(180deg,rgba(4,12,20,.46),rgba(4,11,19,.62) 55%,rgba(3,9,16,.82));
+
+  --d-ms-color:var(--d-acc); /* 里程碑态:数字/信标转青 */
+
+  --d-font-display:"SF Pro Display","PingFang SC",sans-serif;
+}
+[data-theme="dive"] .dive-card{background:rgba(255,255,255,.045);border-radius:var(--qt-radius);padding:15px 18px}
+[data-theme="dive"] .dive-cta{background:#F2F1EC;color:#101114}
+
+/* ============================================================
+   主题 2 · 冶炼 forge(灵魂屏)
+   暗房余温 + 单一琥珀强调(#E8A854,≤3 处:成色仪表/锤记/参数行)
+   ============================================================ */
+[data-theme="forge"]{
+  --f-ink:#F4F1E9;           /* 前景暖白 */
+  --f-acc:#E8A854;           /* 唯一强调:琥珀 */
+  --f-bg:#0B0806;
+  --f-surface:rgba(255,255,255,.035);
+  --f-hairline:rgba(255,255,255,.07);
+
+  --f-price-weight:200;
+  --f-price-size:96px;
+  --f-price-tracking:-.04em;
+
+  --f-bg-image:url("assets/bg-forge.jpg");
+  --f-bg-pos:center 26%;
+  --f-veil:linear-gradient(180deg,rgba(8,5,3,.66),rgba(10,6,3,.42) 45%,rgba(8,5,3,.78));
+
+  --f-ms-color:var(--f-acc); /* 里程碑态:数字/仪表转琥珀 */
+
+  --f-font-display:"SF Pro Display","PingFang SC",sans-serif;
+}
+[data-theme="forge"] .forge-card{background:rgba(255,255,255,.035);border-radius:var(--qt-radius);padding:15px 18px}
+[data-theme="forge"] .forge-cta{background:#F2F1EC;color:#101114}
+
+/* ---------- 共享交互状态(两主题一致) ---------- */
+/* 里程碑:数字转强调色 + 撤销按钮浮现 */
+/* 撤销:幽灵按钮,仅 HIST.length>1 时 .on */
+/* 断卡/冷却:底部常驻提示条(见 specs) */

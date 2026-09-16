@@ -1,0 +1,377 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>值啦 · 应用主题 · 深潜 + 冶炼</title>
+<link rel="stylesheet" href="theme-tokens.css">
+<style>
+:root{--doc-bg:#0F1013;--doc-ink:#EDEDEA;--doc-mute:#77787E;--doc-line:#232529;
+ --sans:-apple-system,BlinkMacSystemFont,"PingFang SC","Microsoft YaHei",sans-serif;
+ --mono:ui-monospace,"SF Mono",Menlo,monospace}
+*{margin:0;padding:0;box-sizing:border-box}
+body{background:var(--doc-bg);color:var(--doc-ink);font-family:var(--sans);line-height:1.6;-webkit-font-smoothing:antialiased}
+.page{max-width:1140px;margin:0 auto;padding:56px 28px 110px}
+.doc-head{max-width:720px;padding-bottom:26px;border-bottom:1px solid var(--doc-line)}
+.kicker{font-family:var(--mono);font-size:10px;letter-spacing:.22em;text-transform:uppercase;color:var(--doc-mute)}
+h1{font-size:28px;font-weight:700;letter-spacing:-.015em;margin:14px 0 10px}
+.doc-head p{color:var(--doc-mute);font-size:14px}
+.doc-head p b{color:var(--doc-ink);font-weight:600}
+.theme{margin-top:72px;display:grid;grid-template-columns:1fr 400px;gap:48px;align-items:center}
+.theme.flip{grid-template-columns:400px 1fr}
+@media(max-width:960px){.theme,.theme.flip{grid-template-columns:1fr}}
+.t-info .idx{font-family:var(--mono);font-size:10px;letter-spacing:.2em;color:#4ED8BE}
+.t-info h2{font-size:22px;font-weight:700;margin:10px 0 3px;letter-spacing:-.01em}
+.t-info .en{font-family:var(--mono);font-size:10px;letter-spacing:.16em;text-transform:uppercase;color:var(--doc-mute)}
+.t-info .story{margin-top:14px;font-size:14px;color:#A6A7AC;max-width:54ch}
+.t-info .story b{color:var(--doc-ink);font-weight:600}
+.try{margin-top:16px;font-size:12.5px;color:var(--doc-mute)}
+.try b{color:var(--doc-ink);font-weight:600}
+.stage{display:flex;justify-content:center}
+.phone{width:375px;height:770px;border-radius:47px;padding:9px;background:#17181C;box-shadow:0 0 0 1px rgba(255,255,255,.06),0 30px 80px rgba(0,0,0,.6)}
+.screen{width:100%;height:100%;border-radius:39px;overflow:hidden;position:relative;display:flex;flex-direction:column}
+.sbar{flex:0 0 44px;display:flex;align-items:flex-end;justify-content:space-between;padding:0 30px 6px;font-size:13px;font-weight:600;position:relative;z-index:30}
+.home{position:absolute;bottom:8px;left:50%;transform:translateX(-50%);width:120px;height:4px;border-radius:2px;background:currentColor;opacity:.28;z-index:30}
+.grain{position:absolute;inset:0;pointer-events:none;z-index:26;opacity:.35;mix-blend-mode:overlay;background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='160' height='160'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.85' numOctaves='2'/%3E%3CfeColorMatrix type='saturate' values='0'/%3E%3C/filter%3E%3Crect width='160' height='160' filter='url(%23n)' opacity='0.14'/%3E%3C/svg%3E")}
+.lbl{font-family:var(--mono);font-size:9.5px;letter-spacing:.24em;text-transform:uppercase;opacity:.42}
+.card{background:rgba(255,255,255,.045);border-radius:20px;padding:16px 18px}
+.cta{height:54px;border:none;border-radius:27px;width:100%;cursor:pointer;font-family:inherit;font-size:15px;font-weight:600;letter-spacing:.02em;background:#F2F1EC;color:#101114;transition:transform .12s}
+.cta:active{transform:scale(.98)}
+.u-ghost{margin:14px auto 0;display:block;background:none;border:none;color:inherit;opacity:0;pointer-events:none;font-family:var(--mono);font-size:10px;letter-spacing:.16em;cursor:pointer;transition:opacity .3s}
+.u-ghost.on{opacity:.4;pointer-events:auto}
+.u-ghost.on:hover{opacity:.85}
+.mtoast{position:absolute;left:26px;right:26px;top:118px;z-index:40;background:rgba(14,15,18,.92);border-radius:16px;padding:15px 22px;font-weight:600;font-size:14px;color:#F4F4F0;opacity:0;transform:translateY(-8px);pointer-events:none;transition:all .35s cubic-bezier(.2,.9,.3,1);border:1px solid var(--tacc,#fff)}
+.mtoast small{display:block;font-weight:500;font-size:11px;opacity:.55;margin-top:5px;font-family:var(--mono);letter-spacing:.08em}
+.mtoast.show{opacity:1;transform:translateY(0)}
+
+/* ===== 深潜 ===== */
+.a{--ink:#EEF4F3;--acc:#74D9E3;background:#050E16;color:var(--ink)}
+.a-bg{position:absolute;inset:0;z-index:0;background:url("themes/dive/assets/bg-dive.jpg") center 20%/cover no-repeat}
+.a-bg::after{content:"";position:absolute;inset:0;background:linear-gradient(180deg,rgba(4,12,20,.46),rgba(4,11,19,.62) 55%,rgba(3,9,16,.82))}
+.a-app{flex:1;display:flex;flex-direction:column;padding:2px 26px 16px;position:relative;z-index:5}
+.a-top{display:flex;justify-content:space-between;align-items:center;padding:8px 0 0}
+.a-brand{font-weight:700;font-size:15px}
+.a-chip{font-family:var(--mono);font-size:9px;letter-spacing:.16em;opacity:.5}
+.a-hero{margin-top:74px;text-align:center}
+.a-price{font-size:104px;font-weight:100;line-height:.92;letter-spacing:-.05em;font-variant-numeric:tabular-nums;transition:color .6s}
+.a-price small{font-size:18px;font-weight:300;opacity:.55}
+.a-eq{margin-top:14px;font-size:13px;color:rgba(238,244,243,.72);font-weight:500}
+.a-eq b{color:var(--acc);font-weight:700;font-family:var(--mono)}
+.a-ms .a-price{color:var(--acc)}
+.a-deltarow{margin-top:26px;display:flex;justify-content:space-between;font-family:var(--mono);font-size:10.5px;letter-spacing:.08em}
+.a-deltarow span{opacity:.55}
+.a-deltarow b{font-weight:700;color:var(--acc)}
+.a-ruler{position:absolute;left:26px;top:150px;bottom:210px;width:30px;z-index:6}
+.a-ruler .rail{position:absolute;left:14px;top:0;bottom:0;width:1px;background:rgba(255,255,255,.14)}
+.a-ruler .tick{position:absolute;left:11px;width:7px;height:1px;background:rgba(255,255,255,.22)}
+.a-ruler .cur{position:absolute;left:6px;width:16px;height:16px;margin-top:-8px;transition:top .6s cubic-bezier(.3,1.1,.3,1)}
+.a-ruler .cur::before{content:"";position:absolute;left:0;top:7.5px;width:16px;height:1.5px;background:var(--acc)}
+.a-ruler .cur::after{content:"";position:absolute;right:-7px;top:4.5px;width:6px;height:6px;border-radius:50%;background:var(--acc);box-shadow:0 0 10px rgba(116,217,227,.8)}
+.a-ruler .cur b{position:absolute;left:24px;top:-4px;font-family:var(--mono);font-size:9px;font-weight:600;color:var(--acc)}
+.a-target{position:absolute;left:64px;right:26px;z-index:4;border-top:1px dashed rgba(116,217,227,.5)}
+.a-target .lab{position:absolute;left:0;top:-18px;font-family:var(--mono);font-size:8px;letter-spacing:.18em;color:rgba(116,217,227,.85)}
+.a-card{margin-top:auto;background:rgba(255,255,255,.045);border-radius:20px;padding:15px 18px}
+.a-card .r1{display:flex;justify-content:space-between;align-items:baseline;font-size:13px;font-weight:600}
+.a-card .r1 .n{font-family:var(--mono);color:var(--acc)}
+.a-dots{display:flex;gap:5px;margin-top:11px}
+.a-dots i{flex:1;height:3px;border-radius:2px;background:rgba(255,255,255,.10)}
+.a-dots i.done{background:var(--acc)}
+.a-card .cap{display:flex;justify-content:space-between;margin-top:9px;font-family:var(--mono);font-size:8.5px;letter-spacing:.12em;opacity:.38}
+.a-dev{margin-top:8px;padding:13px 18px;border-radius:20px;background:rgba(255,255,255,.03);display:flex;align-items:center;gap:11px;font-size:12px}
+.a-dev .ic{width:26px;height:26px;flex:0 0 26px;border-radius:8px;background:rgba(116,217,227,.14);display:flex;align-items:center;justify-content:center}
+.a-dev b{font-weight:600}
+.a-dev small{display:block;font-family:var(--mono);font-size:8.5px;letter-spacing:.1em;opacity:.45;margin-top:2px}
+.a-dev .v{margin-left:auto;font-family:var(--mono);font-weight:700;font-size:12px;color:var(--acc)}
+.a-btn{margin-top:14px}
+.a-foot{margin-top:12px;text-align:center;font-family:var(--mono);font-size:8.5px;letter-spacing:.14em;opacity:.35}
+.a-state{position:absolute;left:26px;right:26px;bottom:170px;z-index:10;text-align:center;font-size:11.5px;color:rgba(238,244,243,.75);background:rgba(6,14,22,.72);border-radius:14px;padding:9px 12px;backdrop-filter:blur(10px);opacity:0;transition:opacity .4s}
+.a-state.show{opacity:1}
+.a-bub{position:absolute;border-radius:50%;pointer-events:none;z-index:9;background:radial-gradient(circle at 32% 28%,rgba(255,255,255,.7),rgba(255,255,255,.06) 60%);animation:a-rise 1.25s ease-out forwards}
+@keyframes a-rise{0%{transform:translateY(0) scale(.6);opacity:0}15%{opacity:.6}100%{transform:translateY(-200px) scale(1.1);opacity:0}}
+.a-ms .a-price{color:var(--acc)}
+
+/* ===== 冶炼 ===== */
+.b{--ink:#F4F1E9;--acc:#E8A854;background:#0B0806;color:var(--ink)}
+.b-bg{position:absolute;inset:0;z-index:0;background:url("themes/forge/assets/bg-forge.jpg") center 26%/cover no-repeat}
+.b-bg::after{content:"";position:absolute;inset:0;background:linear-gradient(180deg,rgba(8,5,3,.66),rgba(10,6,3,.42) 45%,rgba(8,5,3,.78))}
+.b-app{flex:1;display:flex;flex-direction:column;padding:2px 26px 16px;position:relative;z-index:5}
+.b-top{display:flex;justify-content:space-between;align-items:center;padding:8px 0 0}
+.b-brand{font-weight:700;font-size:15px}
+.b-chip{font-family:var(--mono);font-size:9px;letter-spacing:.16em;opacity:.5}
+.b-hero{margin-top:66px;text-align:center}
+.b-price{font-size:96px;font-weight:200;line-height:.92;letter-spacing:-.04em;font-variant-numeric:tabular-nums;transition:color .5s}
+.b-price small{font-size:18px;font-weight:300;opacity:.55}
+.b.won .b-price{color:var(--acc)}
+.b-sub{margin-top:14px;font-size:13px;color:rgba(244,241,233,.72);font-weight:500}
+.b-sub b{color:var(--acc);font-weight:700;font-family:var(--mono)}
+.b-tele{display:flex;margin-top:28px;background:rgba(255,255,255,.035);border-radius:20px;padding:14px 0}
+.b-tele .t{flex:1;text-align:center;border-right:1px solid rgba(255,255,255,.07)}
+.b-tele .t:last-child{border-right:none}
+.b-tele .t b{display:block;font-family:var(--mono);font-size:15px;font-weight:700}
+.b-tele .t small{display:block;font-family:var(--mono);font-size:8px;letter-spacing:.2em;opacity:.42;margin-top:4px}
+.b-gauge-wrap{margin-top:22px}
+.b-gauge-row{display:flex;justify-content:space-between;align-items:baseline;font-family:var(--mono);font-size:10px;letter-spacing:.1em;opacity:.6;margin-bottom:8px}
+.b-gauge-row .big{font-size:14px;font-weight:700;color:var(--acc);opacity:1}
+.b-gauge{height:2px;border-radius:1px;background:rgba(255,255,255,.10);position:relative}
+.b-gauge .fill{position:absolute;left:0;top:-.5px;height:3px;border-radius:1.5px;background:var(--acc);transition:width .5s cubic-bezier(.2,.8,.2,1)}
+.b-gauge .mark{position:absolute;right:0;top:-4px;bottom:-4px;width:1px;background:rgba(232,168,84,.9)}
+.b-gauge .mark small{position:absolute;right:0;top:-17px;font-family:var(--mono);font-size:8px;letter-spacing:.14em;color:var(--acc);opacity:.9;white-space:nowrap}
+.b-record{margin-top:22px;display:flex;justify-content:space-between}
+.b-record i{width:9px;height:9px;transform:rotate(45deg);border-radius:1.5px;background:rgba(255,255,255,.10);transition:background .3s}
+.b-record i.hit{background:var(--acc)}
+.b-week{margin-top:22px;display:flex;justify-content:space-between}
+.b-week .d{flex:1;text-align:center}
+.b-week .d i{display:block;font-style:normal;font-family:var(--mono);font-size:10.5px;font-weight:600;padding:7px 0;border-radius:10px;color:rgba(244,241,233,.35)}
+.b-week .d.on i{color:var(--acc);background:rgba(232,168,84,.10)}
+.b-week .d small{display:block;font-family:var(--mono);font-size:7.5px;letter-spacing:.14em;opacity:.35;margin-top:5px}
+.b-dev{margin-top:8px;padding:13px 18px;border-radius:20px;background:rgba(255,255,255,.03);display:flex;align-items:center;gap:11px;font-size:12px}
+.b-dev .ic{width:26px;height:26px;flex:0 0 26px;border-radius:8px;background:rgba(232,168,84,.13);display:flex;align-items:center;justify-content:center}
+.b-dev b{font-weight:600}
+.b-dev small{display:block;font-family:var(--mono);font-size:8.5px;letter-spacing:.1em;opacity:.45;margin-top:2px}
+.b-dev .v{margin-left:auto;font-family:var(--mono);font-weight:700;font-size:12px;color:var(--acc)}
+.b-btn{margin-top:14px}
+.b-foot{margin-top:12px;text-align:center;font-family:var(--mono);font-size:8.5px;letter-spacing:.14em;opacity:.35}
+.b-state{position:absolute;left:26px;right:26px;bottom:170px;z-index:10;text-align:center;font-size:11.5px;color:rgba(244,241,233,.75);background:rgba(10,7,4,.72);border-radius:14px;padding:9px 12px;backdrop-filter:blur(10px);opacity:0;transition:opacity .4s}
+.b-state.show{opacity:1}
+.b-sp{position:absolute;width:5px;height:2px;border-radius:1px;background:linear-gradient(90deg,#F4D9A8,#E8A854);z-index:11;pointer-events:none}
+footer.doc{margin-top:80px;border-top:1px solid var(--doc-line);padding-top:16px;display:flex;justify-content:space-between;font-family:var(--mono);font-size:9.5px;letter-spacing:.14em;color:var(--doc-mute);flex-wrap:wrap;gap:8px}
+</style>
+</head>
+<body>
+<div class="page">
+  <div class="doc-head">
+    <div class="kicker">Worthit · Applied Themes · 2026-09-16</div>
+    <h1>深潜 + 冶炼 · 已应用</h1>
+    <p>两套主题正式应用为值啦的当前皮肤(竞速弃用)。本页是从主题 tokens 渲染的正式灵魂屏——与交互原型同一套逻辑:连点 6 次体验里程碑转折,撤销可回滚。旧「清醒小票」封存可回退。</p>
+  </div>
+
+  <!-- ============ 深潜 ============ -->
+  <section class="theme">
+    <div class="t-info">
+      <div class="idx">THEME 01 · DIVE</div>
+      <h2>深潜</h2>
+      <div class="en">Applied · soul screen + device ticket</div>
+      <p class="story">单价=水深。¥250 在 24m 处,每打卡一次下潜一格;心里价 ¥150 是 40m 处的发光信标线;断卡=被浮力顶回水面(白付 ¥80);设备票=每天自动下潜。强调色只有一个冷青,出现在深度箭头、信标线、进度条三处。</p>
+      <div class="try"><b>试:</b>点「今天去了,下潜」6 次到里程碑 ¥143;「撤销上次下潜」可回滚。</div>
+    </div>
+    <div class="stage">
+      <div class="phone"><div class="screen a" id="aScr">
+        <div class="a-bg"></div>
+        <div class="grain"></div>
+        <div class="sbar"><span>9:41</span><span id="aSb">−24m</span></div>
+        <div class="a-app">
+          <div class="a-top"><span class="a-brand">值啦 · 深潜</span><span class="a-chip">健身年卡</span></div>
+          <div class="a-ruler" id="aRuler">
+            <div class="rail"></div>
+            <div class="tick" style="top:0"></div><div class="tick" style="top:16.6%"></div><div class="tick" style="top:33.3%"></div><div class="tick" style="top:50%"></div><div class="tick" style="top:66.6%"></div><div class="tick" style="top:83.3%"></div><div class="tick" style="top:100%"></div>
+            <div class="cur" id="aCur" style="top:40%"><b>24m</b></div>
+          </div>
+          <div class="a-target" style="top:calc(150px + (100% - 360px) * .666)"><span class="lab">心里价 ¥150 · 40M</span></div>
+          <div class="a-hero">
+            <div class="lbl">Current true cost</div>
+            <div class="a-price"><span id="aPrice">250</span><small> /次</small></div>
+            <div class="a-eq">当前水深 <b id="aDepth">24m</b> · 潜得越深,花得越少</div>
+          </div>
+          <div class="a-card">
+            <div class="r1"><span>已潜 <span class="n" id="aCount">8</span> 次</span><span id="aDiff">比心里价贵 ¥100</span></div>
+            <div class="a-dots" id="aDots"><i class="done"></i><i class="done"></i><i class="done"></i><i class="done"></i><i class="done"></i><i class="done"></i><i class="done"></i><i class="done"></i><i></i><i></i><i></i><i></i><i></i><i></i></div>
+            <div class="cap"><span>达标 · 14 次到 ¥143</span><span id="aGoal">再去 6 次 → 低于心里价</span></div>
+          </div>
+          <div class="a-dev">
+            <span class="ic"><svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="#74D9E3" stroke-width="2" stroke-linecap="round"><path d="M12 3v10M12 13c-2.5 0-4.5 2-4.5 4.5V21h9v-3.5C16.5 15 14.5 13 12 13z"/><circle cx="12" cy="4.5" r="1.5"/></svg></span>
+            <span style="flex:1;min-width:0"><b>iPhone · ¥5999</b> 按天均摊<small>AUTO-DIVE · 每天自动下潜</small></span>
+            <span class="v">¥187/天</span>
+          </div>
+          <button class="cta a-btn" id="aBtn">今天去了,下潜</button>
+          <button class="u-ghost" id="aUndo">撤销上次下潜</button>
+          <div class="a-foot">水面 = 刚办卡 · 心里价在 40m 等你</div>
+          <div class="a-state" id="aState">浮上水面 16 天 · 单价停在 ¥250 · 白付约 ¥80 · 今天下潜就回落</div>
+          <div class="mtoast" id="aToast"></div>
+        </div>
+        <div class="home"></div>
+      </div></div>
+    </div>
+  </section>
+
+  <!-- ============ 冶炼 ============ -->
+  <section class="theme flip">
+    <div class="stage">
+      <div class="phone"><div class="screen b">
+        <div class="b-bg"></div>
+        <div class="grain"></div>
+        <div class="sbar"><span>9:41</span><span id="bSb">60%</span></div>
+        <div class="b-app">
+          <div class="b-top"><span class="b-brand">值啦 · 冶炼</span><span class="b-chip">健身年卡 · 第 8 锤</span></div>
+          <div class="b-hero">
+            <div class="lbl">Current true cost</div>
+            <div class="b-price"><span id="bPrice">250</span><small> /次</small></div>
+            <div class="b-sub">每一锤,锻去水分 <b id="bT1">¥28</b> · 直到 <b>¥150</b></div>
+          </div>
+          <div class="b-tele">
+            <span class="t"><b id="bTHits">8</b><small>已锻锤数</small></span>
+            <span class="t"><b id="bTLeft">6</b><small>距达标</small></span>
+            <span class="t"><b id="bT3">60%</b><small>心里价达成</small></span>
+          </div>
+          <div class="b-gauge-wrap">
+            <div class="b-gauge-row"><span>心里价达成</span><span class="big" id="bPct">60%</span></div>
+            <div class="b-gauge"><span class="fill" id="bBar"></span><span class="mark"><small>¥150</small></span></div>
+          </div>
+          <div class="b-record" id="bRec">
+            <i class="hit"></i><i class="hit"></i><i class="hit"></i><i class="hit"></i><i class="hit"></i><i class="hit"></i><i class="hit"></i><i class="hit"></i><i></i><i></i><i></i><i></i><i></i><i></i>
+          </div>
+          <div class="b-week">
+            <span class="d on"><i>锻</i><small>周一</small></span>
+            <span class="d on"><i>锻</i><small>周二</small></span>
+            <span class="d"><i>·</i><small>周三</small></span>
+            <span class="d"><i>·</i><small>周四</small></span>
+            <span class="d on"><i>锻</i><small>周五</small></span>
+            <span class="d on"><i>锻</i><small>周六</small></span>
+            <span class="d"><i>·</i><small>今天</small></span>
+          </div>
+          <div class="b-dev">
+            <span class="ic"><svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="#E8A854" stroke-width="2" stroke-linecap="round"><rect x="5" y="3" width="14" height="18" rx="2.5"/><path d="M9 18h6"/><circle cx="12" cy="10" r="2.5"/></svg></span>
+            <span style="flex:1;min-width:0"><b>iPhone · ¥5999</b> 文火慢炼<small>AUTO-FORGE · 每天一锤</small></span>
+            <span class="v">¥187/天</span>
+          </div>
+          <button class="cta b-btn" id="bBtn">打一锤 · 记一次打卡</button>
+          <button class="u-ghost" id="bUndo">撤销上一锤</button>
+          <div class="b-foot">发火 = 刚办卡 · 锻满 = 值回票价</div>
+          <div class="b-state" id="bState">炉温已冷 16 天 · 成色停在 60% · 白付约 ¥80 —— 补一锤,火就回来</div>
+          <div class="mtoast" id="bToast"></div>
+        </div>
+        <div class="home"></div>
+      </div></div>
+    </div>
+    <div class="t-info">
+      <div class="idx">THEME 02 · FORGE</div>
+      <h2>冶炼</h2>
+      <div class="en">Applied · soul screen</div>
+      <p class="story">打卡=锤击,单价=成色。¥250 暖白细体巨数,三格遥测(每锤锻去/锤数/达成),发丝成色仪表向 ¥150 推进,菱形锤记逐格点亮,七日炉勤。强调色只有一个琥珀,出现在仪表、锤记、参数行。达标瞬间数字转琥珀。</p>
+      <div class="try"><b>试:</b>点「打一锤」6 次到成色达标;「撤销上一锤」可回滚。</div>
+    </div>
+  </section>
+
+  <footer class="doc">
+    <span>WORTHIT · APPLIED THEMES · DIVE + FORGE</span>
+    <span>旧「清醒小票」封存可回退 · tokens: theme-tokens.css</span>
+  </footer>
+</div>
+
+<script>
+function rollNum(el,from,to,dur){
+  dur=dur||620;
+  var t0=performance.now();
+  requestAnimationFrame(function f(now){
+    var k=Math.min(1,(now-t0)/dur);
+    el.textContent=Math.round(from+(to-from)*(1-Math.pow(1-k,3)));
+    if(k<1)requestAnimationFrame(f);
+  });
+}
+function showToast(id,big,small){
+  var t=document.getElementById(id);
+  t.innerHTML=big+(small?'<small>'+small+'</small>':'');
+  t.classList.add('show');
+  clearTimeout(window['tt_'+id]);
+  window['tt_'+id]=setTimeout(function(){t.classList.remove('show')},2100);
+}
+/* ===== 深潜 ===== */
+(function(){
+  var scr=document.getElementById('aScr'),price=document.getElementById('aPrice'),cnt=document.getElementById('aCount'),
+      cur=document.getElementById('aCur'),eq=document.getElementById('aDepth'),sb=document.getElementById('aSb'),
+      st=document.getElementById('aState'),btn=document.getElementById('aBtn'),box=scr.querySelector('.a-app'),
+      undo=document.getElementById('aUndo'),
+      diffEl=document.getElementById('aDiff'),goalEl=document.getElementById('aGoal'),
+      dotsBox=document.getElementById('aDots');
+  var HITS=8,p=250,depthF=function(pp){return Math.round(6000/pp);},HIST=[p],tTimer=null;
+  function sync(){
+    cnt.textContent=HITS;
+    diffEl.textContent=p>150?'比心里价贵 ¥'+(p-150):'已低于心里价 ✓';
+    goalEl.textContent=p>150?'再去 '+(14-HITS)+' 次 → 低于心里价':'已达标 ✓';
+    var dots=dotsBox.querySelectorAll('i');
+    dots.forEach(function(d,i){d.classList.toggle('done',i<HITS)});
+    undo.classList.toggle('on',HIST.length>1);
+  }
+  function setDepth(d){
+    cur.style.top=(d/60*100)+'%';
+    cur.querySelector('b').textContent=d+'m';
+    eq.innerHTML='当前水深 <b>'+d+'m</b> · 潜得越深,花得越少';
+    sb.textContent='−'+d+'m';
+  }
+  function bubbles(){
+    for(var i=0;i<8;i++){
+      var sp=document.createElement('span');sp.className='a-bub';
+      var sz=4+Math.random()*10;
+      sp.style.cssText='left:'+(30+Math.random()*50)+'%;bottom:'+(8+Math.random()*14)+'%;width:'+sz+'px;height:'+sz+'px;animation-delay:'+(i*50)+'ms';
+      box.appendChild(sp);(function(el){setTimeout(function(){el.remove()},1500)})(sp);
+    }
+  }
+  btn.addEventListener('click',function(){
+    if(HITS>=14){st.classList.add('show');setTimeout(function(){st.classList.remove('show')},2300);return;}
+    var from=p,wasAbove=p>150;
+    HITS++;p=Math.round(2000/HITS);HIST.push(p);
+    scr.setAttribute('data-depth',p<=200?'3':(p<=222?'2':'1'));
+    rollNum(price,from,p);bubbles();setDepth(depthF(p));sync();
+    if(wasAbove&&p<=150){
+      scr.classList.add('ms');
+      showToast('aToast','低于心里价了 ✓','¥'+p+' < ¥150 · 从这里开始每一潜都是净赚');
+    }
+  });
+  undo.addEventListener('click',function(){
+    if(HIST.length<=1)return;
+    HIST.pop();HITS--;
+    var wasMs=scr.classList.contains('ms');
+    var from=p;p=HIST[HIST.length-1];
+    if(wasMs&&p>150)scr.classList.remove('ms');
+    scr.setAttribute('data-depth',p<=200?'3':(p<=222?'2':'1'));
+    rollNum(price,from,p);
+    setDepth(depthF(p));sync();
+  });
+})();
+/* ===== 冶炼 ===== */
+(function(){
+  var price=document.getElementById('bPrice'),bar=document.getElementById('bBar'),pct=document.getElementById('bPct'),
+      rec=document.getElementById('bRec'),sb=document.getElementById('bSb'),
+      st=document.getElementById('bState'),btn=document.getElementById('bBtn'),
+      undo=document.getElementById('bUndo'),toastEl=document.getElementById('bToast'),
+      t1=document.getElementById('bT1'),tH=document.getElementById('bTHits'),tL=document.getElementById('bTLeft'),t3=document.getElementById('bT3');
+  var scr=price.closest('.screen');
+  var HITS=8,p=250,HIST=[p],tTimer=null;
+  var pctOf=function(pp){return Math.min(100,Math.round(150/pp*100));};
+  function sync(){
+    tH.textContent=HITS;
+    tL.textContent=Math.max(14-HITS,0);
+    t3.textContent=pctOf(p)+'%';
+    t1.textContent='¥'+(HITS>1?Math.round(2000/(HITS-1))-p:28);
+    var diamonds=rec.querySelectorAll('i');
+    diamonds.forEach(function(d,i){d.classList.toggle('hit',i<HITS)});
+    undo.classList.toggle('on',HIST.length>1);
+  }
+  btn.addEventListener('click',function(){
+    if(HITS>=14){st.classList.add('show');setTimeout(function(){st.classList.remove('show')},2300);return;}
+    var from=p,wasAbove=p>150;
+    HITS++;p=Math.round(2000/HITS);HIST.push(p);
+    rollNum(price,from,p);
+    var pv=pctOf(p);
+    bar.style.width=pv+'%';pct.textContent=pv+'%';sb.textContent=pv+'%';
+    if(wasAbove&&p<=150){
+      scr.classList.add('won');
+      showToast('bToast','成色达标 ✓','¥'+p+' < ¥150 · 这张卡从今天起净赚');
+      setTimeout(function(){scr.classList.remove('won')},2600);
+    }
+    sync();
+  });
+  undo.addEventListener('click',function(){
+    if(HIST.length<=1)return;
+    HIST.pop();HITS--;
+    var wasWon=p<=150;
+    var from=p;p=HIST[HIST.length-1];
+    if(wasWon&&p>150)scr.classList.remove('won');
+    rollNum(price,from,p);
+    var pv=pctOf(p);
+    bar.style.width=pv+'%';pct.textContent=pv+'%';sb.textContent=pv+'%';
+    sync();
+  });
+})();
+</script>
+</body>
+</html>
