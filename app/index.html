@@ -372,8 +372,10 @@ svg.ic{width:16px;height:16px;stroke:currentColor;fill:none;stroke-width:1.7;str
     <div class="ledger-bar">
       <p id="ledger-count"></p>
       <div class="ops">
+        <button class="btn btn-ghost btn-sm" id="btn-import">导入 JSON</button>
         <button class="btn btn-ghost btn-sm" id="btn-export">导出 JSON</button>
         <button class="btn btn-danger-ghost btn-sm" id="btn-clear">清空台账</button>
+        <input type="file" id="import-file" accept="application/json,.json" style="display:none" />
       </div>
     </div>
     <div class="sel-bar" id="sel-bar">已选 <b id="sel-count">0</b> 条<span id="sel-diff"></span><button class="btn" id="btn-compare">并排对比<svg class="ic"><use href="#i-scale"/></svg></button></div>
@@ -867,11 +869,11 @@ function renderLedger(){
     box.innerHTML = '<div class="empty"><h3>台账还是空的</h3><p>记下第一笔，之后每次评估都会自动留档，随时回看与对比。</p><button class="btn btn-primary btn-sm" id="empty-go">去记第一笔</button></div>';
     var go = $('empty-go');
     if (go) go.addEventListener('click', function(){ nav('home'); });
-    $('btn-clear').disabled = true; $('btn-export').disabled = true;
+  $('btn-clear').disabled = true; $('btn-export').disabled = true; $('btn-import').disabled = true;
     updateSelBar();
     return;
   }
-  $('btn-clear').disabled = false; $('btn-export').disabled = false;
+  $('btn-clear').disabled = false; $('btn-export').disabled = false; $('btn-import').disabled = false;
   var rows = records.map(function(r){
     var V = VERDICT[r.result.verdict] || VERDICT.marginal;
     var checked = selected.has(r.id) ? ' checked' : '';
@@ -1015,7 +1017,39 @@ function renderCompare(recs){
   }).join('');
 }
 
-/* ---------------- 导出 / 清空 ---------------- */
+/* ---------------- 导入 / 导出 / 清空 ---------------- */
+function normalizeImported(rec){
+  if (!rec || typeof rec !== 'object' || !rec.id || !rec.result || typeof rec.result.C !== 'number') return null;
+  if (!rec.input || typeof rec.input !== 'object') return null;
+  if (typeof rec.result.verdict !== 'string' || !VERDICT[rec.result.verdict]) return null;
+  return { id:String(rec.id), ts:Number(rec.ts)||Date.now(), input:rec.input, result:rec.result };
+}
+$('btn-import').addEventListener('click', function(){ $('import-file').click(); });
+$('import-file').addEventListener('change', function(){
+  var f = this.files && this.files[0];
+  this.value = '';
+  if (!f) return;
+  var reader = new FileReader();
+  reader.onload = function(){
+    try {
+      var data = JSON.parse(reader.result);
+      var list = Array.isArray(data) ? data : (Array.isArray(data.records) ? data.records : null);
+      if (!list) { toast('导入失败：文件里没有记录数组'); return; }
+      var valid = list.map(normalizeImported).filter(Boolean);
+      var skipped = list.length - valid.length;
+      if (valid.length === 0) { toast('导入失败：没有可识别的记录'); return; }
+      var existing = new Set(records.map(function(r){ return r.id; }));
+      var added = 0;
+      valid.forEach(function(r){ if (!existing.has(r.id)){ records.push(r); added++; } });
+      records.sort(function(a,b){ return b.ts - a.ts; });
+      if (!store.save(records)){ toast('导入失败：浏览器存储不可用'); return; }
+      renderLedger(); renderRecent();
+      toast('已导入 ' + added + ' 条' + (skipped > 0 ? '，跳过 ' + skipped + ' 条无效' : ''));
+    } catch(e){ toast('导入失败：文件不是有效的 JSON'); }
+  };
+  reader.onerror = function(){ toast('导入失败：文件读取失败'); };
+  reader.readAsText(f);
+});
 $('btn-export').addEventListener('click', function(){
   try {
     var blob = new Blob([JSON.stringify({ app:'worth-it', version:1, exportedAt:new Date().toISOString(), records:records }, null, 2)], { type:'application/json' });
