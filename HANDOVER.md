@@ -2,6 +2,7 @@
 
 > 购买决策辅助应用：输入价格与使用预期，计算单次使用成本、回本周期，给出可解释的「值不值」结论，并自动留存台账。
 > 线上地址：<https://worth-it-app-codegetters.vercel.app/> · 源码：<https://github.com/CodeGetters/worth-it>
+> 视觉：**深潜 dive / 冶炼 forge 双主题**（quiet-luxury 语言，2026-09-17 起替代旧 Takram 米纸方案），导航栏一键切换、localStorage 记忆选择。
 
 ---
 
@@ -71,6 +72,7 @@ vercel alias <deployment-url> worth-it-app-codegetters.vercel.app
 
 | 决策 | 理由 |
 |---|---|
+| 双主题（深潜/冶炼）CSS 变量切换 | 主题 = `[data-theme]` 作用域下的变量组（背景插画/强调色/巨数字重），切换零重排；背景插画压缩后 ≤333KB，从 `app/assets/` 加载 |
 | 单文件自包含 HTML/CSS/JS | 决策工具逻辑简单、无后端需求；零构建、零依赖，任何人都能直接打开和维护；部署到任何静态托管都成立 |
 | 原生 JS（无框架） | 三个视图 + 一个表单的状态量，框架收益为零；避开构建链后可维护性更高 |
 | localStorage 持久化 | 单用户本地工具，无需账号与服务器；`worthit.records.v1` 键 + JSON 数组，导出/导入做数据安全网 |
@@ -114,5 +116,5 @@ worth-it/
 1. 打开 `app/index.html` 确认能跑；
 2. 读本文档第三节了解口径（应用内也有同款页面）；
 3. 改计算逻辑 → 编辑 `app/index.html` 的 `calc()`，同步改「口径说明」区文案；
-4. 改视觉 → 所有 token 在 `:root` CSS 变量区（与设计稿一致）；
+4. 改视觉 → 两套主题 token 在 `[data-theme="dive"]` / `[data-theme="forge"]` 变量区；三档结论色在 `:root`（--worth/--marginal/--skip，两主题共用）；背景插画在 `app/assets/`；
 5. 部署 → `vercel deploy app --prod --yes` + `vercel alias` 固定域名。
