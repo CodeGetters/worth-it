@@ -1,8 +1,8 @@
 # Worth It · 值不值 — 交接文档
 
-> 购买决策辅助应用：输入价格与使用预期，计算单次使用成本、回本周期，给出可解释的「值不值」结论，并自动留存台账。
+> **值啦 WORTHIT**——买后打卡工具：卡办了之后，每次去用就来打卡，看着真实单次成本一次次往下掉；断卡会挨催，多卡有总览，到期有复盘。
 > 线上地址：<https://worth-it-app-codegetters.vercel.app/> · 源码：<https://github.com/CodeGetters/worth-it>
-> 视觉：**深潜 dive / 冶炼 forge 双主题**（quiet-luxury 语言，2026-09-17 起替代旧 Takram 米纸方案），导航栏一键切换、localStorage 记忆选择。
+> 结构：**打卡灵魂屏（核心）+ 多卡总览 + 添加卡 + 买前算一笔（子页）**；视觉为深潜 dive / 冶炼 forge 双主题（导航右上分段切换，localStorage 记忆）。
 
 ---
 
@@ -34,7 +34,17 @@ vercel alias <deployment-url> worth-it-app-codegetters.vercel.app
 - GitHub Pages 已开通但**不可用**：该账号的 GitHub Actions 被平台禁用（API 返回 422），legacy 构建永远排队。`.github/workflows/pages.yml` 已备好，Actions 恢复后 push 即自动生效。
 - Cloudflare Workers `worth-it-app.branch-racer-691.workers.dev` 为临时账号部署（52 分钟内可认领），`*.workers.dev` 在中国大陆被 DNS 污染，仅作海外备用通道。
 
-## 三、计算口径（应用内「口径说明」页同步公示）
+## 三、核心口径（打卡模型）
+
+**真实单价 = 卡总价 ÷ 已打卡次数**——每打一次，分母 +1，单价往下掉一格，这是产品的灵魂数字。
+
+- **不限次卡**：无终点，去越多越便宜；用户自填的「心里一次值多少」只是参照线（仪表 0–100%），不是回本终点
+- **有限次课包**：打满总次数后打卡按钮冻结（单价定格）；到期未用次数按比例折算浪费金额，在总览提示
+- **断卡负反馈**（随距上次打卡天数递进）：3–6 天温和提醒 → 7–14 天报数字（单价卡在哪）→ 15–20 天扎心（白付约 ¥X）→ 21 天+ 止损劝退（接受沉没成本、下次别续）
+- **补卡**：限购买日 ~ 今天，一天可多次；单条可撤销（undo 最近一次）
+- **边界**：0 次打卡显示「–」不显示天价；已过期冻结打卡并停预测
+
+## 三·B、买前计算器口径（「买前算一笔」子页，口径与上一版一致）
 
 **输入**：价格 P（必填 >0）、每周使用频率 F（0.1–21）、使用年限 Y（0.25–10）、单次心理价位 T（默认 ¥30）、年维护 M（选填默认 0）、残值抵扣 R（选填默认 0 ≤ P）。
 
@@ -80,16 +90,16 @@ vercel alias <deployment-url> worth-it-app-codegetters.vercel.app
 
 ```
 worth-it/
-├── app/index.html          ← 应用本体（自包含：样式+引擎+交互）
+├── app/index.html          ← 应用本体（打卡版：灵魂屏+总览+添加+买前算一笔）
+├── app/assets/             ← 双主题背景插画（bg-dive.jpg / bg-forge.jpg）
 ├── index.html              ← 根入口（302 → app/index.html）
-├── V1 设计稿（工作区）      ← ../"V1 Worth It-设计稿.html"
-├── README.md / TECH_PLAN.md / TODO.md   ← 产品与技术方案（前期调研）
+├── README.md / TECH_PLAN.md / TODO.md   ← 产品与技术方案（打卡模型的完整论证）
 ├── HANDOVER.md             ← 本文档
 ├── TESTING.md              ← 测试与验收记录
 └── .github/workflows/pages.yml ← Pages 工作流（Actions 解禁后生效）
 ```
 
-计算引擎（`calc` / `validate` / `parseNumber`）是纯函数，位于 `app/index.html` `<script>` 开头注释标记区内，与 UI 完全分离，可直接抽出做单元测试（本轮 33 项断言即基于此）。
+计算引擎（`calcCard` / `parseNumber`）是纯函数，位于 `app/index.html` 主 `<script>` 开头，与 UI 完全分离，可抽出单测（本轮 13 项断言即基于此）。
 
 ## 六、已知限制
 
