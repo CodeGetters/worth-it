@@ -91,3 +91,5 @@
 | Vercel 部署直链 | https://worth-it-dvpqg4ox5-codegetters-projects.vercel.app/ | ✅ 最新版本 |
 | Cloudflare Workers（备用） | https://worth-it-app.branch-racer-691.workers.dev/ | ⚠️ 海外可达（多测点 TCP/HTTP 验证）；*.workers.dev 在大陆被 DNS 污染；边缘 bot 拦截自动化抓取 |
 | GitHub Pages | https://codegetters.github.io/worth-it/ | ❌ 账号 Actions 被平台禁用（422），无法构建；工作流已就绪，解禁即生效 |
+
+| — | 2026-09-17 **Next.js 工程化** | 按用户要求升级为完整工程：Next.js 16 App Router + TS + zustand persist。四页路由化（soul/overview/add/calc），引擎抽为 `lib/engine.ts` 纯 TS 模块。测试：引擎单测 28/28、本地 E2E 19/19、线上 E2E 8/8、`npm run build` 通过（5 路由静态化）。部署 Vercel 项目 `worthit-next`（SSO 已关）→ <https://worthit-next-codegetters.vercel.app/>。期间修复：`page.tsx` 缺 use client、CSS 误加 use client、`parseNumber` NaN 类型、`novalidate`→`noValidate`、测试 store 键名、受控输入默认值拼接（测试方式）、375px 导航溢出（≤560px 隐藏分段控件+页脚兜底切换） | ✅ |

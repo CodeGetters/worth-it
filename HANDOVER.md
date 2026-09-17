@@ -1,8 +1,34 @@
 # Worth It · 值不值 — 交接文档
 
 > **值啦 WORTHIT**——买后打卡工具：卡办了之后，每次去用就来打卡，看着真实单次成本一次次往下掉；断卡会挨催，多卡有总览，到期有复盘。
-> 线上地址：<https://worth-it-app-codegetters.vercel.app/> · 源码：<https://github.com/CodeGetters/worth-it>
+> 线上地址（Next.js 工程）：<https://worthit-next-codegetters.vercel.app/> · 单文件兜底版：<https://worth-it-app-codegetters.vercel.app/> · 源码：<https://github.com/CodeGetters/worth-it>
 > 结构：**打卡灵魂屏（核心）+ 多卡总览 + 添加卡 + 买前算一笔（子页）**；视觉为深潜 dive / 冶炼 forge 双主题（导航右上分段切换，localStorage 记忆）。
+
+---
+
+## 〇、Next.js 工程（worthit-next/，当前主力版本）
+
+单文件版之外的完整工程化实现，功能与单文件版完全对齐：
+
+| 项 | 说明 |
+|---|---|
+| 技术栈 | Next.js 16（App Router）+ React 19 + TypeScript + zustand（persist 持久化） |
+| 路由 | /soul 打卡灵魂屏 · /overview 总览 · /add 添加卡 · /calc 买前算一笔 · / 重定向 |
+| 目录 | `lib/engine.ts`（纯函数引擎，可单测）· `lib/store.ts`（zustand store）· `components/`（NavBar/Foot/Toast/Dialog）· `app/`（四页 + themes.css + globals.css） |
+| 双主题 | `[data-theme]` CSS 变量作用域 + zustand persist 记忆 + head 内联脚本防闪烁 |
+| 测试 | `__tests__/engine.test.ts`（28 断言，`npx tsx __tests__/engine.test.ts`）· `.e2e/e2e.js`（本地 19 断言）· `.e2e/prod-e2e.js`（线上 8 断言） |
+
+**本地运行**：
+```bash
+cd worthit-next
+npm install
+npm run dev        # 开发 http://localhost:3000
+npm run build && npm run start   # 生产
+```
+
+**部署**：已部署 Vercel 项目 `worthit-next`，固定域名 <https://worthit-next-codegetters.vercel.app/>；部署保护（SSO）已关闭。回滚方式与主应用一致：`vercel ls worthit-next` 取历史部署，`vercel alias <url> worthit-next-codegetters.vercel.app` 秒切。
+
+**验收记录**：引擎单测 28/28 · 本地 E2E 19/19（打卡闭环/里程碑翻转/特效/双主题/添加课包/总览/持久化/买前计算/异常输入/移动端）· 线上 E2E 8/8 · `npm run build` 通过（5 路由静态化）。详见 TESTING.md。
 
 ---
 
