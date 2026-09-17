@@ -1,0 +1,37 @@
+/* 值啦 · 双主题 tokens（深潜 dive / 冶炼 forge，quiet-luxury 语言） */
+
+.themes-base{
+  --qt-sans:-apple-system,BlinkMacSystemFont,"SF Pro Display","PingFang SC","HarmonyOS Sans SC","Microsoft YaHei",sans-serif;
+  --qt-mono:ui-monospace,"SF Mono",Menlo,monospace;
+  --r-card:20px; --r-input:14px;
+  --ease:cubic-bezier(.32,.72,0,1);
+  --worth:#4ED8BE; --worth-soft:rgba(78,216,190,.14);
+  --marginal:#E8A854; --marginal-soft:rgba(232,168,84,.14);
+  --skip:#F07B62; --skip-soft:rgba(240,123,98,.14);
+}
+[data-theme="dive"]{
+  color-scheme:dark;
+  --bg:#050E16; --bg-image:url("/themes/bg-dive.jpg"); --bg-pos:center 20%;
+  --veil:linear-gradient(180deg,rgba(4,12,20,.46),rgba(4,11,19,.62) 55%,rgba(3,9,16,.88));
+  --ink:#EEF4F3; --muted:rgba(238,244,243,.55);
+  --surface:rgba(255,255,255,.045); --surface-2:rgba(255,255,255,.07);
+  --hairline:rgba(255,255,255,.07); --hairline-strong:rgba(255,255,255,.14);
+  --accent:#74D9E3; --accent-ink:#0B1620; --accent-soft:rgba(116,217,227,.14); --accent-mist:rgba(116,217,227,.08);
+  --nav-bg:rgba(5,14,22,.72);
+  --shadow:0 1px 0 rgba(255,255,255,.04) inset,0 24px 48px -24px rgba(0,0,0,.5);
+  --price-weight:100; --price-tracking:-.05em;
+  --glow:rgba(116,217,227,.4);
+}
+[data-theme="forge"]{
+  color-scheme:dark;
+  --bg:#0B0806; --bg-image:url("/themes/bg-forge.jpg"); --bg-pos:center 26%;
+  --veil:linear-gradient(180deg,rgba(8,5,3,.66),rgba(10,6,3,.42) 45%,rgba(8,5,3,.84));
+  --ink:#F4F1E9; --muted:rgba(244,241,233,.55);
+  --surface:rgba(255,255,255,.035); --surface-2:rgba(255,255,255,.06);
+  --hairline:rgba(255,255,255,.07); --hairline-strong:rgba(255,255,255,.14);
+  --accent:#E8A854; --accent-ink:#17100A; --accent-soft:rgba(232,168,84,.14); --accent-mist:rgba(232,168,84,.08);
+  --nav-bg:rgba(11,8,6,.72);
+  --shadow:0 1px 0 rgba(255,255,255,.04) inset,0 24px 48px -24px rgba(0,0,0,.55);
+  --price-weight:200; --price-tracking:-.04em;
+  --glow:rgba(232,168,84,.4);
+}
