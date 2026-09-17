@@ -1,12 +1,56 @@
 /* 全站共用样式（打卡版 · quiet-luxury） */
 
 *{box-sizing:border-box;margin:0;padding:0}
-html{scroll-behavior:smooth}
-body{background:var(--bg);color:var(--ink);font-family:var(--qt-sans);font-size:15px;line-height:1.6;-webkit-font-smoothing:antialiased;min-height:100vh;transition:background-color .5s var(--ease),color .5s var(--ease)}
+html{scroll-behavior:smooth;overflow-x:hidden}
+body{background:var(--bg);color:var(--ink);font-family:var(--qt-sans);font-size:15px;line-height:1.6;-webkit-font-smoothing:antialiased;min-height:100vh;overflow-x:hidden;transition:background-color .5s var(--ease),color .5s var(--ease)}
 .bg-layer{position:fixed;inset:0;z-index:0;pointer-events:none;background:var(--bg-image) var(--bg-pos)/cover no-repeat}
 .bg-veil{position:fixed;inset:0;z-index:0;pointer-events:none;background:var(--veil)}
 .grain{position:fixed;inset:0;z-index:0;pointer-events:none;opacity:.3;mix-blend-mode:overlay;background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='160' height='160'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.85' numOctaves='2'/%3E%3CfeColorMatrix type='saturate' values='0'/%3E%3C/filter%3E%3Crect width='160' height='160' filter='url(%23n)' opacity='0.12'/%3E%3C/svg%3E")}
 #fx-layer{position:fixed;inset:0;pointer-events:none;z-index:60;overflow:hidden}
+/* ── 环境常驻层 ── */
+.ambient{position:fixed;inset:0;pointer-events:none;z-index:1;overflow:hidden;contain:strict}
+/* 光柱（深潜） */
+.ray{position:absolute;top:-12%;width:140px;height:130%;filter:blur(28px);opacity:0;transform-origin:top center;animation:raysway 14s ease-in-out infinite alternate, rayfade 6s ease-out forwards;will-change:transform}
+.ray.r2{animation-duration:18s,7s}
+.ray.r3{animation-duration:22s,8s}
+@keyframes raysway{0%{transform:rotate(-9deg) translateX(-30px)}100%{transform:rotate(7deg) translateX(40px)}}
+@keyframes rayfade{from{opacity:0}30%{opacity:.14}70%{opacity:.1}to{opacity:.16}}
+[data-theme="forge"] .ray{opacity:0!important;animation:none}
+/* 悬浮尘埃（深潜）/ 余烬（冶炼） */
+.mote{position:absolute;border-radius:50%;animation:mote 12s linear infinite}
+[data-theme="dive"] .mote{width:3px;height:3px;background:rgba(238,244,243,.28);box-shadow:0 0 6px rgba(238,244,243,.3)}
+[data-theme="forge"] .mote{width:2.5px;height:2.5px;background:linear-gradient(180deg,#F4D9A8,#E8A854);box-shadow:0 0 8px rgba(232,168,84,.7);animation-duration:9s}
+@keyframes mote{0%{transform:translateY(6vh) translateX(0);opacity:0}12%{opacity:1}50%{transform:translateY(-46vh) translateX(14px)}100%{transform:translateY(-98vh) translateX(-8px);opacity:0}}
+/* 随机上升气泡（深潜常驻） */
+.amb-bub{position:absolute;border-radius:50%;background:radial-gradient(circle at 32% 28%,rgba(255,255,255,.5),rgba(255,255,255,.04) 62%);animation:abub 11s ease-in infinite}
+[data-theme="forge"] .amb-bub{display:none}
+@keyframes abub{0%{transform:translateY(0) scale(.5);opacity:0}14%{opacity:.55}82%{opacity:.4}100%{transform:translateY(-104vh) scale(1.2);opacity:0}}
+/* ── 信标线呼吸 ── */
+.gauge .mark{animation:markpulse 2.8s ease-in-out infinite}
+@keyframes markpulse{0%,100%{opacity:.9;box-shadow:0 0 4px var(--accent)}50%{opacity:.45;box-shadow:0 0 14px var(--accent)}}
+/* ── 大数字水波光晕（打卡瞬间强调） ── */
+.big-price{position:relative}
+.big-price::after{content:'';position:absolute;inset:-18px -30px;border-radius:30px;pointer-events:none;opacity:0;background:radial-gradient(ellipse at center,var(--accent-mist),transparent 70%)}
+.big-price.wash::after{animation:wash 900ms var(--ease)}
+@keyframes wash{0%{opacity:0;transform:scale(.85)}30%{opacity:1}100%{opacity:0;transform:scale(1.15)}}
+/* ── 多圈涟漪 ── */
+.ripple{position:absolute;border-radius:50%;background:rgba(16,17,20,.12);transform:scale(0);animation:rip 560ms var(--ease) forwards;pointer-events:none}
+.ripple.r2{animation-delay:110ms;background:rgba(16,17,20,.08)}
+.ripple.r3{animation-delay:220ms;background:rgba(16,17,20,.05)}
+/* ── 屏幕微震（冶炼锤击） ── */
+@keyframes hammer{0%{transform:translate(0,0)}20%{transform:translate(-3px,2px)}40%{transform:translate(3px,-2px)}60%{transform:translate(-2px,-1px)}80%{transform:translate(1px,1px)}100%{transform:translate(0,0)}}
+body.hammer{animation:hammer 260ms ease-out}
+/* ── 里程碑庆祝编排 ── */
+.ms-wave{position:fixed;inset:0;z-index:70;pointer-events:none;background:radial-gradient(circle at 50% 46%,transparent 32%,var(--accent-mist) 46%,transparent 62%);opacity:0}
+.ms-wave.go{animation:mswave 1.3s var(--ease) forwards}
+@keyframes mswave{0%{opacity:0;transform:scale(.5)}35%{opacity:1}100%{opacity:0;transform:scale(2.1)}}
+.ms-rain{position:fixed;top:-8vh;z-index:71;pointer-events:none;width:8px;height:12px;border-radius:2px;opacity:0}
+.ms-rain.go{animation:msfall var(--dur,1.5s) ease-in forwards}
+@keyframes msfall{0%{opacity:0;transform:translateY(0) rotate(0)}12%{opacity:.95}100%{opacity:0;transform:translateY(112vh) rotate(340deg)}}
+[data-theme="dive"] .ms-rain{background:linear-gradient(180deg,rgba(116,217,227,.9),rgba(116,217,227,.15))}
+[data-theme="forge"] .ms-rain{background:linear-gradient(180deg,#F4D9A8,rgba(232,168,84,.12))}
+.big-price.flip .bump{animation:flipin 700ms var(--ease)}
+@keyframes flipin{0%{transform:rotateX(90deg);opacity:0}55%{transform:rotateX(-8deg);opacity:1}100%{transform:rotateX(0)}}
 .fx-bub{position:absolute;border-radius:50%;background:radial-gradient(circle at 32% 28%,rgba(255,255,255,.75),rgba(255,255,255,.06) 60%);animation:fxrise 1.2s ease-out forwards}
 @keyframes fxrise{0%{transform:translateY(0) scale(.6);opacity:0}15%{opacity:.7}100%{transform:translateY(-190px) scale(1.15);opacity:0}}
 .fx-spark{position:absolute;width:6px;height:2px;border-radius:1px;background:linear-gradient(90deg,#F4D9A8,var(--accent));animation:fxspark 1s ease-out forwards}

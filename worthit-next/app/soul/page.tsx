@@ -67,18 +67,20 @@ export default function SoulPage() {
 
   const doCheckin = (e?: React.MouseEvent<HTMLButtonElement>) => {
     if (!card) return;
-    // 涟漪
+    // 三圈同心涟漪
     const btn = e?.currentTarget;
     if (btn) {
       const rect = btn.getBoundingClientRect();
-      const rip = document.createElement('span');
-      rip.className = 'ripple';
       const size = Math.max(rect.width, rect.height);
-      rip.style.width = rip.style.height = size + 'px';
-      rip.style.left = (e!.clientX - rect.left - size / 2) + 'px';
-      rip.style.top = (e!.clientY - rect.top - size / 2) + 'px';
-      btn.appendChild(rip);
-      setTimeout(() => rip.remove(), 560);
+      for (let i = 0; i < 3; i++) {
+        const rip = document.createElement('span');
+        rip.className = 'ripple' + (i > 0 ? ' r' + (i + 1) : '');
+        rip.style.width = rip.style.height = size + 'px';
+        rip.style.left = (e!.clientX - rect.left - size / 2) + 'px';
+        rip.style.top = (e!.clientY - rect.top - size / 2) + 'px';
+        btn.appendChild(rip);
+        setTimeout(() => rip.remove(), 900);
+      }
     }
     const before = calcCard(card);
     checkin(card.id);
@@ -90,14 +92,41 @@ export default function SoulPage() {
       before.price !== null && before.price > card.mental && afterPrice <= card.mental
     ) {
       setMsMsg({ title: '里程碑 · 单价已低于心里价', sub: '之后每去一次都是白赚' });
-      setTimeout(() => setMsMsg(null), 2800);
+      celebrate();
+      setTimeout(() => setMsMsg(null), 3200);
     } else if (card.type === 'limited' && card.total && after.hits === card.total) {
       setMsMsg({ title: `打满了 · ${card.total} 次全部用完`, sub: `单价定格 ${fmtMoney2(afterPrice ?? 0)}` });
-      setTimeout(() => setMsMsg(null), 2800);
+      celebrate();
+      setTimeout(() => setMsMsg(null), 3200);
     }
-    // bump 动画
+    // bump + 水波光晕 + 冶炼锤击震屏
+    const bpEl = document.querySelector('.big-price');
     const bn = numRef.current;
     if (bn) { bn.classList.remove('bump'); void bn.offsetWidth; bn.classList.add('bump'); }
+    if (bpEl) { bpEl.classList.remove('wash'); void (bpEl as HTMLElement).offsetWidth; bpEl.classList.add('wash'); }
+    if (document.documentElement.getAttribute('data-theme') === 'forge') {
+      document.body.classList.remove('hammer'); void document.body.offsetWidth; document.body.classList.add('hammer');
+      setTimeout(() => document.body.classList.remove('hammer'), 300);
+    }
+  };
+
+  /** 里程碑庆祝：全屏光波 + 粒子雨 */
+  const celebrate = () => {
+    // 光波
+    const wave = document.createElement('div');
+    wave.className = 'ms-wave go';
+    document.body.appendChild(wave);
+    setTimeout(() => wave.remove(), 1400);
+    // 粒子雨
+    for (let i = 0; i < 40; i++) {
+      const r = document.createElement('span');
+      r.className = 'ms-rain go';
+      r.style.left = Math.random() * 100 + '%';
+      r.style.setProperty('--dur', (1.1 + Math.random() * 1.1) + 's');
+      r.style.animationDelay = Math.random() * 0.5 + 's';
+      document.body.appendChild(r);
+      setTimeout(() => r.remove(), 2600);
+    }
   };
 
   const doUndo = () => {

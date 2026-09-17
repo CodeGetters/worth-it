@@ -5,6 +5,7 @@ import NavBar from '@/components/NavBar';
 import Foot from '@/components/Foot';
 import DialogHost from '@/components/DialogHost';
 import ToastHost from '@/components/ToastHost';
+import AmbientLayer from '@/components/AmbientLayer';
 
 export const metadata: Metadata = {
   title: '值啦 · 值WORTHIT — 卡都办了，就别让它躺死',
@@ -24,6 +25,7 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
         <div className="bg-layer" aria-hidden />
         <div className="bg-veil" aria-hidden />
         <div className="grain" aria-hidden />
+        <AmbientLayer />
         <div id="fx-layer" aria-hidden />
         <div className="app">
           <NavBar />
