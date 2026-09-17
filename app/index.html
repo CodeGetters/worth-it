@@ -127,8 +127,6 @@ body{background:var(--bg);color:var(--ink);font-family:var(--qt-sans);font-size:
 .preview-main .pm-label{font-family:var(--qt-mono);font-size:10px;letter-spacing:.18em;color:var(--muted)}
 .preview-main .pm-val{font-family:var(--qt-mono);font-size:26px;font-weight:var(--price-weight);letter-spacing:var(--price-tracking);font-variant-numeric:tabular-nums;color:var(--ink);transition:color .4s}
 .preview.p-ok .pm-val{color:var(--accent)}
-@keyframes pvpulse{0%{box-shadow:0 0 0 0 var(--accent-mist)}60%{box-shadow:0 0 0 10px rgba(0,0,0,0)}100%{box-shadow:0 0 0 0 rgba(0,0,0,0)}}
-.preview.pulse{animation:pvpulse 700ms var(--ease)}
 .preview .pm-badge{margin-left:auto}
 .pm-go{margin-left:auto;font-family:var(--qt-mono);font-size:11px;letter-spacing:.08em;color:var(--accent);opacity:.75;transition:opacity 200ms var(--ease)}
 .preview:hover .pm-go{opacity:1}
@@ -271,10 +269,10 @@ table.mini{width:100%;border-collapse:collapse;font-size:13px;margin-top:6px}
 .mini td{padding:9px 10px;border-bottom:1px solid var(--hairline)}
 .mini td.mono{font-family:var(--qt-mono);font-size:12px}
 /* ---------- Toast / Dialog ---------- */
-.toast-zone{position:fixed;bottom:28px;left:0;right:0;display:flex;flex-direction:column;align-items:center;gap:10px;z-index:90;pointer-events:none}
-.toast{display:flex;align-items:center;gap:10px;background:var(--ink);color:var(--bg);border-radius:999px;padding:11px 20px;font-size:13px;box-shadow:var(--shadow);animation:toastin 260ms var(--ease)}
-@keyframes toastin{from{opacity:0;transform:translateY(10px)}to{opacity:1;transform:none}}
-.toast.out{opacity:0;transform:translateY(6px);transition:all 240ms var(--ease)}
+.toast-zone{position:fixed;top:84px;left:0;right:0;display:flex;flex-direction:column;align-items:center;z-index:90;pointer-events:none}
+.toast{display:flex;align-items:center;gap:10px;background:var(--ink);color:var(--bg);border-radius:999px;padding:11px 20px;font-size:13px;box-shadow:var(--shadow);animation:toastin 320ms var(--ease)}
+@keyframes toastin{from{opacity:0;transform:translateY(-14px) scale(.97)}to{opacity:1;transform:none}}
+.toast.out{opacity:0;transform:translateY(-8px);transition:all 240ms var(--ease)}
 .toast svg.ic{stroke:var(--accent)}
 .dialog-mask{position:fixed;inset:0;background:rgba(0,0,0,.55);backdrop-filter:blur(4px);display:none;align-items:center;justify-content:center;z-index:80;padding:20px}
 .dialog-mask.on{display:flex}
@@ -863,10 +861,7 @@ function renderExamples(){
       $('f-years').value = ex.years; $('f-mental').value = ex.mental; $('f-maint').value = ex.maint; $('f-resale').value = ex.resale;
       ['price','freq','years','mental','maint','resale'].forEach(function(k){ clearErr(k); });
       updatePreview();
-      var pv = $('live-preview');
-      pv.classList.remove('pulse');
-      void pv.offsetWidth; // 重启动画
-      pv.classList.add('pulse');
+      toast('已填入「' + ex.name + '」· 点预览卡或下方按钮出结论');
     };
     card.addEventListener('click', fill);
     card.addEventListener('keydown', function(e){ if (e.key === 'Enter' || e.key === ' '){ e.preventDefault(); fill(); } });
