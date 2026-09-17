@@ -111,6 +111,14 @@ body{background:var(--bg);color:var(--ink);font-family:var(--qt-sans);font-size:
 .record-strip{display:flex;justify-content:center;gap:6px;flex-wrap:wrap;margin:22px auto 0;max-width:520px}
 .record-strip i{width:9px;height:9px;transform:rotate(45deg);border-radius:1.5px;background:rgba(255,255,255,.1);transition:background .3s}
 .record-strip i.hit{background:var(--accent)}
+.record-strip .more{font-family:var(--qt-mono);font-size:10px;color:var(--muted);align-self:center;margin-left:6px}
+#fx-layer{position:fixed;inset:0;pointer-events:none;z-index:60;overflow:hidden}
+.fx-bub{position:absolute;border-radius:50%;background:radial-gradient(circle at 32% 28%,rgba(255,255,255,.75),rgba(255,255,255,.06) 60%);animation:fxrise 1.2s ease-out forwards}
+@keyframes fxrise{0%{transform:translateY(0) scale(.6);opacity:0}15%{opacity:.7}100%{transform:translateY(-190px) scale(1.15);opacity:0}}
+.fx-spark{position:absolute;width:6px;height:2px;border-radius:1px;background:linear-gradient(90deg,#F4D9A8,var(--accent));animation:fxspark 1s ease-out forwards}
+@keyframes fxspark{0%{transform:translate(0,0);opacity:0}20%{opacity:.9}100%{transform:translate(var(--dx,0),-130px);opacity:0}}
+.big-price .bump{display:inline-block;animation:bump 340ms var(--ease)}
+@keyframes bump{0%{transform:scale(1)}40%{transform:scale(1.035)}100%{transform:scale(1)}}
 .checkin-btn{display:block;width:100%;max-width:460px;height:56px;margin:26px auto 0;border:none;border-radius:28px;background:#F2F1EC;color:#101114;font:600 15.5px/1 var(--qt-sans);letter-spacing:.02em;cursor:pointer;transition:transform .12s var(--ease),background 200ms;box-shadow:0 14px 34px -16px rgba(0,0,0,.55)}
 .checkin-btn:hover{background:#fff}
 .checkin-btn:active{transform:scale(.97)}
@@ -272,6 +280,7 @@ input[type=checkbox].cb:checked::after{content:'';position:absolute;left:5.5px;t
 <div class="bg-layer" aria-hidden="true"></div>
 <div class="bg-veil" aria-hidden="true"></div>
 <div class="grain" aria-hidden="true"></div>
+<div id="fx-layer" aria-hidden="true"></div>
 
 <div class="app">
   <div class="nav-shell" id="nav-shell">
@@ -303,18 +312,18 @@ input[type=checkbox].cb:checked::after{content:'';position:absolute;left:5.5px;t
 
       <div class="hero-price">
         <div class="lbl" id="soul-lbl">CURRENT TRUE COST</div>
-        <div class="big-price dash" id="big-price">–<small> /次</small></div>
+        <div class="big-price dash" id="big-price"><span id="big-num">–</span><small> /次</small></div>
         <div class="soul-eq" id="soul-eq">打第一次卡后开始计算</div>
       </div>
 
       <div class="gauge-wrap" id="gauge-wrap" style="visibility:hidden">
-        <div class="gauge-row"><span>心里价达成</span><span class="big" id="gauge-pct">–</span></div>
+        <div class="gauge-row"><span id="gauge-lbl">心里价达成</span><span class="big" id="gauge-pct">–</span></div>
         <div class="gauge"><span class="fill" id="gauge-fill" style="width:0%"></span><span class="mark"><small id="gauge-mark">¥30</small></span></div>
       </div>
 
       <div class="telemetry" id="telemetry" style="visibility:hidden">
         <span class="t"><b id="t-hits">0</b><small id="t-hits-lbl">已打卡</small></span>
-        <span class="t"><b id="t-left">–</b><small>距心里价</small></span>
+        <span class="t"><b id="t-left">–</b><small id="t-left-lbl">距心里价</small></span>
         <span class="t"><b id="t-daily">–</b><small id="t-daily-lbl">日均烧钱</small></span>
       </div>
 
@@ -570,6 +579,45 @@ function esc(s){
     return {'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c];
   });
 }
+/* 数字滚动：from → to 插值 600ms */
+var _priceAnim = null;
+function rollPrice(from, to, isMs){
+  var el = document.getElementById('big-num');
+  if (!el) return;
+  if (_priceAnim) cancelAnimationFrame(_priceAnim);
+  if (from === null || to === null || from === to){
+    el.textContent = to === null ? '–' : fmtMoney2(to).replace('¥','');
+    return;
+  }
+  var t0 = performance.now(), dur = 620;
+  function frame(t){
+    var k = clamp((t - t0) / dur, 0, 1);
+    var eased = 1 - Math.pow(1 - k, 3);
+    var cur = from + (to - from) * eased;
+    el.textContent = fmtMoney2(cur).replace('¥','');
+    if (k < 1) _priceAnim = requestAnimationFrame(frame);
+  }
+  _priceAnim = requestAnimationFrame(frame);
+}
+/* 打卡特效：深潜=气泡上浮 / 冶炼=火星飞溅 */
+function fxBurst(){
+  var layer = document.getElementById('fx-layer');
+  if (!layer) return;
+  var theme = document.documentElement.getAttribute('data-theme');
+  var n = theme === 'forge' ? 14 : 10;
+  for (var i = 0; i < n; i++){
+    var el = document.createElement(theme === 'forge' ? 'i' : 'i');
+    el.className = theme === 'forge' ? 'fx-spark' : 'fx-bub';
+    el.style.left = (20 + Math.random() * 60) + '%';
+    el.style.top = (55 + Math.random() * 25) + '%';
+    if (theme === 'forge') el.style.setProperty('--dx', (Math.random()*120-60) + 'px');
+    var size = theme === 'forge' ? (3 + Math.random()*5) : (4 + Math.random()*10);
+    if (theme === 'dive'){ el.style.width = size + 'px'; el.style.height = size + 'px'; }
+    layer.appendChild(el);
+    (function(node){ setTimeout(function(){ node.remove(); }, 1300); })(el);
+  }
+}
+
 var _toastTimer = null;
 function toast(msg){
   var zone = $('toast-zone');
@@ -674,52 +722,75 @@ function renderSoul(){
   $('chip-type').textContent = card.type === 'limited' ? '有限次 ' + card.total + ' 次' : '不限次';
   var st = calcCard(card);
   $('btn-cal').style.display = 'block';
-  // 主数字
+  var theme = document.documentElement.getAttribute('data-theme');
+  var isForge = theme === 'forge';
+  // 主数字（带滚动动画：记录上一帧值）
   var bp = $('big-price');
+  var prev = window._lastPrice !== undefined ? window._lastPrice : st.price;
   if (st.price === null){
     bp.className = 'big-price dash';
-    bp.innerHTML = '–<small> /次</small>';
+    $('big-num').textContent = '–';
     $('soul-eq').textContent = '打第一次卡后开始计算';
+    window._lastPrice = null;
   } else {
     var isMs = card.mental && st.price <= card.mental;
     bp.className = 'big-price' + (isMs ? ' ms' : '');
-    bp.innerHTML = fmtMoney2(st.price).replace('¥','') + '<small> /次</small>';
-    var toGoNow = hits_to_go(card, st);
-    $('soul-eq').innerHTML = verbs.eq + ' · ' + (isMs ? '已达心理价，之后每去一次都是白赚' : '离心里价 <b>' + fmtMoney2(card.mental) + '</b> 还差 ' + toGoNow + ' 次');
+    rollPrice(window._lastPrice === undefined ? null : window._lastPrice, st.price, isMs);
+    window._lastPrice = st.price;
+    // 叙事行：里程碑后翻转为正向
+    if (isMs){
+      var savedPer = card.mental - st.price;
+      var totalSaved = savedPer * st.hits;
+      $('soul-eq').innerHTML = (isForge ? '成色达标' : '当前水深 <b>' + depthOf(st.price) + 'm</b>') + ' · 已达心里价 · 每去一次白赚 <b>' + fmtMoney2(savedPer) + '</b>，累计 <b>' + fmtMoney(Math.round(totalSaved)) + '</b>';
+    } else {
+      var toGoNow = hits_to_go(card, st);
+      $('soul-eq').innerHTML = (isForge ? '成色推进' : '当前水深 <b>' + depthOf(st.price) + 'm</b>，潜得越深花得越少') + ' · 离心里价 <b>' + fmtMoney2(card.mental) + '</b> 还差 ' + toGoNow + ' 次';
+    }
   }
-  // 仪表
+  // 仪表（里程碑后翻转为「省了多少」语义）
   var gw = $('gauge-wrap');
   if (card.mental && st.price !== null){
     gw.style.visibility = 'visible';
     var pct = Math.round(st.mentalPct * 100);
+    $('gauge-lbl').textContent = isMs ? '已锁定的白赚空间' : (isForge ? '心里价达成' : '下潜进度 · 心里价');
     $('gauge-pct').textContent = pct + '%';
-    $('gauge-fill').style.width = pct + '%';
-    $('gauge-mark').textContent = fmtMoney2(card.mental);
+    $('gauge-fill').style.width = Math.min(pct, 100) + '%';
+    $('gauge-mark').textContent = isMs ? '' : fmtMoney2(card.mental);
   } else { gw.style.visibility = 'hidden'; }
-  // 遥测
+  // 遥测：里程碑后中格翻转为「下次白赚」
   var tm = $('telemetry');
   tm.style.visibility = 'visible';
   $('t-hits').textContent = st.hits;
-  $('t-hits-lbl').textContent = document.documentElement.getAttribute('data-theme') === 'forge' ? '已锻锤数' : '已打卡';
-  var toGo = hits_to_go(card, st);
-  $('t-left').textContent = st.price === null ? '–' : (isFinite(toGo) ? toGo : '∞');
-  var dailyBurn = card.price / Math.max(1, Math.min(st.daysSinceLast + (st.hits>0?0:0), 9999) + st.hits * 0 + (st.hits ? 0 : st.daysSinceLast) || 1);
-  // 日均烧钱 = 总价 ÷ 持有天数（简化）
+  $('t-hits-lbl').textContent = isForge ? '已锻锤数' : '已打卡';
+  if (isMs){
+    $('t-left').textContent = fmtMoney2(card.mental - st.price);
+    $('t-left-lbl').textContent = '每次白赚';
+  } else {
+    var toGo = hits_to_go(card, st);
+    $('t-left').textContent = st.price === null ? '–' : (isFinite(toGo) ? toGo : '∞');
+    $('t-left-lbl').textContent = '距心里价';
+  }
   var heldDays = Math.max(1, dayDiff(new Date(card.start + 'T00:00:00').getTime(), Date.now()) + 1);
-  $('t-daily').textContent = fmtMoney(card.price / heldDays);
-  $('t-daily-lbl').textContent = document.documentElement.getAttribute('data-theme') === 'forge' ? '日均炉温' : '日均成本';
+  if (isMs){
+    $('t-daily').textContent = fmtMoney(Math.round((card.mental - st.price) * st.hits));
+    $('t-daily-lbl').textContent = '累计白赚';
+  } else {
+    $('t-daily').textContent = fmtMoney(card.price / heldDays);
+    $('t-daily-lbl').textContent = isForge ? '日均炉温' : '日均成本';
+  }
   // 打卡记录条
   var strip = $('record-strip');
   if (st.hits > 0){
     strip.style.display = 'flex';
-    var maxShow = 30;
+    var maxShow = 28;
     var html = '';
-    var sorted = card.checkins.slice().sort(function(a,b){ return a-b; });
-    sorted.slice(-maxShow).forEach(function(){
+    card.checkins.slice(-maxShow).forEach(function(){
       html += '<i class="hit"></i>';
     });
+    if (st.hits > maxShow) html += '<span class="more">+' + (st.hits - maxShow) + '</span>';
     if (card.type === 'limited' && card.total){
-      for (var i = st.hits; i < Math.min(card.total, maxShow); i++) html += '<i></i>';
+      var remainingShow = Math.min(card.total - st.hits, maxShow - Math.min(st.hits, maxShow));
+      for (var i = 0; i < Math.max(0, remainingShow); i++) html += '<i></i>';
     }
     strip.innerHTML = html;
   } else strip.style.display = 'none';
@@ -755,9 +826,13 @@ function renderSoul(){
       return '<button class="cs-dot' + (c.id === card.id ? ' on' : '') + '" data-cs="' + c.id + '">' + esc(c.name) + '</button>';
     }).join('');
     switcher.querySelectorAll('[data-cs]').forEach(function(b){
-      b.addEventListener('click', function(){ setCurCard(b.getAttribute('data-cs')); renderSoul(); });
+      b.addEventListener('click', function(){ window._lastPrice = undefined; setCurCard(b.getAttribute('data-cs')); renderSoul(); });
     });
   } else switcher.classList.remove('on');
+}
+function depthOf(price){
+  // 叙事映射：心里价 30 ≈ 40m（信标线），刚买 250 ≈ 24m 的量级感 → depth = 7200/price
+  return Math.min(40, Math.round(7200 / Math.max(price, 1)));
 }
 function hits_to_go(card, st){
   // 距心里价还差几次：解 price = P/(hits+n) <= mental → n >= P/mental - hits
@@ -784,10 +859,15 @@ $('btn-checkin').addEventListener('click', function(){
   card.checkins.push(Date.now());
   store.save(cards);
   var before = st.price;
+  fxBurst();
   renderSoul();
+  // 主数字 bump 反馈
+  var bn = $('big-num');
+  if (bn){ bn.classList.remove('bump'); void bn.offsetWidth; bn.classList.add('bump'); }
   var after = calcCard(card);
   if (after.price !== null && card.mental && before !== null && before > card.mental && after.price <= card.mental){
     msToast('里程碑 · 单价已低于心里价', '之后每去一次都是白赚');
+    fxBurst(); fxBurst(); // 里程碑双份特效
   } else if (card.type === 'limited' && card.total && after.hits === card.total){
     msToast('打满了 · ' + card.total + ' 次全部用完', '单价定格 ' + fmtMoney2(after.price));
   }
@@ -894,7 +974,7 @@ function renderOverview(){
   }).join('') + '</div>';
   box.innerHTML = html;
   box.querySelectorAll('[data-open]').forEach(function(el){
-    var open = function(){ setCurCard(el.getAttribute('data-open')); nav('soul'); renderSoul(); };
+    var open = function(){ window._lastPrice = undefined; setCurCard(el.getAttribute('data-open')); nav('soul'); renderSoul(); };
     el.addEventListener('click', function(e){ if (e.target.closest('[data-del]')) return; open(); });
     el.addEventListener('keydown', function(e){ if (e.key === 'Enter'){ open(); } });
   });
