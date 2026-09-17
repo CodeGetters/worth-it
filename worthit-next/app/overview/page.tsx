@@ -39,7 +39,7 @@ export default function OverviewPage() {
   };
 
   return (
-    <section aria-label="总览">
+    <section className="page-in" aria-label="总览">
       <span className="kicker">OVERVIEW · 哪张值哪张亏</span>
       <h1 className="page-title">我的卡</h1>
       <p className="page-sub">在用的盯紧点，躺着的赶紧去，白办的下次别续。</p>

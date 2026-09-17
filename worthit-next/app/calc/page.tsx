@@ -28,7 +28,7 @@ export default function CalcPage() {
     errors[k] ? <div className="err" role="alert">{errors[k]}</div> : null;
 
   return (
-    <section aria-label="买前计算器">
+    <section className="page-in" aria-label="买前计算器">
       <span className="kicker">BEFORE BUYING · 还没买</span>
       <h1 className="page-title">买前算一笔</h1>
       <p className="page-sub">还没买，先算算按你的预期值不值。买完之后，去「打卡」页跟踪真实单价。</p>

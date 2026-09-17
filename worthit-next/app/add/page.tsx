@@ -68,7 +68,7 @@ export default function AddPage() {
   ) : null;
 
   return (
-    <section aria-label="添加卡">
+    <section className="page-in" aria-label="添加卡">
       <span className="kicker">NEW CARD</span>
       <h1 className="page-title">添加我的卡</h1>
       <p className="page-sub">像填一张待开的小票，尽量少填。默认值能填的都填好了。</p>

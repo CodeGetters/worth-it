@@ -65,8 +65,21 @@ export default function SoulPage() {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [st?.price, st?.hits]);
 
-  const doCheckin = () => {
+  const doCheckin = (e?: React.MouseEvent<HTMLButtonElement>) => {
     if (!card) return;
+    // 涟漪
+    const btn = e?.currentTarget;
+    if (btn) {
+      const rect = btn.getBoundingClientRect();
+      const rip = document.createElement('span');
+      rip.className = 'ripple';
+      const size = Math.max(rect.width, rect.height);
+      rip.style.width = rip.style.height = size + 'px';
+      rip.style.left = (e!.clientX - rect.left - size / 2) + 'px';
+      rip.style.top = (e!.clientY - rect.top - size / 2) + 'px';
+      btn.appendChild(rip);
+      setTimeout(() => rip.remove(), 560);
+    }
     const before = calcCard(card);
     checkin(card.id);
     setFxKey((k) => k + 1);
@@ -115,7 +128,7 @@ export default function SoulPage() {
   const noCard = hydrated && !card;
 
   return (
-    <section className="soul" aria-label="打卡">
+    <section className="soul page-in" aria-label="打卡">
       {card && (
         <>
           <div className="soul-chip" role="button" tabIndex={0}
@@ -165,7 +178,7 @@ export default function SoulPage() {
             <span className="big">{Math.round(st.mentalPct * 100)}%</span>
           </div>
           <div className="gauge">
-            <span className="fill" style={{ width: Math.min(Math.round(st.mentalPct * 100), 100) + '%' }} />
+            <span className="fill" key={st.hits} style={{ width: Math.min(Math.round(st.mentalPct * 100), 100) + '%' }} />
             {!isMs && <span className="mark" />}
           </div>
         </div>
@@ -190,12 +203,12 @@ export default function SoulPage() {
 
       {card && st != null && st.hits > 0 && (
         <div className="record-strip">
-          {card.checkins.slice(-28).map((ts, i) => <i key={i} className="hit" />)}
+          {card.checkins.slice(-28).map((ts, i, arr) => <i key={ts} className={'hit' + (i === arr.length - 1 && fxKey > 0 ? ' pop' : '')} />)}
           {st.hits > 28 && <span className="more">+{st.hits - 28}</span>}
         </div>
       )}
 
-      <button className="checkin-btn" id="btn-checkin" onClick={doCheckin}
+      <button className="checkin-btn" id="btn-checkin" onClick={doCheckin} style={{ position: 'relative', overflow: 'hidden' }}
         disabled={noCard ? false : !!card && !!st && (st.expired || (card.type === 'limited' && !!card.total && st.hits >= card.total))}>
         {!hydrated ? '…' : noCard ? '放一张示例卡' :
           st?.expired ? '已到期 · 去总览看复盘' :

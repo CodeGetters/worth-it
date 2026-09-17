@@ -1,5 +1,5 @@
 const puppeteer = require('puppeteer');
-const BASE = 'http://localhost:3457';
+const BASE = 'https://worthit-next-codegetters.vercel.app';
 let pass = 0, fail = 0;
 function check(n, c, x){ if (c){ pass++; console.log('PASS', n); } else { fail++; console.log('FAIL', n, x || ''); } }
 (async () => {
