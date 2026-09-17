@@ -75,8 +75,24 @@ body{background:var(--bg);color:var(--ink);font-family:var(--qt-sans);font-size:
 .form-card{padding:26px 28px}
 .panel{padding:20px 22px}
 .panel h3{font-family:var(--qt-mono);font-size:10px;font-weight:600;letter-spacing:.2em;text-transform:uppercase;color:var(--muted);margin-bottom:12px}
-.frow{display:grid;grid-template-columns:1.4fr 1fr 1fr;gap:14px}
-.frow + .frow{margin-top:14px}
+.frow{display:grid;gap:14px}
+.frow-3{grid-template-columns:1.4fr 1fr 1fr}
+.frow-2{grid-template-columns:1fr 1fr}
+.frow + .frow,.fgroup + .frow,.advanced .frow{margin-top:14px}
+.fgroup{margin-top:18px;padding-bottom:8px;border-bottom:1px solid var(--hairline)}
+.fgroup:first-child{margin-top:0}
+.fg-title{font-family:var(--qt-mono);font-size:9.5px;letter-spacing:.22em;text-transform:uppercase;color:var(--muted)}
+.field.span-2{grid-column:span 2}
+@media (max-width:900px){.field.span-2{grid-column:span 1}}
+.advanced-toggle{display:flex;align-items:center;gap:8px;width:100%;margin-top:18px;padding:10px 2px;background:none;border:none;border-top:1px solid var(--hairline);color:var(--muted);font:500 13px/1 var(--qt-sans);cursor:pointer;transition:color 180ms var(--ease);text-align:left}
+.advanced-toggle:hover{color:var(--ink)}
+.advanced-toggle:focus-visible{outline:2px solid var(--accent);outline-offset:2px;border-radius:6px}
+.advanced-toggle .chev{width:13px;height:13px;transition:transform 220ms var(--ease)}
+.advanced-toggle[aria-expanded="true"] .chev{transform:rotate(90deg)}
+.advanced-toggle .at-hint{margin-left:auto;font-size:11.5px;color:var(--muted);opacity:.7}
+.advanced{margin-top:12px}
+.hero-head{margin-bottom:24px}
+.kicker{font-family:var(--qt-mono);font-size:10px;letter-spacing:.24em;color:var(--accent);opacity:.9}
 .field label{display:flex;justify-content:space-between;align-items:baseline;font-size:13px;font-weight:500;margin-bottom:6px}
 .field label em{font-style:normal;font-family:var(--mono);font-size:11px;color:var(--muted)}
 .control{position:relative}
@@ -90,8 +106,16 @@ body{background:var(--bg);color:var(--ink);font-family:var(--qt-sans);font-size:
 .err{font-size:12px;color:var(--danger);margin-top:6px;display:none;gap:5px;align-items:center}
 .field.invalid .err{display:flex}
 .field.invalid .hint{display:none}
-.preview{display:flex;align-items:center;gap:10px;margin-top:18px;padding:12px 16px;border-radius:var(--r-sm);background:var(--accent-mist);border:1px dashed var(--accent);font-size:13px;color:var(--ink)}
-.preview b{font-family:var(--mono);font-variant-numeric:tabular-nums}
+.preview{margin-top:20px;padding:14px 18px;border-radius:var(--r-card);background:var(--surface-2);border:1px solid var(--hairline);transition:border-color 240ms var(--ease),background 240ms var(--ease)}
+.preview.p-ok{border-color:var(--accent);background:var(--accent-mist)}
+.preview.p-bad{border-color:var(--skip);background:var(--skip-soft)}
+.preview-top{display:flex;justify-content:space-between;align-items:baseline;gap:10px;font-size:12.5px;color:var(--muted)}
+.preview-top b{font-family:var(--qt-mono);font-variant-numeric:tabular-nums;color:var(--ink);font-weight:600}
+.preview-main{display:flex;align-items:baseline;gap:10px;margin-top:6px}
+.preview-main .pm-label{font-family:var(--qt-mono);font-size:10px;letter-spacing:.18em;color:var(--muted)}
+.preview-main .pm-val{font-family:var(--qt-mono);font-size:26px;font-weight:var(--price-weight);letter-spacing:var(--price-tracking);font-variant-numeric:tabular-nums;color:var(--ink);transition:color .4s}
+.preview.p-ok .pm-val{color:var(--accent)}
+.preview .pm-badge{margin-left:auto}
 .actions{display:flex;gap:12px;margin-top:18px;flex-wrap:wrap}
 .btn{display:inline-flex;align-items:center;justify-content:center;gap:8px;height:46px;padding:0 22px;border-radius:999px;font:inherit;font-size:14px;font-weight:700;cursor:pointer;border:1px solid transparent;transition:transform 160ms var(--ease),background 160ms var(--ease),box-shadow 160ms var(--ease)}
 .btn:focus-visible{outline:2px solid var(--accent);outline-offset:2px}
@@ -104,10 +128,12 @@ body{background:var(--bg);color:var(--ink);font-family:var(--qt-sans);font-size:
 .btn-danger-ghost:hover{background:var(--skip-soft)}
 .btn[disabled]{opacity:.45;cursor:not-allowed;transform:none}
 .btn-sm{height:38px;padding:0 16px;font-size:13px}
-.example{display:flex;align-items:center;justify-content:space-between;gap:10px;padding:12px 14px;border:1px solid var(--hairline);border-radius:14px;background:var(--surface)}
+.example{display:flex;align-items:center;gap:12px;padding:13px 15px;border:1px solid var(--hairline);border-radius:14px;background:rgba(255,255,255,.02);transition:border-color 200ms var(--ease),background 200ms var(--ease)}
 .example + .example{margin-top:10px}
-.example b{font-size:14px}
-.example small{display:block;color:var(--muted);font-size:12px}
+.example:hover{border-color:var(--hairline-strong);background:var(--surface-2)}
+.example .ex-body{flex:1;min-width:0}
+.example b{font-size:14px;font-weight:600}
+.example small{display:block;color:var(--muted);font-size:11.5px;margin-top:2px;font-family:var(--qt-mono);letter-spacing:.02em}
 .badge{display:inline-flex;align-items:center;gap:6px;height:24px;padding:0 10px;border-radius:999px;font-size:12px;font-weight:700;white-space:nowrap}
 .badge i{width:6px;height:6px;border-radius:99px;background:currentColor}
 .badge-worth{background:var(--worth-soft);color:var(--worth)}
@@ -118,11 +144,15 @@ body{background:var(--bg);color:var(--ink);font-family:var(--qt-sans);font-size:
 .use-btn:hover{background:var(--accent-soft)}
 .side{display:grid;gap:14px}
 .recent{border-top:1px solid var(--hairline);padding-top:14px;margin-top:4px}
+.recent-empty{display:flex;flex-direction:column;align-items:flex-start;gap:10px;padding:4px 0 2px}
+.recent-empty .re-dot{width:8px;height:8px;border-radius:99px;background:var(--accent);opacity:.5;box-shadow:0 0 10px var(--accent)}
+.recent-empty p{font-size:12.5px;color:var(--muted);line-height:1.7}
 .recent dl{display:grid;grid-template-columns:auto 1fr;gap:4px 14px;font-size:13px}
 .recent dt{color:var(--muted)}
 .recent dd{font-weight:500;text-align:right;font-variant-numeric:tabular-nums}
 /* ---------- 结果 ---------- */
 .result-wrap{background:var(--surface);border:1px solid var(--hairline);border-radius:26px;box-shadow:var(--shadow);padding:34px 38px 38px;backdrop-filter:blur(14px)}
+.result-wrap .verdict-row > .ring-wrap{display:flex;flex-direction:column;align-items:center}
 .verdict-row{display:flex;align-items:center;gap:26px;flex-wrap:wrap}
 .ring{position:relative;width:132px;height:132px;flex:none}
 .ring svg{transform:rotate(-90deg)}
@@ -131,6 +161,8 @@ body{background:var(--bg);color:var(--ink);font-family:var(--qt-sans);font-size:
 .ring .score span{font-size:11px;color:var(--muted);letter-spacing:.06em}
 .ring .ring-track{stroke:rgba(37,35,29,.1);fill:none;stroke-width:10}
 .ring .ring-val{fill:none;stroke-width:10;stroke-linecap:round;transition:stroke-dasharray 700ms var(--ease),stroke 300ms}
+.ring-cap{font-family:var(--qt-mono);font-size:10px;letter-spacing:.1em;color:var(--muted);margin-top:8px;text-align:center;white-space:nowrap}
+@media (max-width:900px){.ring-cap{white-space:normal;text-align:left}}
 .verdict-title{flex:1;min-width:260px}
 .verdict-title .badge{height:30px;font-size:14px;padding:0 14px}
 .verdict-title h2{font-size:34px;line-height:1.15;font-weight:700;margin-top:10px;letter-spacing:-.02em}
@@ -140,7 +172,8 @@ body{background:var(--bg);color:var(--ink);font-family:var(--qt-sans);font-size:
 .big-cost b{display:block;font-family:var(--qt-mono);font-size:54px;font-weight:var(--price-weight);line-height:1.02;letter-spacing:var(--price-tracking);font-variant-numeric:tabular-nums;color:var(--ink)}
 .big-cost small{color:var(--muted);font-size:12px}
 .metrics{display:grid;grid-template-columns:repeat(4,1fr);gap:14px;margin-top:26px}
-.metric{border:1px solid var(--hairline);border-radius:16px;background:var(--surface);padding:16px 18px}
+.metric{border:1px solid var(--hairline);border-radius:16px;background:var(--surface);padding:16px 18px;transition:border-color 200ms var(--ease),transform 200ms var(--ease)}
+.metric:hover{border-color:var(--hairline-strong);transform:translateY(-1px)}
 .metric label{font-size:12px;color:var(--muted);letter-spacing:.04em}
 .metric b{display:block;font-family:var(--qt-mono);font-size:21px;font-weight:500;margin-top:4px;font-variant-numeric:tabular-nums;letter-spacing:-.02em}
 .metric span{font-size:12px;color:var(--muted)}
@@ -238,6 +271,12 @@ svg.ic{width:16px;height:16px;stroke:currentColor;fill:none;stroke-width:1.6;str
 .theme-toggle:hover{border-color:var(--accent);color:var(--accent)}
 .theme-toggle:focus-visible{outline:2px solid var(--accent);outline-offset:2px}
 .foot-note{margin-top:22px;font-size:12px;color:var(--muted);display:flex;gap:8px;align-items:flex-start}
+.app-foot{margin-top:56px;padding:22px 4px 0;border-top:1px solid var(--hairline);display:flex;align-items:center;gap:14px;flex-wrap:wrap;font-size:12px;color:var(--muted)}
+.app-foot .af-brand{display:inline-flex;align-items:center;gap:8px;font-weight:600;color:var(--ink);letter-spacing:.02em}
+.app-foot .af-brand .brand-mark{width:16px;height:16px;border-radius:5px}
+.app-foot .af-sep{width:1px;height:12px;background:var(--hairline-strong)}
+.app-foot .af-link{background:none;border:none;color:var(--accent);font:inherit;cursor:pointer;padding:0}
+.app-foot .af-link:hover{text-decoration:underline}
 .visually-hidden{position:absolute;width:1px;height:1px;overflow:hidden;clip:rect(0 0 0 0);white-space:nowrap}
 /* ---------- 响应式 ---------- */
 @media (max-width:900px){
@@ -254,7 +293,11 @@ svg.ic{width:16px;height:16px;stroke:currentColor;fill:none;stroke-width:1.6;str
 @media (max-width:520px){
   .metrics{grid-template-columns:1fr}
   .verdict-title h2{font-size:30px}
-  .app-links a{padding:7px 10px;font-size:12px}
+  .app-links{gap:0}
+  .app-links a{padding:7px 9px;font-size:12px}
+  .brand small{display:none}
+  .theme-toggle{height:30px;padding:0 10px;font-size:11px}
+  .app-foot{gap:10px;font-size:11.5px}
 }
 @media (prefers-reduced-motion:reduce){*{animation:none!important;transition:none!important}}
 </style>
@@ -277,6 +320,7 @@ svg.ic{width:16px;height:16px;stroke:currentColor;fill:none;stroke-width:1.6;str
   <symbol id="i-arrow" viewBox="0 0 24 24"><path d="M4 12h15 M13 6l6 6-6 6"/></symbol>
   <symbol id="i-info" viewBox="0 0 24 24"><circle cx="12" cy="12" r="8.5"/><path d="M12 11v5 M12 7.8v.2"/></symbol>
   <symbol id="i-back" viewBox="0 0 24 24"><path d="M20 12H5 M11 6l-6 6 6 6"/></symbol>
+  <symbol id="i-chev" viewBox="0 0 24 24"><path d="M9 6l6 6-6 6"/></symbol>
 </svg>
 
 <div class="bg-layer" aria-hidden="true"></div>
@@ -296,29 +340,34 @@ svg.ic{width:16px;height:16px;stroke:currentColor;fill:none;stroke-width:1.6;str
 
   <!-- ================= 记一笔 ================= -->
   <section id="view-home" class="view on" aria-label="决策录入">
-    <h1 class="page-title">买它之前，先算这一笔。</h1>
-    <p class="page-sub">填 4 个数，算出每用一次花多少钱、多久回本。判断标准全程透明，见「口径说明」。</p>
+    <div class="hero-head">
+      <span class="kicker">TRUE COST CALCULATOR · 值不值</span>
+      <h1 class="page-title">买它之前，先算这一笔。</h1>
+      <p class="page-sub">填几个数，算出每用一次花多少钱、多久回本。<br/>判断标准全程透明，随时可查「口径」。</p>
+    </div>
     <div class="layout">
       <form class="form-card" id="calc-form" novalidate>
-        <div class="frow">
-          <div class="field">
+        <div class="fgroup"><span class="fg-title">这笔消费是什么</span></div>
+        <div class="frow frow-3">
+          <div class="field span-2">
             <label for="f-name">商品 / 服务名称 <em>选填</em></label>
             <div class="control"><input class="input" id="f-name" placeholder="例如：半自动咖啡机" maxlength="40" /></div>
           </div>
           <div class="field" id="fw-price">
             <label for="f-price">价格 <em>必填</em></label>
-            <div class="control"><input class="input" id="f-price" inputmode="decimal" placeholder="例如 1200" /><span class="unit">¥</span></div>
+            <div class="control"><input class="input" id="f-price" inputmode="decimal" placeholder="例如 1,200" /><span class="unit">¥</span></div>
             <div class="hint">大于 0 的金额</div>
             <div class="err" id="e-price" role="alert"></div>
           </div>
+        </div>
+        <div class="fgroup"><span class="fg-title">你打算怎么用它</span></div>
+        <div class="frow frow-3">
           <div class="field" id="fw-freq">
             <label for="f-freq">使用频率 <em>必填</em></label>
             <div class="control"><input class="input" id="f-freq" inputmode="decimal" placeholder="例如 5" /><span class="unit">次/周</span></div>
             <div class="hint">0.1 – 21，可填小数</div>
             <div class="err" id="e-freq" role="alert"></div>
           </div>
-        </div>
-        <div class="frow">
           <div class="field" id="fw-years">
             <label for="f-years">预计使用年限 <em>必填</em></label>
             <div class="control"><input class="input" id="f-years" inputmode="decimal" placeholder="例如 3" /><span class="unit">年</span></div>
@@ -331,19 +380,24 @@ svg.ic{width:16px;height:16px;stroke:currentColor;fill:none;stroke-width:1.6;str
             <div class="hint">用一次花多少算「还行」</div>
             <div class="err" id="e-mental" role="alert"></div>
           </div>
-          <div class="field" id="fw-maint">
-            <label for="f-maint">年维护成本 <em>选填</em></label>
-            <div class="control"><input class="input" id="f-maint" inputmode="decimal" placeholder="0" /><span class="unit">¥/年</span></div>
-            <div class="hint">耗材、保养等年均花费</div>
-            <div class="err" id="e-maint" role="alert"></div>
-          </div>
         </div>
-        <div class="frow">
-          <div class="field" id="fw-resale">
-            <label for="f-resale">残值抵扣 <em>选填</em></label>
-            <div class="control"><input class="input" id="f-resale" inputmode="decimal" placeholder="0" /><span class="unit">¥</span></div>
-            <div class="hint">将来转卖能收回的钱，不超过价格</div>
-            <div class="err" id="e-resale" role="alert"></div>
+        <button type="button" class="advanced-toggle" id="btn-advanced" aria-expanded="false" aria-controls="advanced-fields">
+          <svg class="ic chev"><use href="#i-chev"/></svg>进阶：维护成本与残值<span class="at-hint">让口径更贴近真实，通常不用填</span>
+        </button>
+        <div class="advanced" id="advanced-fields" hidden>
+          <div class="frow frow-2">
+            <div class="field" id="fw-maint">
+              <label for="f-maint">年维护成本 <em>选填</em></label>
+              <div class="control"><input class="input" id="f-maint" inputmode="decimal" placeholder="不填按 0 算" /><span class="unit">¥/年</span></div>
+              <div class="hint">耗材、保养等年均花费</div>
+              <div class="err" id="e-maint" role="alert"></div>
+            </div>
+            <div class="field" id="fw-resale">
+              <label for="f-resale">残值抵扣 <em>选填</em></label>
+              <div class="control"><input class="input" id="f-resale" inputmode="decimal" placeholder="不填按 0 算" /><span class="unit">¥</span></div>
+              <div class="hint">将来转卖能收回的钱，不超过价格</div>
+              <div class="err" id="e-resale" role="alert"></div>
+            </div>
           </div>
         </div>
         <div class="preview" id="live-preview" role="status" aria-live="polite"></div>
@@ -369,12 +423,15 @@ svg.ic{width:16px;height:16px;stroke:currentColor;fill:none;stroke-width:1.6;str
   <section id="view-result" class="view" aria-label="结果分析">
     <div class="result-wrap">
       <div class="verdict-row">
-        <div class="ring" aria-hidden="true">
-          <svg width="132" height="132" viewBox="0 0 132 132">
-            <circle class="ring-track" cx="66" cy="66" r="56"/>
-            <circle class="ring-val" id="ring-val" cx="66" cy="66" r="56" stroke="var(--accent)" stroke-dasharray="0 351.9"/>
-          </svg>
-          <div class="score"><b id="score-num">–</b><span>综合评分</span></div>
+        <div class="ring-wrap">
+          <div class="ring" aria-hidden="true">
+            <svg width="132" height="132" viewBox="0 0 132 132">
+              <circle class="ring-track" cx="66" cy="66" r="56"/>
+              <circle class="ring-val" id="ring-val" cx="66" cy="66" r="56" stroke="var(--accent)" stroke-dasharray="0 351.9"/>
+            </svg>
+            <div class="score"><b id="score-num">–</b><span>综合评分</span></div>
+          </div>
+          <div class="ring-cap">0–100 · 成本 60% / 频率 25% / 规模 15%</div>
         </div>
         <div class="verdict-title">
           <span class="badge" id="verdict-badge"><i></i><span id="verdict-label">待计算</span></span>
@@ -434,6 +491,14 @@ svg.ic{width:16px;height:16px;stroke:currentColor;fill:none;stroke-width:1.6;str
     <p class="page-sub">每列取最低单次成本标「最划算」；评分与结论口径见「口径说明」。</p>
     <div class="compare-grid" id="compare-grid"></div>
   </section>
+
+  <footer class="app-foot">
+    <span class="af-brand"><span class="brand-mark" aria-hidden="true"></span>值啦 WORTHIT</span>
+    <span class="af-sep"></span>
+    <span>判断标准全程透明 · 数据只存在本机浏览器</span>
+    <span class="af-sep"></span>
+    <button class="af-link" data-nav="method" type="button">查看计算口径</button>
+  </footer>
 
   <!-- ================= 口径说明 ================= -->
   <section id="view-method" class="view" aria-label="计算口径">
@@ -685,6 +750,27 @@ $('theme-toggle').addEventListener('click', function(){
   applyTheme(cur === 'dive' ? 'forge' : 'dive');
 });
 
+/* ---------------- 进阶字段折叠 ---------------- */
+$('btn-advanced').addEventListener('click', function(){
+  var panel = $('advanced-fields');
+  var open = panel.hidden;
+  panel.hidden = !open;
+  this.setAttribute('aria-expanded', String(open));
+});
+
+/* ---------------- 金额输入千分位（失焦格式化，输入中不打扰） ---------------- */
+['f-price', 'f-maint', 'f-resale'].forEach(function(id){
+  var el = $(id);
+  el.addEventListener('blur', function(){
+    var v = parseNumber(el.value);
+    if (v !== null && !isNaN(v) && Math.abs(v) >= 1000) el.value = v.toLocaleString('zh-CN');
+  });
+  el.addEventListener('focus', function(){
+    var v = parseNumber(el.value);
+    if (v !== null && !isNaN(v)) el.value = String(v);
+  });
+});
+
 /* ---------------- 导航 ---------------- */
 var VIEWS = ['home','result','ledger','compare','method'];
 function nav(name){
@@ -708,21 +794,23 @@ var EXAMPLES = [
 ];
 function renderExamples(){
   $('examples').innerHTML = EXAMPLES.map(function(ex, i){
-    var r = calc(ex);
     var meta = '¥' + Number(ex.price).toLocaleString('zh-CN') + ' · 每周 ' + ex.freq + ' 次 · ' + ex.years + ' 年';
-    return '<div class="example"><div><b>' + esc(ex.name) + '</b><small>' + meta + '</small></div>' +
+    return '<div class="example" data-ex-card="' + i + '" role="button" tabindex="0" aria-label="填入示例 ' + esc(ex.name) + '">' +
+      '<div class="ex-body"><b>' + esc(ex.name) + '</b><small>' + meta + '</small></div>' +
       '<span class="badge badge-' + ex.tag + '"><i></i>' + VERDICT[ex.tag].label + '</span>' +
-      '<button type="button" class="use-btn" data-ex="' + i + '">填入</button></div>';
+      '<span class="use-btn">填入 →</span></div>';
   }).join('');
-  $('examples').querySelectorAll('[data-ex]').forEach(function(b){
-    b.addEventListener('click', function(){
-      var ex = EXAMPLES[+b.getAttribute('data-ex')];
+  $('examples').querySelectorAll('[data-ex-card]').forEach(function(card){
+    var fill = function(){
+      var ex = EXAMPLES[+card.getAttribute('data-ex-card')];
       $('f-name').value = ex.name; $('f-price').value = ex.price; $('f-freq').value = ex.freq;
       $('f-years').value = ex.years; $('f-mental').value = ex.mental; $('f-maint').value = ex.maint; $('f-resale').value = ex.resale;
       ['price','freq','years','mental','maint','resale'].forEach(function(k){ clearErr(k); });
       updatePreview();
       toast('已填入示例「' + ex.name + '」，点「帮我算算值不值」');
-    });
+    };
+    card.addEventListener('click', fill);
+    card.addEventListener('keydown', function(e){ if (e.key === 'Enter' || e.key === ' '){ e.preventDefault(); fill(); } });
   });
 }
 
@@ -768,10 +856,16 @@ function updatePreview(){
   var v = calc(readForm());
   var box = $('live-preview');
   if (v.ok){
-    box.innerHTML = '<svg class="ic"><use href="#i-info"/></svg>当前输入预计总使用 <b>' + Math.round(v.N).toLocaleString('zh-CN') + '</b> 次 · 单次成本约 <b>' + fmtMoney2(v.C) + '</b>';
+    var V = VERDICT[v.verdict];
+    box.classList.remove('p-ok','p-bad');
+    box.classList.add(v.verdict === 'skip' ? 'p-bad' : 'p-ok');
+    box.innerHTML = '<div class="preview-top"><span>按当前输入预计总使用 <b>' + Math.round(v.N).toLocaleString('zh-CN') + '</b> 次</span>' +
+      '<span class="pm-badge badge ' + V.cls + '"><i></i>初步' + V.label + '</span></div>' +
+      '<div class="preview-main"><span class="pm-label">单次成本约</span><span class="pm-val">' + fmtMoney2(v.C) + '</span></div>';
   } else {
+    box.classList.remove('p-ok','p-bad');
     var first = Object.keys(v.errs)[0];
-    box.innerHTML = '<svg class="ic"><use href="#i-info"/></svg>' + esc(v.errs[first]) + '（补全后实时预览）';
+    box.innerHTML = '<div class="preview-main" style="margin-top:0"><span class="pm-val" style="font-size:14px;font-weight:500;color:var(--muted);letter-spacing:0">' + esc(v.errs[first]) + '（补全后实时预览）</span></div>';
   }
 }
 
@@ -905,7 +999,7 @@ $('btn-save').addEventListener('click', function(){
 function renderRecent(){
   var box = $('recent-box');
   if (records.length === 0){
-    box.innerHTML = '<div class="recent"><p class="hint">还没有记录。算完第一笔后，这里会显示最近一次的结论。</p></div>';
+    box.innerHTML = '<div class="recent-empty"><span class="re-dot"></span><p>还没有记录。<br/>算完第一笔，这里会显示它的结论与评分。</p></div>';
     return;
   }
   var r = records[0];
